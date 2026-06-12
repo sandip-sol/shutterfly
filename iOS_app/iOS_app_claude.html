@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shutterfly iOS — Stage 3 POC: Fixes, Feasibility, Impact & Roadmap</title>
+<style>
+  :root {
+    --bg:#ffffff;--bg2:#f7f6f3;--bg3:#eeecea;
+    --text:#1a1a1a;--text2:#5a5854;--text3:#8a8884;
+    --border:rgba(0,0,0,0.09);--border2:rgba(0,0,0,0.16);
+    --accent:#1c5faa;--accent-bg:#e8f0fb;
+    --warn:#7a4208;--warn-bg:#fdf0e0;
+    --danger:#a32020;--danger-bg:#fceaea;
+    --success:#1a6633;--success-bg:#eaf5ee;
+    --amber:#6a4200;--amber-bg:#fef8ec;
+    --purple:#4a228a;--purple-bg:#f0eafc;
+    --teal:#0a5a52;--teal-bg:#e4f5f2;
+    --radius:10px;--radius-sm:6px;
+  }
+  @media(prefers-color-scheme:dark){
+    :root{
+      --bg:#1c1c1e;--bg2:#252527;--bg3:#2e2e30;
+      --text:#f0ede8;--text2:#a8a6a2;--text3:#6a6866;
+      --border:rgba(255,255,255,0.09);--border2:rgba(255,255,255,0.16);
+      --accent:#5b9cf0;--accent-bg:#0d2a52;
+      --warn:#e8a84a;--warn-bg:#2a1e08;
+      --danger:#f07070;--danger-bg:#2a1010;
+      --success:#60c880;--success-bg:#0a2212;
+      --amber:#f0c060;--amber-bg:#221800;
+      --purple:#c0a0f8;--purple-bg:#1e1030;
+      --teal:#50c8c0;--teal-bg:#062820;
+    }
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;font-size:14px;line-height:1.65;color:var(--text);background:var(--bg);max-width:1060px;margin:0 auto;padding:40px 28px 80px}
+
+  /* Cover */
+  .cover{margin-bottom:48px;padding-bottom:28px;border-bottom:0.5px solid var(--border2)}
+  .cover-badge{display:inline-flex;align-items:center;gap:6px;background:var(--accent-bg);color:var(--accent);font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;margin-bottom:14px;letter-spacing:0.04em}
+  .cover h1{font-size:30px;font-weight:700;line-height:1.2;color:var(--text);margin-bottom:8px}
+  .cover-sub{font-size:15px;color:var(--text2);margin-bottom:20px;line-height:1.6;max-width:720px}
+  .cover-meta{display:flex;gap:18px;flex-wrap:wrap;font-size:12px;color:var(--text3)}
+  .cover-meta span{display:flex;align-items:center;gap:4px}
+  .m-dot{width:5px;height:5px;border-radius:50%;background:var(--accent);flex-shrink:0}
+
+  /* TOC */
+  .toc{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);padding:18px 22px;margin-bottom:44px}
+  .toc-title{font-size:10px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--text3);margin-bottom:12px}
+  .toc-cols{display:grid;grid-template-columns:1fr 1fr;gap:4px 20px}
+  .toc-cols a{font-size:12.5px;color:var(--accent);text-decoration:none;display:block;padding:1px 0}
+  .toc-cols a:hover{text-decoration:underline}
+
+  /* Section */
+  .section{margin-bottom:52px;scroll-margin-top:20px}
+  .s-eyebrow{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:5px}
+  .section h2{font-size:21px;font-weight:700;color:var(--text);margin-bottom:5px;padding-bottom:10px;border-bottom:0.5px solid var(--border)}
+  .section-intro{font-size:13px;color:var(--text2);margin-bottom:20px;line-height:1.6;max-width:800px}
+  h3.sub{font-size:15px;font-weight:600;color:var(--text);margin:20px 0 10px}
+  h4.micro{font-size:13px;font-weight:600;color:var(--text);margin:14px 0 6px}
+
+  /* Alerts */
+  .alert{border-radius:var(--radius-sm);padding:11px 14px;font-size:13px;line-height:1.6;margin-bottom:14px;border-left:3px solid}
+  .a-danger{background:var(--danger-bg);border-color:var(--danger);color:var(--text)}
+  .a-warn{background:var(--warn-bg);border-color:var(--warn);color:var(--text)}
+  .a-info{background:var(--accent-bg);border-color:var(--accent);color:var(--text)}
+  .a-success{background:var(--success-bg);border-color:var(--success);color:var(--text)}
+  .a-purple{background:var(--purple-bg);border-color:var(--purple);color:var(--text)}
+  .a-teal{background:var(--teal-bg);border-color:var(--teal);color:var(--text)}
+
+  /* Tags */
+  .tag{display:inline-flex;align-items:center;font-size:10px;font-weight:600;padding:1px 7px;border-radius:3px;white-space:nowrap;letter-spacing:.02em}
+  .t-p1{background:var(--danger-bg);color:var(--danger)}
+  .t-p2{background:var(--warn-bg);color:var(--warn)}
+  .t-p3{background:var(--accent-bg);color:var(--accent)}
+  .t-high{background:var(--danger-bg);color:var(--danger)}
+  .t-med{background:var(--amber-bg);color:var(--amber)}
+  .t-low{background:var(--success-bg);color:var(--success)}
+  .t-conf{background:var(--success-bg);color:var(--success)}
+  .t-like{background:var(--amber-bg);color:var(--amber)}
+  .t-val{background:var(--warn-bg);color:var(--warn)}
+  .t-ios26{background:var(--purple-bg);color:var(--purple)}
+  .t-quick{background:var(--teal-bg);color:var(--teal)}
+
+  /* Tables */
+  .tw{overflow-x:auto;border:0.5px solid var(--border);border-radius:var(--radius);margin-bottom:20px}
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  thead{background:var(--bg2)}
+  thead th{text-align:left;padding:9px 12px;font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);border-bottom:0.5px solid var(--border2);white-space:nowrap}
+  tbody tr{border-bottom:0.5px solid var(--border)}
+  tbody tr:last-child{border-bottom:none}
+  tbody td{padding:9px 12px;vertical-align:top;color:var(--text2);line-height:1.5}
+  tbody td:first-child{color:var(--text);font-weight:500}
+  tfoot td{padding:9px 12px;font-weight:600;color:var(--text);background:var(--bg2);border-top:0.5px solid var(--border2)}
+
+  /* Cards */
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:16px}
+  .card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius);padding:16px 18px}
+  .card h4{font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px}
+  .card p,.card li{font-size:12.5px;color:var(--text2);line-height:1.55}
+  .card ul{padding-left:16px}
+  .card ul li{margin-bottom:3px}
+
+  /* Issue blocks */
+  .iblock{border:0.5px solid var(--border);border-radius:var(--radius);margin-bottom:20px;overflow:hidden}
+  .iblock-header{padding:12px 16px;display:flex;align-items:center;gap:10px;border-bottom:0.5px solid var(--border)}
+  .iblock-num{width:26px;height:26px;border-radius:50%;background:var(--accent-bg);color:var(--accent);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .iblock-header h3{font-size:14px;font-weight:600;color:var(--text);flex:1}
+  .iblock-body{padding:14px 16px}
+  .iblock-body p{font-size:13px;color:var(--text2);margin-bottom:8px;line-height:1.6}
+  .iblock-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:12px}
+  .iblock-cell{background:var(--bg2);border-radius:var(--radius-sm);padding:8px 10px}
+  .iblock-cell .ic-label{font-size:10px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--text3);margin-bottom:3px}
+  .iblock-cell .ic-val{font-size:12.5px;color:var(--text)}
+
+  /* Solution cards */
+  .sol-card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius);padding:16px 18px;margin-bottom:16px}
+  .sol-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;gap:10px;flex-wrap:wrap}
+  .sol-header h4{font-size:14px;font-weight:600;color:var(--text)}
+  .sol-tags{display:flex;gap:5px;flex-wrap:wrap}
+  .sol-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-top:10px}
+  .sol-cell{background:var(--bg2);border-radius:var(--radius-sm);padding:8px 10px}
+  .sol-cell .sc-l{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text3);margin-bottom:2px}
+  .sol-cell .sc-v{font-size:12px;color:var(--text)}
+  .sol-fix{font-size:12.5px;color:var(--text2);line-height:1.55;margin-top:6px}
+  .sol-metrics{font-size:12px;color:var(--success);margin-top:8px;padding:6px 10px;background:var(--success-bg);border-radius:var(--radius-sm)}
+
+  /* Matrix quadrants */
+  .matrix{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px}
+  .quad{border:0.5px solid var(--border);border-radius:var(--radius);padding:16px 18px}
+  .quad-label{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px}
+  .quad.qa .quad-label{color:var(--success)}
+  .quad.qb .quad-label{color:var(--accent)}
+  .quad.qc .quad-label{color:var(--purple)}
+  .quad.qd .quad-label{color:var(--text3)}
+  .quad ul{list-style:none}
+  .quad ul li{font-size:12.5px;color:var(--text2);padding:4px 0;border-bottom:0.5px solid var(--border);display:flex;gap:6px;align-items:flex-start;line-height:1.45}
+  .quad ul li:last-child{border-bottom:none}
+  .quad ul li::before{content:'•';flex-shrink:0;font-size:10px;margin-top:2px}
+  .quad.qa ul li::before{color:var(--success)}
+  .quad.qb ul li::before{color:var(--accent)}
+  .quad.qc ul li::before{color:var(--purple)}
+  .quad.qd ul li::before{color:var(--text3)}
+
+  /* Roadmap */
+  .roadmap{display:flex;flex-direction:column;gap:0}
+  .phase{border:0.5px solid var(--border);border-radius:var(--radius);margin-bottom:16px;overflow:hidden}
+  .phase-header{padding:14px 18px;display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;background:var(--bg2)}
+  .phase-num{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
+  .ph1 .phase-num{background:var(--danger-bg);color:var(--danger)}
+  .ph2 .phase-num{background:var(--warn-bg);color:var(--warn)}
+  .ph3 .phase-num{background:var(--accent-bg);color:var(--accent)}
+  .ph4 .phase-num{background:var(--purple-bg);color:var(--purple)}
+  .phase-title h3{font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px}
+  .phase-title p{font-size:12px;color:var(--text3)}
+  .phase-timeline{font-size:12px;color:var(--text3);white-space:nowrap;background:var(--bg3);padding:4px 10px;border-radius:20px}
+  .phase-body{padding:14px 18px}
+  .phase-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:10px}
+  .phase-cell{background:var(--bg2);border-radius:var(--radius-sm);padding:8px 10px}
+  .phase-cell .pc-l{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text3);margin-bottom:3px}
+  .phase-cell .pc-v{font-size:12px;color:var(--text);line-height:1.5}
+  .phase-items{font-size:12.5px;color:var(--text2);line-height:1.6}
+  .phase-items li{margin-bottom:3px}
+
+  /* KPI table */
+  .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:20px}
+  .kpi-card{background:var(--bg2);border-radius:var(--radius-sm);padding:12px 14px}
+  .kpi-card .kc-cat{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);margin-bottom:4px}
+  .kpi-card .kc-metric{font-size:12.5px;font-weight:500;color:var(--text);margin-bottom:2px}
+  .kpi-card .kc-target{font-size:12px;color:var(--success)}
+
+  /* iOS 26 feature cards */
+  .ios26-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-bottom:20px}
+  .ios26-card{border:0.5px solid var(--border);border-left:3px solid var(--purple);border-radius:var(--radius);padding:14px 16px}
+  .ios26-card h4{font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px;display:flex;align-items:center;gap:6px}
+  .ios26-card p{font-size:12px;color:var(--text2);line-height:1.55}
+
+  /* Divider */
+  .divider{height:0.5px;background:var(--border);margin:24px 0}
+
+  /* Final reco */
+  .reco-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:20px}
+  .reco-card{border-radius:var(--radius);padding:16px 18px;border:0.5px solid var(--border)}
+  .reco-card.r1{border-top:3px solid var(--danger)}
+  .reco-card.r2{border-top:3px solid var(--accent)}
+  .reco-card.r3{border-top:3px solid var(--success)}
+  .reco-card.r4{border-top:3px solid var(--purple)}
+  .reco-card h4{font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px}
+  .reco-card ul{list-style:none}
+  .reco-card ul li{font-size:12.5px;color:var(--text2);padding:3px 0;border-bottom:0.5px solid var(--border);line-height:1.45}
+  .reco-card ul li:last-child{border-bottom:none}
+
+  @media(max-width:640px){
+    body{padding:20px 14px 60px}
+    .toc-cols{grid-template-columns:1fr}
+    .matrix{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══ COVER ═══ -->
+<header class="cover">
+  <div class="cover-badge">Stage 3 of 3 &mdash; POC Document</div>
+  <h1>Shutterfly iOS App<br>Modernisation &amp; Improvement POC</h1>
+  <p class="cover-sub">A complete proof of concept for fixing critical issues, eliminating conversion friction, rebuilding performance foundations, and positioning the Shutterfly iOS app for iOS 26 — covering UX, engineering, AI, personalisation, and a phased delivery roadmap.</p>
+  <div class="cover-meta">
+    <span><span class="m-dot"></span>Platform: iOS 26.5.1 target</span>
+    <span><span class="m-dot"></span>Scope: iPhone app</span>
+    <span><span class="m-dot"></span>Stage: Final POC</span>
+    <span><span class="m-dot"></span>Audience: Product · Engineering · Design · Leadership</span>
+    <span><span class="m-dot"></span>Based on: Stage 1 research + Stage 2 diagnosis, June 2026</span>
+  </div>
+</header>
+
+<!-- TOC -->
+<nav class="toc">
+  <p class="toc-title">Document contents</p>
+  <div class="toc-cols">
+    <a href="#exec">1. Executive Summary</a>
+    <a href="#objectives">2. POC Objectives</a>
+    <a href="#problem">3. Problem Statement</a>
+    <a href="#current-state">4. Current State Analysis</a>
+    <a href="#issue-blocks">5. Key Issue Blocks</a>
+    <a href="#solutions">6. Proposed Solution Plan</a>
+    <a href="#matrix">7. Feasibility vs Impact Matrix</a>
+    <a href="#perf-plan">8. Performance Optimisation Plan</a>
+    <a href="#ux-plan">9. UX Improvement Plan</a>
+    <a href="#ai-plan">10. AI &amp; Personalisation Plan</a>
+    <a href="#ios26">11. iOS 26 Adaptation Plan</a>
+    <a href="#roadmap">12. Phased Roadmap</a>
+    <a href="#metrics">13. Success Metrics</a>
+    <a href="#business-impact">14. Expected Business Impact</a>
+    <a href="#recommendation">15. Final Recommendation</a>
+  </div>
+</nav>
+
+<!-- ═══ 1. EXEC SUMMARY ═══ -->
+<section class="section" id="exec">
+  <p class="s-eyebrow">Section 01</p>
+  <h2>Executive Summary</h2>
+
+  <div class="alert a-info">
+    <strong>Current state in one sentence:</strong> The Shutterfly iOS app has strong brand equity and a 4.7★ App Store rating, but is haemorrhaging its most loyal customers through a 2026 editor regression, a platform-breaking iOS 18 upload failure, cart checkout timeouts with no recovery, and a photo library performance collapse — while competitors Mixbook and Popsa are pulling ahead on mobile experience quality.
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <h4>What the data shows</h4>
+      <ul>
+        <li>4.7★ from 587K ratings masks a sharp spike in 1-star reviews since the 2026 editor update</li>
+        <li>P68 percentile rank — 32% of Photo &amp; Video apps outperform Shutterfly on rating, release frequency &amp; size</li>
+        <li>HEIF upload failure blocks every current iPhone user from the core creation flow</li>
+        <li>Cart spinner abandonment is a confirmed, unrecovered checkout failure</li>
+        <li>20-year loyal customers are publicly switching to Mixbook over editor changes</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>The business opportunity</h4>
+      <ul>
+        <li>Fixing P1 issues alone could recover an estimated 12–18% of abandoned checkout sessions</li>
+        <li>Surfacing AI Auto-Fill at product entry could increase photo book starts by 25–40%</li>
+        <li>Background upload fix makes the unlimited storage moat finally functional on iOS</li>
+        <li>iOS 26 Foundation Models enables on-device AI at zero cloud cost</li>
+        <li>iOS 26 Liquid Glass adoption positions Shutterfly as a modern, design-forward app</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>What this POC will prove</h4>
+      <ul>
+        <li>P1 bugs can be triaged in &lt;4 weeks without a full rewrite</li>
+        <li>A native photo selection and upload flow eliminates the HEIF and library-freeze problems</li>
+        <li>A fast-order path (3 taps to Apple Pay) measurably lifts checkout conversion</li>
+        <li>AI Auto-Fill surfaced at product start outperforms buried discovery in the editor</li>
+        <li>iOS 26 integration is a competitive differentiator that can be shipped in Phase 3</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>Why improvement is urgent</h4>
+      <ul>
+        <li>Mixbook has rebuilt its iOS app with AI-first UX and is the top-rated photo book alternative</li>
+        <li>Apple mandated iOS 26 SDK for all App Store submissions from April 2026 — custom UI is now visually broken vs. system apps without Liquid Glass adoption</li>
+        <li>Every day the HEIF bug persists, Shutterfly is invisible to the core iPhone user base</li>
+        <li>The editor regression is an active, accelerating defection event — not a background concern</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 2. OBJECTIVES ═══ -->
+<section class="section" id="objectives">
+  <p class="s-eyebrow">Section 02</p>
+  <h2>POC Objectives</h2>
+  <p class="section-intro">This POC is designed to validate eight specific hypotheses. Each is measurable within a defined test window.</p>
+
+  <div class="tw">
+    <table>
+      <thead><tr><th>#</th><th>Objective</th><th>Hypothesis</th><th>Measurement</th><th>Target</th></tr></thead>
+      <tbody>
+        <tr><td>O1</td><td>Faster, reliable app startup</td><td>Deferred SDK init + App Thinning reduces cold start below 2s on iPhone 12</td><td>Instruments Time Profiler cold start p90</td><td>&lt;2.0s cold start</td></tr>
+        <tr><td>O2</td><td>Eliminate HEIF upload failure</td><td>Rebuilt native upload pipeline with PHAsset HEIF handling achieves ≥98% upload success on iOS 18</td><td>Upload success rate by file format</td><td>≥98% HEIF success</td></tr>
+        <tr><td>O3</td><td>Reduce mobile journey friction</td><td>Removing top 3 UX friction points (editor regression, cart spinner, coupon pre-validation) increases order completion rate by ≥10%</td><td>Order completion rate (A/B vs baseline)</td><td>+10% completion</td></tr>
+        <tr><td>O4</td><td>Improve product discovery</td><td>Intent-based homepage + AI Auto-Fill entry point increases photo book starts by ≥25%</td><td>Photo book creation start rate</td><td>+25% book starts</td></tr>
+        <tr><td>O5</td><td>Improve editor completion</td><td>Fixing canvas scale, text editing, and drag stall reduces average time-to-complete a photo book by ≥30%</td><td>Median editor session duration to order</td><td>&minus;30% edit time</td></tr>
+        <tr><td>O6</td><td>Improve cart &amp; checkout</td><td>Cart timeout with retry + Apple Pay integration lifts checkout conversion by ≥15%</td><td>Cart-to-order conversion rate</td><td>+15% conversion</td></tr>
+        <tr><td>O7</td><td>Improve retention via personalisation</td><td>Seasonal re-order push notifications lift 90-day repeat purchase rate by ≥8%</td><td>90-day repeat purchase rate, push CTR</td><td>+8% repeat purchase</td></tr>
+        <tr><td>O8</td><td>iOS 26 compliance &amp; differentiation</td><td>Liquid Glass adoption + Foundation Models integration positions Shutterfly favourably vs. competitors on the iOS 26 platform</td><td>App Store feature coverage, user rating trend</td><td>P75+ percentile rank</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══ 3. PROBLEM STATEMENT ═══ -->
+<section class="section" id="problem">
+  <p class="s-eyebrow">Section 03</p>
+  <h2>Problem Statement</h2>
+
+  <div class="alert a-danger">
+    <strong>Core problem:</strong> Shutterfly's iOS app is failing its most valuable users — long-term, high-LTV photo book creators and gift buyers — at every critical moment in the creation-to-purchase journey. The app's architecture, editor, upload pipeline, and checkout flow have not kept pace with iOS platform evolution, user expectations, or competitor quality. The competitive gap is widening, and the brand trust advantage that has sustained the app's high aggregate rating is now actively eroding.
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <h4>Mobile user journey issues</h4>
+      <p>Users are dropped, confused, or blocked at 7 key moments: photo permission grant, photo upload (HEIF), photo library navigation (50K+ library freeze), editor canvas (2026 regression), cart (spinner timeout), coupon entry (validation failure), and checkout (session expiry). Any one of these would cause abandonment; all seven compounding means many users never complete an order.</p>
+    </div>
+    <div class="card">
+      <h4>Performance bottlenecks</h4>
+      <p>The app is 249 MB — 2–3× its focused competitors. The editor runs in WKWebView with a separate JS process that exhausts memory on complex books. Photo library loading is not virtualised. Upload is foreground-only. Cold start is estimated at 4–6 seconds on older devices. These are not cosmetic issues — they directly cause crashes, abandonment, and negative reviews.</p>
+    </div>
+    <div class="card">
+      <h4>Competitive pressure</h4>
+      <p>Mixbook has rebuilt its iOS app from scratch with native-feeling performance and AI Auto-Create as a primary entry point. Popsa delivers a near-instant AI-first mobile experience. FreePrints owns the "simple prints" segment with a 3-tap order flow. Canva is entering photo gifts. Shutterfly's advantage — brand, storage, catalogue — is not enough to overcome a broken experience on the device users already hold.</p>
+    </div>
+    <div class="card">
+      <h4>iOS 26 compliance gap</h4>
+      <p>Apple mandated the iOS 26 SDK for all new App Store submissions from April 2026. Apps built with older SDKs that have custom UI components now look visually inconsistent next to system apps that automatically adopt Liquid Glass. Competitors who have adopted Liquid Glass and Foundation Models will appear more modern in user comparisons. The window to lead on iOS 26 is now — not in 2027.</p>
+    </div>
+    <div class="card">
+      <h4>Missed AI &amp; personalisation</h4>
+      <p>Shutterfly has AI Auto-Fill and Magic Writer — but they are buried in the editor menus and almost never discovered by mobile users. The homepage is generic for all users regardless of purchase history. No seasonal re-order triggers exist. No image quality gate prevents poor-resolution photos being used in large-format products. The AI capability exists; the surface layer to deliver it does not.</p>
+    </div>
+    <div class="card">
+      <h4>Monitoring and visibility gap</h4>
+      <p>The severity of the documented issues — confirmed HEIF failure, confirmed cart spinner, confirmed editor drag stall — suggests either inadequate real-user monitoring or issues visible in analytics but not prioritised. Without instrument-level upload success rates, cart load times, and editor interaction completion rates, the engineering team cannot measure the impact of fixes or detect regressions before they reach public App Store reviews.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 4. CURRENT STATE ═══ -->
+<section class="section" id="current-state">
+  <p class="s-eyebrow">Section 04</p>
+  <h2>Current State Analysis</h2>
+
+  <div class="tw">
+    <table>
+      <thead>
+        <tr><th>Area</th><th>Current observation</th><th>Issue type</th><th>User impact</th><th>Business impact</th><th>Evidence</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>First launch</td><td>Generic promotional homepage. No intent routing or value prop orientation. No AI feature visibility. Cold start 4–6s estimated on iPhone 12 on cellular.</td><td>UX + Performance</td><td><span class="tag t-med">Medium</span></td><td><span class="tag t-med">Medium</span></td><td><span class="tag t-like">Likely</span></td></tr>
+        <tr><td>Onboarding</td><td>No new-user orientation flow. First-time and returning users see identical homepage. No photo storage or AI feature education. No product-path routing based on intent.</td><td>UX / Product</td><td><span class="tag t-med">Medium</span></td><td><span class="tag t-med">Medium</span></td><td><span class="tag t-like">Likely</span></td></tr>
+        <tr><td>Sign-in / sign-up</td><td>Account required before browsing. Weak session management — frequent re-authentication mid-journey, especially before checkout. Auth token TTL mismatched with creation session length.</td><td>UX + Backend</td><td><span class="tag t-high">High</span></td><td><span class="tag t-high">High</span></td><td><span class="tag t-like">Likely</span></td></tr>
+        <tr><td>Photos permission flow</td><td>iOS 14+ limited photo access not handled gracefully. Missing photos show no in-context explanation. No permission upgrade prompt at the point of confusion.</td><td>iOS UX</td><td><span class="tag t-high">High</span></td><td><span class="tag t-high">High</span></td><td><span class="tag t-like">Likely</span></td></tr>
+        <tr><td>Homepage</td><td>CMS-driven promotional grid. Same view for all users regardless of purchase history, photo library content, or time of year. AI features not surfaced. No resume-in-progress CTA.</td><td>UX / Personalisation</td><td><span class="tag t-med">Medium</span></td><td><span class="tag t-med">Medium</span></td><td><span class="tag t-like">Likely</span></td></tr>
+        <tr><td>Navigation</td><td>Deep product category hierarchy. 3–4 taps to reach a specific product. No jobs-to-be-done based navigation. Bottom tab structure adequate but product discovery requires expertise.</td><td>UX / IA</td><td><span class="tag t-med">Medium</span></td><td><span class="tag t-med">Medium</span></td><td><span class="tag t-like">Likely</span></td></tr>
+        <tr><td>Product discovery</td><td>Wide catalogue advantage is wasted without intelligent surface. No ML-based recommendation on browse. Seasonal products are promoted correctly but non-habitual discovery is poor.</td><td>UX / Product</td><td><span class="tag t-med">Medium</span></td><td><span class="tag t-med">Medium</span></td><td><span class="tag t-conf">Confirmed</span></td></tr>
+        <tr><td>Search / filter</td><td>Product search works. Photo library search by keyword/date is limited. No semantic photo search within Shutterfly library.</td><td>Product / Data</td><td><span class="tag t-med">Medium</span></td><td><span class="tag t-low">Low</span></td><td><span class="tag t-val">Needs testing</span></td></tr>
+        <tr><td>Photo selection / upload</td><td>HEIF format upload fails on iOS 18+ (confirmed). Large libraries (50K+) freeze the photo grid — likely non-virtualised UICollectionView. Date metadata incorrect on legacy photos. Bulk upload stalls when app is backgrounded (foreground-only URLSession).</td><td>iOS Bug + Architecture</td><td><span class="tag t-high">High</span></td><td><span class="tag t-high">High</span></td><td><span class="tag t-conf">Confirmed</span></td></tr>
+        <tr><td>Customisation / editor</td><td>2026 update: canvas too small (150% zoom required), no cut/paste in text boxes, drag-and-drop stalls after 10 items. WKWebView architecture causes JS memory pressure. Editor is the most-complained-about feature and driving customer defection to Mixbook.</td><td>iOS Bug + Architecture</td><td><span class="tag t-high">High</span></td><td><span class="tag t-high">High</span></td><td><span class="tag t-conf">Confirmed</span></td></tr>
+        <tr><td>Preview</td><td>Server-side preview generation is slow. No progressive/skeleton loading. Preview quality lower than print output. Users order without full confidence in result.</td><td>Performance + UX</td><td><span class="tag t-med">Medium</span></td><td><span class="tag t-med">Medium</span></td><td><span class="tag t-like">Likely</span></td></tr>
+        <tr><td>Cart</td><td>Indefinite spinning loader — no timeout, no retry, no error message. Blank screen on "Print all." Confirmed direct checkout abandonment. Silent failure at highest-intent moment.</td><td>iOS Bug + Backend</td><td><span class="tag t-high">High</span></td><td><span class="tag t-high">High</span></td><td><span class="tag t-conf">Confirmed</span></td></tr>
+        <tr><td>Checkout</td><td>Session expiry forces re-authentication before payment — potential cart loss. Coupon pre-validation absent — codes fail at submission. Apple Pay status unconfirmed but web-view checkout suggests absence. Calendar order year bug.</td><td>UX + Backend + iOS</td><td><span class="tag t-high">High</span></td><td><span class="tag t-high">High</span></td><td><span class="tag t-conf">Confirmed</span></td></tr>
+        <tr><td>Order tracking</td><td>Functional. No post-purchase re-engagement hooks. No "make another" or set-completion suggestions. Delivery notifications sent but no lifecycle value extraction.</td><td>Product / Retention</td><td><span class="tag t-low">Low</span></td><td><span class="tag t-med">Medium</span></td><td><span class="tag t-like">Likely</span></td></tr>
+        <tr><td>Push notifications</td><td>Deep-link state not preserved through login redirect. Broadcast promotions rather than personalised triggers. No seasonal re-order sequences.</td><td>iOS + Product</td><td><span class="tag t-med">Medium</span></td><td><span class="tag t-med">Medium</span></td><td><span class="tag t-val">Needs testing</span></td></tr>
+        <tr><td>Account / profile</td><td>Unlimited storage stat not visible — a key retention differentiator not surfaced to the user. Past orders accessible. Preference management limited.</td><td>UX / Product</td><td><span class="tag t-low">Low</span></td><td><span class="tag t-med">Medium</span></td><td><span class="tag t-like">Likely</span></td></tr>
+        <tr><td>App performance</td><td>249 MB binary. Cold start 4–6s estimated. WKWebView editor JS memory pressure. Non-virtualised photo grid. Foreground-only uploads. P68 App Store percentile. Weekly patches required.</td><td>Architecture + Performance</td><td><span class="tag t-high">High</span></td><td><span class="tag t-high">High</span></td><td><span class="tag t-conf">Confirmed</span></td></tr>
+        <tr><td>Personalisation</td><td>Absent on mobile. No user-history-based homepage. No intent detection. AI features hidden. No occasion-triggered recommendations. No image quality screening.</td><td>Product / Data</td><td><span class="tag t-med">Medium</span></td><td><span class="tag t-high">High</span></td><td><span class="tag t-like">Likely</span></td></tr>
+        <tr><td>Analytics / monitoring</td><td>Severity of confirmed bugs (HEIF upload, cart spinner) unresolved despite public evidence suggests monitoring gaps: upload success rate by format, cart load timeout rate, and editor interaction completion rate are likely not instrumented.</td><td>Data / Engineering</td><td><span class="tag t-low">Low</span></td><td><span class="tag t-high">High</span></td><td><span class="tag t-val">Needs validation</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══ 5. ISSUE BLOCKS ═══ -->
+<section class="section" id="issue-blocks">
+  <p class="s-eyebrow">Section 05</p>
+  <h2>Key Issue Blocks</h2>
+  <p class="section-intro">Issues grouped by theme for engineering and product planning. Each block represents a coherent workstream.</p>
+
+  <!-- Block 1 -->
+  <div class="iblock">
+    <div class="iblock-header">
+      <div class="iblock-num">1</div>
+      <h3>Photo upload &amp; permission pipeline failure</h3>
+      <span class="tag t-p1">P1 Critical</span>
+    </div>
+    <div class="iblock-body">
+      <p><strong>What:</strong> HEIF/HEIC photos (default iPhone format since iOS 11, enforced in iOS 18) fail to upload in the app. Large libraries freeze the photo grid. Bulk uploads stall when the app is backgrounded. iOS 14+ limited photo access creates invisible missing-photo states with no user explanation.</p>
+      <p><strong>Why it matters:</strong> This is the first thing every user does. Without successful photo upload, no product can be created and no order can be placed. It is a complete funnel-entry blockage for the majority of current iPhone users.</p>
+      <p><strong>Business effect:</strong> Every upload failure is a lost order. Upload stalls undermine the unlimited storage value proposition — the deepest competitive moat in the product.</p>
+      <div class="iblock-row">
+        <div class="iblock-cell"><div class="ic-label">Issues</div><div class="ic-val">A1, A2, A3, B2, C2, C3</div></div>
+        <div class="iblock-cell"><div class="ic-label">Priority</div><div class="ic-val"><span class="tag t-p1">P1</span></div></div>
+        <div class="iblock-cell"><div class="ic-label">Evidence</div><div class="ic-val"><span class="tag t-conf">Confirmed</span></div></div>
+        <div class="iblock-cell"><div class="ic-label">Root cause</div><div class="ic-val">iOS API + Architecture</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Block 2 -->
+  <div class="iblock">
+    <div class="iblock-header">
+      <div class="iblock-num">2</div>
+      <h3>Photo book editor regression (2026)</h3>
+      <span class="tag t-p1">P1 Critical</span>
+    </div>
+    <div class="iblock-body">
+      <p><strong>What:</strong> The 2026 editor update introduced three compounding regressions: canvas workspace too small (150% zoom required to see a full page), broken cut/paste in text boxes, and drag-and-drop layout stalling after ~10 interactions. The editor runs in a WKWebView with JS memory leak behaviour.</p>
+      <p><strong>Why it matters:</strong> Photo books are Shutterfly's highest AOV product and the deepest expression of the brand's value. A broken editor is actively driving 20-year customers to Mixbook — with public, documented defection statements.</p>
+      <p><strong>Business effect:</strong> Reduced photo book starts, completions, and repeat purchase. Accelerating negative review trend. The company has been here before and reversed editor changes under pressure — this needs triage now.</p>
+      <div class="iblock-row">
+        <div class="iblock-cell"><div class="ic-label">Issues</div><div class="ic-val">A4, A5, A6, B3, C1</div></div>
+        <div class="iblock-cell"><div class="ic-label">Priority</div><div class="ic-val"><span class="tag t-p1">P1</span></div></div>
+        <div class="iblock-cell"><div class="ic-label">Evidence</div><div class="ic-val"><span class="tag t-conf">Confirmed</span></div></div>
+        <div class="iblock-cell"><div class="ic-label">Root cause</div><div class="ic-val">WKWebView + CSS + JS leak</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Block 3 -->
+  <div class="iblock">
+    <div class="iblock-header">
+      <div class="iblock-num">3</div>
+      <h3>Cart, checkout &amp; session failure</h3>
+      <span class="tag t-p1">P1 Critical</span>
+    </div>
+    <div class="iblock-body">
+      <p><strong>What:</strong> The cart shows an indefinite spinner with no timeout, retry, or error message. Session expiry before checkout forces re-authentication with potential cart loss. Coupon codes fail at order submission without pre-validation. Apple Pay availability unconfirmed.</p>
+      <p><strong>Why it matters:</strong> These failures occur at the highest-intent moment in the entire user journey — after creative work is complete and the user is ready to pay. They represent direct, measurable revenue loss with no recovery mechanism.</p>
+      <p><strong>Business effect:</strong> Cart abandonment at payment intent. Trust erosion from coupon "false advertising" perception. Every affected user has a high probability of negative review posting.</p>
+      <div class="iblock-row">
+        <div class="iblock-cell"><div class="ic-label">Issues</div><div class="ic-val">A7, A8, A10, A14, C4, C7</div></div>
+        <div class="iblock-cell"><div class="ic-label">Priority</div><div class="ic-val"><span class="tag t-p1">P1</span></div></div>
+        <div class="iblock-cell"><div class="ic-label">Evidence</div><div class="ic-val"><span class="tag t-conf">Confirmed</span></div></div>
+        <div class="iblock-cell"><div class="ic-label">Root cause</div><div class="ic-val">Backend timeout + Auth TTL + UX</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Block 4 -->
+  <div class="iblock">
+    <div class="iblock-header">
+      <div class="iblock-num">4</div>
+      <h3>App performance &amp; binary weight</h3>
+      <span class="tag t-p2">P2 Important</span>
+    </div>
+    <div class="iblock-body">
+      <p><strong>What:</strong> 249 MB app binary (2–3× competitors) with multiple SDKs initialising synchronously at startup. Non-virtualised photo grid causes memory crashes. Cold start estimated 4–6s on older devices. WKWebView editor lacks Metal GPU access and has process-level memory limits.</p>
+      <p><strong>Business effect:</strong> Install friction, startup abandonment on older devices, crash-driven negative reviews, and P68 category percentile rank despite strong brand recognition.</p>
+      <div class="iblock-row">
+        <div class="iblock-cell"><div class="ic-label">Issues</div><div class="ic-val">B1, B5, B6, B8, C3</div></div>
+        <div class="iblock-cell"><div class="ic-label">Priority</div><div class="ic-val"><span class="tag t-p2">P2</span></div></div>
+        <div class="iblock-cell"><div class="ic-label">Evidence</div><div class="ic-val"><span class="tag t-conf">Confirmed</span></div></div>
+        <div class="iblock-cell"><div class="ic-label">Root cause</div><div class="ic-val">SDK accumulation + no App Thinning</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Block 5 -->
+  <div class="iblock">
+    <div class="iblock-header">
+      <div class="iblock-num">5</div>
+      <h3>Weak AI &amp; personalisation layer</h3>
+      <span class="tag t-p2">P2 Important</span>
+    </div>
+    <div class="iblock-body">
+      <p><strong>What:</strong> AI Auto-Fill and Magic Writer exist but are buried in the editor menus — most mobile users never encounter them. The homepage is identical for all users regardless of purchase history. No seasonal re-order triggers. No image quality gate. No AI-driven product suggestions.</p>
+      <p><strong>Business effect:</strong> The most time-efficient, conversion-friendly creation path (AI Auto-Fill) is inaccessible to users who need it most. Shutterfly's AI investment is not generating return on mobile. Mixbook's Auto-Create is prominently positioned and is winning the time-constrained user segment.</p>
+      <div class="iblock-row">
+        <div class="iblock-cell"><div class="ic-label">Issues</div><div class="ic-val">A11, A12, C5, D1, D3, D4, D5</div></div>
+        <div class="iblock-cell"><div class="ic-label">Priority</div><div class="ic-val"><span class="tag t-p2">P2</span></div></div>
+        <div class="iblock-cell"><div class="ic-label">Evidence</div><div class="ic-val"><span class="tag t-conf">Confirmed</span></div></div>
+        <div class="iblock-cell"><div class="ic-label">Root cause</div><div class="ic-val">Product / UX surface layer</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Block 6 -->
+  <div class="iblock">
+    <div class="iblock-header">
+      <div class="iblock-num">6</div>
+      <h3>Retention, push &amp; post-purchase gaps</h3>
+      <span class="tag t-p2">P2 Important</span>
+    </div>
+    <div class="iblock-body">
+      <p><strong>What:</strong> Post-purchase re-engagement is absent. Deep links from push notifications lose destination after login redirect. No seasonal re-order sequences. No subscription model. The post-delivery window — when user satisfaction peaks — is unused.</p>
+      <p><strong>Business effect:</strong> Shutterfly's engagement is entirely campaign and promotion-driven, creating a boom-bust cycle. Each re-engagement requires a paid marketing trigger rather than a behavioural one.</p>
+      <div class="iblock-row">
+        <div class="iblock-cell"><div class="ic-label">Issues</div><div class="ic-val">A15, A16, A17, D1, D2, D4</div></div>
+        <div class="iblock-cell"><div class="ic-label">Priority</div><div class="ic-val"><span class="tag t-p2">P2</span></div></div>
+        <div class="iblock-cell"><div class="ic-label">Evidence</div><div class="ic-val"><span class="tag t-like">Likely</span></div></div>
+        <div class="iblock-cell"><div class="ic-label">Root cause</div><div class="ic-val">Product strategy + CRM config</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 6. SOLUTION PLAN ═══ -->
+<section class="section" id="solutions">
+  <p class="s-eyebrow">Section 06</p>
+  <h2>Proposed Solution Plan</h2>
+  <p class="section-intro">Each solution maps to one or more issue blocks. Fixes are ordered by priority within each block.</p>
+
+  <h3 class="sub">Block 1 — Upload &amp; permission pipeline</h3>
+
+  <div class="sol-card">
+    <div class="sol-header">
+      <h4>S1 — Rebuild native photo upload pipeline with HEIF support</h4>
+      <div class="sol-tags"><span class="tag t-p1">P1</span><span class="tag t-high">High impact</span><span class="tag t-conf">Confirmed issue</span></div>
+    </div>
+    <p class="sol-fix"><strong>Fix:</strong> Replace the existing PHImageManager-based upload with a native pipeline using <code>PHAsset.requestContentEditingInput</code> for HEIF files, converting to JPEG only where required by the backend via <code>AVAssetExportSession</code>. Implement <code>URLSession(configuration: .background)</code> for all uploads so they continue when the app is backgrounded. Add chunk-resumption using server-side upload tokens. Replace the non-virtualised photo grid with a <code>UICollectionView</code> using <code>NSDiffableDataSourceSnapshot</code> and async <code>PHImageManager</code> thumbnail requests on a background queue.</p>
+    <div class="sol-grid">
+      <div class="sol-cell"><div class="sc-l">UX effort</div><div class="sc-v">Medium — new upload progress states</div></div>
+      <div class="sol-cell"><div class="sc-l">iOS eng effort</div><div class="sc-v">High — URLSession background + PHAsset pipeline rebuild</div></div>
+      <div class="sol-cell"><div class="sc-l">Backend effort</div><div class="sc-v">Medium — chunked upload API + resumption tokens</div></div>
+      <div class="sol-cell"><div class="sc-l">Feasibility</div><div class="sc-v"><span class="tag t-low">High</span></div></div>
+      <div class="sol-cell"><div class="sc-l">Impact</div><div class="sc-v"><span class="tag t-high">High</span></div></div>
+      <div class="sol-cell"><div class="sc-l">Timeline</div><div class="sc-v">Phase 1–2 (Weeks 1–6)</div></div>
+    </div>
+    <div class="sol-metrics">Success metrics: HEIF upload success rate ≥98% on iOS 18; upload completion rate for 1K+ photo batches ≥95%; photo grid scroll frame rate ≥55fps on iPhone 12</div>
+  </div>
+
+  <div class="sol-card">
+    <div class="sol-header">
+      <h4>S2 — iOS 14+ permission education layer</h4>
+      <div class="sol-tags"><span class="tag t-p1">P1</span><span class="tag t-high">High feasibility</span></div>
+    </div>
+    <p class="sol-fix"><strong>Fix:</strong> Add an in-context permission upgrade prompt at the point of use: when the photo grid renders with a reduced set (limited access), show a contextual banner — "Some photos are hidden. Tap to allow full access." — that triggers <code>PHPhotoLibrary.shared().presentLimitedLibraryPicker</code> or routes to Settings. No cold-start change required.</p>
+    <div class="sol-grid">
+      <div class="sol-cell"><div class="sc-l">UX effort</div><div class="sc-v">Low — banner component</div></div>
+      <div class="sol-cell"><div class="sc-l">iOS eng effort</div><div class="sc-v">Low — 1 day</div></div>
+      <div class="sol-cell"><div class="sc-l">Feasibility</div><div class="sc-v"><span class="tag t-low">High</span></div></div>
+      <div class="sol-cell"><div class="sc-l">Timeline</div><div class="sc-v">Phase 1 (Week 1)</div></div>
+    </div>
+    <div class="sol-metrics">Success metrics: Full photo access grant rate +15%; photo-not-found support tickets &minus;30%</div>
+  </div>
+
+  <h3 class="sub">Block 2 — Editor triage</h3>
+
+  <div class="sol-card">
+    <div class="sol-header">
+      <h4>S3 — Editor regression hotfix package (2026)</h4>
+      <div class="sol-tags"><span class="tag t-p1">P1</span><span class="tag t-high">High impact</span><span class="tag t-conf">Active defection risk</span></div>
+    </div>
+    <p class="sol-fix"><strong>Fix (web-layer patches, no full rewrite required for triage):</strong> (1) Canvas viewport: inject a CSS media query in the WKWebView that sets canvas <code>max-width: 100vw; transform-origin: top left; scale: fit</code> for mobile viewport widths — this allows the full page spread to be visible at 100% without pan. (2) Cut/paste: configure <code>WKWebViewConfiguration.allowsInlineMediaPlayback</code> and add a <code>WKUIDelegate</code> override to pass clipboard operations through the iOS pasteboard bridge. (3) Drag stall: profile and patch the JS event listener leak — wrap page drag handlers with <code>removeEventListener</code> in an AbortController to prevent accumulation past 10 interactions.</p>
+    <p class="sol-fix" style="margin-top:6px;"><strong>Longer-term (Phase 3):</strong> Begin native editor component migration using SwiftUI with <code>.textEditorStyle(.richText)</code> for text editing (available in iOS 26 SwiftUI) and Core Animation layers for photo frame rendering, replacing the WKWebView layer-by-layer.</p>
+    <div class="sol-grid">
+      <div class="sol-cell"><div class="sc-l">UX effort</div><div class="sc-v">Medium — layout validation on all iPhone sizes</div></div>
+      <div class="sol-cell"><div class="sc-l">iOS/Web eng effort</div><div class="sc-v">Medium — CSS + JS patch; native rewrite is High</div></div>
+      <div class="sol-cell"><div class="sc-l">Feasibility (hotfix)</div><div class="sc-v"><span class="tag t-low">High</span></div></div>
+      <div class="sol-cell"><div class="sc-l">Timeline (hotfix)</div><div class="sc-v">Phase 1 (Weeks 2–3)</div></div>
+    </div>
+    <div class="sol-metrics">Success metrics: Editor drag-drop success rate to 100+ interactions; time-to-complete 20-page book &minus;30%; editor-related 1-star reviews stop trending upward within 45 days</div>
+  </div>
+
+  <h3 class="sub">Block 3 — Cart, checkout &amp; session</h3>
+
+  <div class="sol-card">
+    <div class="sol-header">
+      <h4>S4 — Cart recovery + Apple Pay + session persistence</h4>
+      <div class="sol-tags"><span class="tag t-p1">P1</span><span class="tag t-high">High impact</span></div>
+    </div>
+    <p class="sol-fix"><strong>Fix:</strong> (1) Cart timeout: add a 30-second <code>URLSession.timeoutIntervalForRequest</code> to the cart load call. On timeout, show an actionable error state with a single Retry CTA — not a spinner. (2) Apple Pay: implement <code>PKPaymentRequest</code> in the native checkout path. If checkout runs in WKWebView, add a native Apple Pay button overlay using <code>PKPaymentButton</code> that triggers a native payment sheet, bridging back to the web checkout on completion. (3) Session: extend auth token TTL to 7 days with silent refresh via <code>BGTaskScheduler</code>. Migrate cart state to server-side storage against user ID — never session-scoped. (4) Coupon pre-validation: call the promotion eligibility API when the coupon code is entered at cart (not order submission), and display a green/red inline status with plain-English explanation.</p>
+    <div class="sol-grid">
+      <div class="sol-cell"><div class="sc-l">UX effort</div><div class="sc-v">Medium — error states + coupon UI</div></div>
+      <div class="sol-cell"><div class="sc-l">iOS eng effort</div><div class="sc-v">Medium — PKPaymentRequest + BGTask</div></div>
+      <div class="sol-cell"><div class="sc-l">Backend effort</div><div class="sc-v">Medium — cart persistence + promotion API endpoint</div></div>
+      <div class="sol-cell"><div class="sc-l">Feasibility</div><div class="sc-v"><span class="tag t-low">High</span></div></div>
+      <div class="sol-cell"><div class="sc-l">Timeline</div><div class="sc-v">Phase 2 (Weeks 4–7)</div></div>
+    </div>
+    <div class="sol-metrics">Success metrics: Cart load timeout rate to 0; cart-to-order conversion +15%; coupon-related support contacts &minus;40%; Apple Pay checkout adoption ≥50% of eligible orders</div>
+  </div>
+
+  <h3 class="sub">Block 4 — Performance</h3>
+
+  <div class="sol-card">
+    <div class="sol-header">
+      <h4>S5 — App startup optimisation &amp; binary reduction</h4>
+      <div class="sol-tags"><span class="tag t-p2">P2</span><span class="tag t-high">High impact</span></div>
+    </div>
+    <p class="sol-fix"><strong>Fix:</strong> (1) SDK audit: identify all embedded frameworks; consolidate duplicate analytics event collection (commonly Firebase + one other); move non-critical SDKs to lazy initialisation triggered on first use rather than app launch. (2) App Thinning: enable App Store's on-demand resources for high-res product imagery currently bundled in the binary. (3) Startup: defer all non-critical initialisation (analytics, A/B testing, push) to a background thread post-first-frame render using Swift concurrency's <code>Task.detached(priority: .background)</code>.</p>
+    <div class="sol-grid">
+      <div class="sol-cell"><div class="sc-l">iOS eng effort</div><div class="sc-v">High — full SDK audit + refactor</div></div>
+      <div class="sol-cell"><div class="sc-l">Expected gain</div><div class="sc-v">Cold start &minus;40–50%, binary &minus;30–50 MB</div></div>
+      <div class="sol-cell"><div class="sc-l">Feasibility</div><div class="sc-v"><span class="tag t-med">Medium</span></div></div>
+      <div class="sol-cell"><div class="sc-l">Timeline</div><div class="sc-v">Phase 2 (Weeks 5–8)</div></div>
+    </div>
+    <div class="sol-metrics">Success metrics: Cold start p90 &lt;2.0s on iPhone 12; app binary &lt;180 MB; app startup crash rate &minus;20%</div>
+  </div>
+
+  <h3 class="sub">Block 5 — AI &amp; personalisation</h3>
+
+  <div class="sol-card">
+    <div class="sol-header">
+      <h4>S6 — Surface AI Auto-Fill at product creation entry point</h4>
+      <div class="sol-tags"><span class="tag t-p2">P2</span><span class="tag t-high">High feasibility</span><span class="tag t-quick">Quick win</span></div>
+    </div>
+    <p class="sol-fix"><strong>Fix:</strong> When a user navigates to create a photo book, replace the blank template selection screen with a dual-path entry: (A) "Build it for me — AI creates your book" [Auto-Fill CTA with photo count] and (B) "Design it myself." The CTA copy should be contextual: "47 photos from your Hawaii trip — build your book in 60 seconds." No new AI infrastructure required — this is a UX surface change that routes to the existing Auto-Fill feature with pre-populated context.</p>
+    <div class="sol-grid">
+      <div class="sol-cell"><div class="sc-l">UX effort</div><div class="sc-v">Low–Medium — product creation entry screen</div></div>
+      <div class="sol-cell"><div class="sc-l">iOS eng effort</div><div class="sc-v">Low — routing change</div></div>
+      <div class="sol-cell"><div class="sc-l">Feasibility</div><div class="sc-v"><span class="tag t-low">High</span></div></div>
+      <div class="sol-cell"><div class="sc-l">Timeline</div><div class="sc-v">Phase 2 (Week 4–5)</div></div>
+    </div>
+    <div class="sol-metrics">Success metrics: AI Auto-Fill usage rate +300% (from near-zero baseline); photo book start-to-order conversion +20%</div>
+  </div>
+
+  <div class="sol-card">
+    <div class="sol-header">
+      <h4>S7 — Intent-aware personalised homepage</h4>
+      <div class="sol-tags"><span class="tag t-p2">P2</span><span class="tag t-high">High impact</span></div>
+    </div>
+    <p class="sol-fix"><strong>Fix:</strong> Replace the generic CMS homepage with a three-zone layout: (1) Resume in-progress projects (top, always visible). (2) Seasonal/occasion card — dynamically rendered based on calendar date + past order history (e.g. "Mother's Day is 12 days away — here's a suggested gift based on last year's order"). (3) Products. The seasonal card requires a lightweight recommendation API call using order history + calendar signal. The in-progress projects card is client-side from local project state.</p>
+    <div class="sol-grid">
+      <div class="sol-cell"><div class="sc-l">UX effort</div><div class="sc-v">Medium</div></div>
+      <div class="sol-cell"><div class="sc-l">Backend effort</div><div class="sc-v">Medium — recommendation API + seasonal rules engine</div></div>
+      <div class="sol-cell"><div class="sc-l">Feasibility</div><div class="sc-v"><span class="tag t-med">Medium</span></div></div>
+      <div class="sol-cell"><div class="sc-l">Timeline</div><div class="sc-v">Phase 3 (Weeks 8–11)</div></div>
+    </div>
+    <div class="sol-metrics">Success metrics: Homepage-to-product-start rate +15%; repeat purchase rate 90-day +8%</div>
+  </div>
+</section>
+
+<!-- ═══ 7. MATRIX ═══ -->
+<section class="section" id="matrix">
+  <p class="s-eyebrow">Section 07</p>
+  <h2>Feasibility vs Impact Matrix</h2>
+  <p class="section-intro">Four quadrants. Engineering and product should start with Quadrant A, protect capacity for Quadrant B, and sequence C and D after P1 and P2 are resolved.</p>
+
+  <div class="matrix">
+    <div class="quad qa">
+      <p class="quad-label">A — Quick wins (High feasibility, high/medium impact)</p>
+      <ul>
+        <li>S2 — Photos permission education banner (1 day)</li>
+        <li>Cart timeout with retry button + actionable error state</li>
+        <li>S6 — AI Auto-Fill surface at product entry (UX routing change)</li>
+        <li>Coupon pre-validation inline feedback at cart entry</li>
+        <li>Image quality warning at photo selection (PHAsset pixel check)</li>
+        <li>Storage stat card on account home screen</li>
+        <li>Deep-link state preservation through login redirect</li>
+        <li>Auth token TTL extension to 7 days + silent refresh</li>
+        <li>Calendar order year fix (product year defaulting)</li>
+      </ul>
+    </div>
+    <div class="quad qb">
+      <p class="quad-label">B — High-impact strategic improvements (Medium effort)</p>
+      <ul>
+        <li>S1 — Native HEIF upload pipeline rebuild</li>
+        <li>S3 — Editor regression hotfix (CSS + JS patch)</li>
+        <li>S4 — Apple Pay native integration</li>
+        <li>UICollectionView virtualisation for photo grid</li>
+        <li>Background URLSession upload implementation</li>
+        <li>Server-side cart state persistence</li>
+        <li>S7 — Personalised homepage (seasonal + resume)</li>
+        <li>Post-purchase re-engagement push sequence</li>
+        <li>Seasonal re-order push notifications</li>
+      </ul>
+    </div>
+    <div class="quad qc">
+      <p class="quad-label">C — Long-term platform improvements (High effort)</p>
+      <ul>
+        <li>Native SwiftUI editor rewrite (phased, replacing WKWebView)</li>
+        <li>SDK audit + binary size reduction programme</li>
+        <li>iOS 26 Foundation Models on-device AI integration</li>
+        <li>Real-user monitoring instrumentation programme (upload, editor, cart)</li>
+        <li>Progressive preview generation (page-by-page server cache)</li>
+        <li>Full AI photo grouping and smart album engine</li>
+        <li>iOS 26 Liquid Glass design system adoption</li>
+      </ul>
+    </div>
+    <div class="quad qd">
+      <p class="quad-label">D — Lower priority improvements</p>
+      <ul>
+        <li>Subscription / recurring print model (commercial model work required)</li>
+        <li>Semantic photo library search</li>
+        <li>VoiceOver accessibility audit of editor (after editor rewrite begins)</li>
+        <li>AI-generated card and gift copy at product start</li>
+        <li>3D product preview (Spatial Preview — iOS 26 visionOS feature)</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 8. PERF PLAN ═══ -->
+<section class="section" id="perf-plan">
+  <p class="s-eyebrow">Section 08</p>
+  <h2>iOS Performance Optimisation Plan</h2>
+
+  <div class="tw">
+    <table>
+      <thead><tr><th>Area</th><th>Current problem</th><th>Recommended fix</th><th>Expected impact</th><th>Feasibility</th><th>Eng complexity</th><th>How to measure</th></tr></thead>
+      <tbody>
+        <tr><td>App startup</td><td>Estimated 4–6s cold start; SDKs initialise synchronously on main thread</td><td>Defer non-critical SDK init to background thread post-first-frame. Enable App Store App Thinning. Remove or consolidate duplicate analytics SDKs.</td><td>Cold start &lt;2s; &minus;40% startup time</td><td><span class="tag t-med">Medium</span></td><td>High</td><td>Instruments Time Profiler; MetricKit <code>MXAppLaunchMetric</code></td></tr>
+        <tr><td>Binary size</td><td>249 MB — 2–3× competitors; weekly patches for stability</td><td>SDK audit with <code>otool</code>; On-Demand Resources for product imagery; remove unused asset catalogs; Swift binary optimisation in Xcode build settings.</td><td>&minus;30–50 MB binary; faster OTA updates</td><td><span class="tag t-med">Medium</span></td><td>High</td><td>App Store Connect App Thinning report; ipa analysis</td></tr>
+        <tr><td>Photo grid rendering</td><td>Non-virtualised UICollectionView freezes with 50K+ photos; memory crash on iPhone 14 Pro</td><td>Implement <code>NSDiffableDataSourceSnapshot</code> with cell reuse. Async thumbnail requests via <code>PHImageManager.requestImage</code> on a <code>.userInitiated</code> background queue. Cancel pending requests on cell reuse.</td><td>Scroll frame rate ≥55fps; crash rate &minus;80% on large libraries</td><td><span class="tag t-low">High</span></td><td>Medium</td><td>Instruments Allocations; Core Animation frame rate; crash-free session rate</td></tr>
+        <tr><td>Photo upload (HEIF)</td><td>HEIF files fail to upload on iOS 18+. Bulk upload stalls when backgrounded.</td><td>Use <code>PHAsset.requestContentEditingInput</code> for HEIF-native reading. Switch to <code>URLSession(configuration: .background)</code> with <code>AppDelegate.handleEventsForBackgroundURLSession</code>. Implement chunked upload with server-side resumption.</td><td>HEIF upload success ≥98%; background upload completion ≥95%</td><td><span class="tag t-low">High</span></td><td>High</td><td>Upload success rate by MIME type; background completion rate</td></tr>
+        <tr><td>Editor WKWebView performance</td><td>JS heap exhaustion on complex books; drag stall; frame drops on pan/zoom</td><td>Patch JS event listener leaks (AbortController pattern). Virtualise off-screen pages (only render visible ±1 page in DOM). Long-term: migrate to native SwiftUI/Core Animation editor.</td><td>Editor interaction success rate to 100+; frame drops &minus;70%</td><td>Hotfix: <span class="tag t-low">High</span></td><td>Hotfix: Medium; rewrite: High</td><td>WKWebView JS heap via Instruments; drag interaction success counter</td></tr>
+        <tr><td>Preview rendering</td><td>Server-side book preview slow; no progressive loading; preview blurrier than print</td><td>Implement page-by-page progressive preview: render page 1 first, then queue remaining. Cache rendered pages server-side by project ID + version hash. Show skeleton frames while loading.</td><td>Preview time-to-first-page &minus;60%; user ordering confidence +</td><td><span class="tag t-med">Medium</span></td><td>Medium</td><td>Preview load time p90; pre-order preview view rate</td></tr>
+        <tr><td>Cart / checkout</td><td>Indefinite spinner; no timeout; session state lost on re-auth</td><td>30s URLSession timeout on cart load. Server-side cart persistence. BGTask silent token refresh. Apple Pay PKPaymentRequest integration.</td><td>Cart load timeout rate → 0; checkout conversion +15%</td><td><span class="tag t-low">High</span></td><td>Medium</td><td>Cart load time p99; cart-to-order conversion rate</td></tr>
+        <tr><td>Memory management</td><td>Memory pressure crash on iPhone 14 Pro during photo selection</td><td>Respond to <code>applicationDidReceiveMemoryWarning</code> — flush thumbnail cache. Reduce concurrent PHImageManager requests. Profile with Instruments Memory Graph Debugger.</td><td>Memory crash rate &minus;80% on affected devices</td><td><span class="tag t-low">High</span></td><td>Medium</td><td>Crashlytics OOM crash rate; MetricKit memory metrics</td></tr>
+        <tr><td>Network resilience</td><td>No retry logic; no degraded network UI states; uploads fail silently on poor connection</td><td>Implement <code>NWPathMonitor</code> for network-aware UI states. Exponential backoff retry on upload failures (max 3 retries). Show "Slow connection — uploads may take longer" contextual banner.</td><td>Upload failure rate on cellular &minus;50%; user confusion &minus;</td><td><span class="tag t-low">High</span></td><td>Low</td><td>Upload retry success rate; network-error-triggered abandonment rate</td></tr>
+        <tr><td>Real-user monitoring</td><td>Severity of confirmed bugs suggests instrumentation gaps</td><td>Add MetricKit integration for launch time, hang rate, memory. Instrument upload success/failure per MIME type. Track cart load time p50/p90/p99. Track editor interaction success (drag, text edit) per session.</td><td>Issue detection time from days/weeks (public reviews) to hours (internal alert)</td><td><span class="tag t-low">High</span></td><td>Medium</td><td>MTTD (mean time to detect) for new regressions</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══ 9. UX PLAN ═══ -->
+<section class="section" id="ux-plan">
+  <p class="s-eyebrow">Section 09</p>
+  <h2>iOS UX Improvement Plan</h2>
+
+  <div class="tw">
+    <table>
+      <thead><tr><th>Area</th><th>Current UX problem</th><th>Recommended improvement</th><th>Priority</th><th>Effort</th></tr></thead>
+      <tbody>
+        <tr><td>Onboarding</td><td>No intent routing; new users see same homepage as returning users; no value prop education</td><td>3-screen onboarding for new users: (1) "Your photos, turned into gifts" — storage hook. (2) "Create in 60 seconds with AI" — Auto-Fill demo. (3) "What do you want to make?" — intent routing (Photo book / Prints / Cards / Gift). Skip available. First session intent stored for homepage personalisation.</td><td><span class="tag t-p2">P2</span></td><td>Medium</td></tr>
+        <tr><td>Photos permission</td><td>Limited access creates missing photos with no explanation</td><td>Contextual banner at photo grid: "Some photos are hidden — grant full access." Trigger <code>PHPhotoLibrary.presentLimitedLibraryPicker</code>. Show permissions education card on first upload attempt.</td><td><span class="tag t-p1">P1</span></td><td>Low</td></tr>
+        <tr><td>Homepage</td><td>Generic promo grid; no resume-in-progress; no seasonal context</td><td>Three-zone layout: (1) Resume card (in-progress projects). (2) Seasonal occasion card (AI-generated, time + history aware). (3) Product browse. Storage stat (photo count) on account page.</td><td><span class="tag t-p2">P2</span></td><td>Medium</td></tr>
+        <tr><td>Photo selection</td><td>Flat date-ordered grid; no smart grouping; no AI pre-selection; no quality indicator</td><td>Date-grouped sections with event clustering. "Suggested photos" section (best images by ML quality score). Resolution indicator badge on low-res images. Multi-select with count indicator.</td><td><span class="tag t-p2">P2</span></td><td>Medium-High</td></tr>
+        <tr><td>Product creation entry</td><td>AI Auto-Fill buried in editor menus; most users never find it</td><td>Dual-path CTA on product start: "AI builds it for me (60s)" vs "I'll design it." Auto-Fill path pre-populates with detected photo set context (date range, photo count).</td><td><span class="tag t-p2">P2</span></td><td>Low</td></tr>
+        <tr><td>Editor canvas</td><td>Too small on mobile; no text panel; drag stalls; iOS clipboard broken</td><td>Mobile-first canvas layout with full-width view. Text editing in bottom sheet panel (native UIKit, not in-canvas). Drag handle with haptic confirmation. Page strip at bottom for quick navigation. (Phase 3: native SwiftUI rewrite)</td><td><span class="tag t-p1">P1</span></td><td>Medium (hotfix)</td></tr>
+        <tr><td>Upload progress</td><td>No meaningful progress state; "keep app open" instruction only</td><td>Upload progress bar with photo count ("47 of 1,200 uploaded"). Background upload with home screen widget or notification update. "Your photos are uploading in the background" system notification.</td><td><span class="tag t-p1">P1</span></td><td>Low-Medium</td></tr>
+        <tr><td>Error states</td><td>Silent spinner failures; no actionable error messages</td><td>All network errors must show: what went wrong, what the user should do next, a single primary action (Retry / Check connection / Contact support). No empty spinners after 30s.</td><td><span class="tag t-p1">P1</span></td><td>Low</td></tr>
+        <tr><td>Cart &amp; coupon</td><td>Late coupon validation; no eligibility feedback; spinner with no recovery</td><td>Coupon: inline eligibility check on entry with colour-coded status. Cart: 30s timeout → retry CTA → contact support link. Promo pill showing active discount in cart header.</td><td><span class="tag t-p1">P1</span></td><td>Medium</td></tr>
+        <tr><td>Preview confidence</td><td>Slow preview; quality lower than print; no user confidence signal</td><td>Progressive page preview (page 1 first). Full-resolution zoom on preview pages. "What you see is what you get" confidence copy at review step. Resolution quality indicator per photo.</td><td><span class="tag t-p2">P2</span></td><td>Medium</td></tr>
+        <tr><td>Order tracking</td><td>Passive; no re-engagement hooks</td><td>Post-delivery card: "Your book arrived — love it? Start next year's now." Nudge with photo count since last order. Social share of product photos.</td><td><span class="tag t-p3">P3</span></td><td>Low</td></tr>
+        <tr><td>Accessibility</td><td>WKWebView editor likely fails VoiceOver; no Dynamic Type in editor</td><td>Phase 3 native editor rewrite must be built accessibility-first. Interim: add ARIA labels to all interactive web editor elements. VoiceOver test all native flows immediately.</td><td><span class="tag t-p3">P3</span></td><td>High (editor)</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══ 10. AI PLAN ═══ -->
+<section class="section" id="ai-plan">
+  <p class="s-eyebrow">Section 10</p>
+  <h2>AI &amp; Personalisation Opportunity Plan</h2>
+
+  <div class="tw">
+    <table>
+      <thead><tr><th>Feature</th><th>User benefit</th><th>Business benefit</th><th>Data required</th><th>Feasibility</th><th>Impact</th><th>POC phase</th></tr></thead>
+      <tbody>
+        <tr><td>AI Auto-Fill prominent entry point</td><td>Create a photo book in 60s without learning the editor</td><td>+25–40% photo book starts; reduces time-to-order</td><td>Existing: user photo library + auto-fill engine</td><td><span class="tag t-low">High</span></td><td><span class="tag t-high">High</span></td><td>Phase 2</td></tr>
+        <tr><td>Image quality gate (pre-order)</td><td>Warned before committing a blurry photo to a large-format product</td><td>Reduced reprints, returns, CS contacts; better NPS</td><td>PHAsset pixel dimensions + product min-res thresholds</td><td><span class="tag t-low">High</span></td><td><span class="tag t-high">High</span></td><td>Phase 2</td></tr>
+        <tr><td>AI photo pre-selection ("Best of")</td><td>App recommends best photos for a given event/trip without manual scrolling</td><td>Faster time to product start; reduced photo selection abandonment</td><td>ML quality scoring via Vision framework (on-device); date metadata</td><td><span class="tag t-med">Medium</span></td><td><span class="tag t-high">High</span></td><td>Phase 3</td></tr>
+        <tr><td>Smart event/trip grouping</td><td>Library automatically organised into trips and events — no manual album creation</td><td>Reduces friction to creating themed photo books; increases book order rate</td><td>Photo date clustering + GPS metadata (with permission)</td><td><span class="tag t-med">Medium</span></td><td><span class="tag t-med">Medium</span></td><td>Phase 3</td></tr>
+        <tr><td>Personalised seasonal homepage</td><td>App proactively suggests relevant products before the user has to search</td><td>+15% home-to-product start rate; reduces discounting dependency</td><td>Order history + calendar date + photo library date range</td><td><span class="tag t-med">Medium</span></td><td><span class="tag t-high">High</span></td><td>Phase 3</td></tr>
+        <tr><td>Predictive re-order push notifications</td><td>Reminded at the right time to re-order seasonal products (cards, calendars)</td><td>+8% 90-day repeat purchase rate; lower CRM acquisition cost</td><td>Order history + delivery date + seasonal calendar</td><td><span class="tag t-low">High</span></td><td><span class="tag t-med">Medium</span></td><td>Phase 2</td></tr>
+        <tr><td>Smart gifting suggestions</td><td>App suggests personalised gift ideas for upcoming occasions with photos</td><td>Increases AOV; drives gift product category discovery</td><td>Order history + contact book (with permission) + calendar events</td><td><span class="tag t-med">Medium</span></td><td><span class="tag t-med">Medium</span></td><td>Phase 4</td></tr>
+        <tr><td>iOS 26 Foundation Models — caption generation</td><td>On-device AI generates meaningful captions for photo book pages — private, instant, no API cost</td><td>Enhances Magic Writer quality; zero marginal cost per generation; offline capable</td><td>Foundation Models framework (iOS 26+); photo context</td><td><span class="tag t-low">High</span> (iOS 26 only)</td><td><span class="tag t-high">High</span></td><td>Phase 3</td></tr>
+        <tr><td>iOS 26 Foundation Models — product descriptions</td><td>AI suggests personalised product descriptions for gift cards and custom products</td><td>Faster product customisation; higher personalisation at scale</td><td>Foundation Models + product type context</td><td><span class="tag t-low">High</span> (iOS 26 only)</td><td><span class="tag t-med">Medium</span></td><td>Phase 4</td></tr>
+        <tr><td>Smart cart upsells</td><td>When photo book is in cart, see a coordinated product (calendar, prints) from the same photo set</td><td>AOV +10–15%; increases cross-product awareness</td><td>Cart item metadata + product catalogue</td><td><span class="tag t-med">Medium</span></td><td><span class="tag t-med">Medium</span></td><td>Phase 3</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══ 11. iOS 26 ═══ -->
+<section class="section" id="ios26">
+  <p class="s-eyebrow">Section 11</p>
+  <h2>iOS 26 Adaptation Plan</h2>
+  <p class="section-intro">iOS 26 (released September 2025, current version 26.5.1) introduces Liquid Glass design, the Foundation Models framework for on-device AI, native SwiftUI WebView, rich text editing in SwiftUI, and Metal 4. Apple has mandated the iOS 26 SDK for all new App Store submissions since April 2026. Apps not adapted will look visually broken next to system apps on user devices.</p>
+
+  <div class="alert a-purple">
+    <strong>Compliance requirement:</strong> All custom UI components in Shutterfly's native app layers (navigation bars, buttons, tab bars, sheets) must be audited against the iOS 26 Liquid Glass system. Standard UIKit and SwiftUI components adopt Liquid Glass automatically when compiled with the iOS 26 SDK — but custom components do not. Apps with heavy custom UI that don't adapt will look inconsistent vs. first-party and competitor apps that have adopted it.
+  </div>
+
+  <div class="ios26-grid">
+    <div class="ios26-card">
+      <h4><span class="tag t-ios26">iOS 26</span> Liquid Glass design adoption</h4>
+      <p><strong>Apply to:</strong> Tab bar, navigation bars, bottom sheets, modal cards, button styles, filter chips. Standard UIKit/SwiftUI components auto-adopt — focus effort on custom UI components (product cards, editor toolbar, photo grid header). Use <code>.glassEffect()</code> modifier in SwiftUI for custom surfaces. <strong>Timeline:</strong> Phase 2–3. <strong>Effort:</strong> Medium.</p>
+    </div>
+    <div class="ios26-card">
+      <h4><span class="tag t-ios26">iOS 26</span> Foundation Models — on-device AI</h4>
+      <p><strong>Use cases:</strong> (1) Replace cloud-based Magic Writer caption generation with <code>SystemLanguageModel.default</code> — zero latency, zero API cost, works offline, fully private. (2) Guided generation for structured caption output (tone, length constraints). (3) Smart product description suggestions. <strong>Required:</strong> A13 Bionic or newer (iPhone 11+). <strong>Timeline:</strong> Phase 3. <strong>Effort:</strong> Low–Medium.</p>
+    </div>
+    <div class="ios26-card">
+      <h4><span class="tag t-ios26">iOS 26</span> SwiftUI native WebView</h4>
+      <p><strong>Opportunity:</strong> iOS 26 introduces a first-party <code>WebView</code> SwiftUI type (replacing WKWebView bridging). This simplifies the current editor's SwiftUI/WKWebView integration. As the native editor rewrite progresses, remaining web-rendered components can use the new <code>WebView</code> type with cleaner SwiftUI lifecycle management. <strong>Timeline:</strong> Phase 3. <strong>Effort:</strong> Low.</p>
+    </div>
+    <div class="ios26-card">
+      <h4><span class="tag t-ios26">iOS 26</span> Rich Text SwiftUI editor</h4>
+      <p><strong>Opportunity:</strong> iOS 26 SwiftUI adds native <code>.textEditorStyle(.richText)</code> and <code>.richTextToolbar(.visible)</code> — a first-party rich text editing component that handles formatting, clipboard, and keyboard toolbar natively. This directly replaces the broken in-canvas text editing in the WKWebView editor for caption and text overlays. <strong>Timeline:</strong> Phase 3. <strong>Effort:</strong> Low.</p>
+    </div>
+    <div class="ios26-card">
+      <h4><span class="tag t-ios26">iOS 26</span> SwiftUI performance improvements</h4>
+      <p><strong>Applies to:</strong> All SwiftUI views gain faster layout rendering and more efficient state initialisation without code changes (Apple automatic). Reorderable containers reduce custom drag-and-drop code needed for photo grid and editor page reordering. Adopt <code>TabView</code> with <code>.tabBarMinimizeBehavior(.onScrollDown)</code> for cleaner photo selection UX. <strong>Timeline:</strong> Phase 2. <strong>Effort:</strong> Low.</p>
+    </div>
+    <div class="ios26-card">
+      <h4><span class="tag t-ios26">iOS 26</span> Background Assets framework</h4>
+      <p><strong>Opportunity:</strong> iOS 26 Background Assets framework allows large asset bundles (product templates, high-res imagery) to be downloaded in the background after install — reducing the 249 MB binary by offloading assets that don't need to be bundled. Complements the on-demand resources strategy in S5. <strong>Timeline:</strong> Phase 2–3. <strong>Effort:</strong> Low–Medium.</p>
+    </div>
+  </div>
+
+  <div class="alert a-teal">
+    <strong>iOS 26 migration plan summary:</strong> (1) Recompile with Xcode 26 SDK — standard UIKit/SwiftUI components auto-adopt Liquid Glass. (2) Audit and adapt custom UI components. (3) Integrate Foundation Models for Magic Writer caption generation. (4) Migrate text editing to SwiftUI rich text editor. (5) Use Background Assets to reduce binary size. (6) Adopt new SwiftUI WebView type as editor rewrite progresses.
+  </div>
+</section>
+
+<!-- ═══ 12. ROADMAP ═══ -->
+<section class="section" id="roadmap">
+  <p class="s-eyebrow">Section 12</p>
+  <h2>Phased Delivery Roadmap</h2>
+
+  <div class="roadmap">
+
+    <div class="phase ph1">
+      <div class="phase-header">
+        <div class="phase-num">1</div>
+        <div class="phase-title">
+          <h3>Immediate fixes — stop the bleeding</h3>
+          <p>P1 triage, hotfixes, and high-feasibility quick wins</p>
+        </div>
+        <div class="phase-timeline">Weeks 0–4</div>
+      </div>
+      <div class="phase-body">
+        <ul class="phase-items">
+          <li>🔴 HEIF upload pipeline fix — PHAsset HEIF support on iOS 18</li>
+          <li>🔴 Photos permission education banner (limited access handling)</li>
+          <li>🔴 Editor canvas CSS viewport fix (WKWebView mobile scale patch)</li>
+          <li>🔴 Editor cut/paste fix (iOS pasteboard bridge in WKWebView)</li>
+          <li>🔴 Editor drag-and-drop JS event listener leak patch</li>
+          <li>🔴 Cart: 30s timeout + retry CTA + actionable error state</li>
+          <li>🔴 Auth: extend token TTL + silent refresh via BGTask</li>
+          <li>🟡 Coupon: inline pre-validation at cart entry</li>
+          <li>🟡 Image quality gate: PHAsset resolution check at photo selection</li>
+          <li>🟡 MetricKit + Crashlytics instrumentation for upload, editor, cart</li>
+        </ul>
+        <div class="phase-row">
+          <div class="phase-cell"><div class="pc-l">Owner</div><div class="pc-v">iOS Engineering (primary) + Backend (cart, auth)</div></div>
+          <div class="phase-cell"><div class="pc-l">Expected impact</div><div class="pc-v">Upload unblocked for iOS 18 users; editor defection arrested; checkout abandonment reduced</div></div>
+          <div class="phase-cell"><div class="pc-l">Success metrics</div><div class="pc-v">HEIF upload ≥98%; cart timeout → 0; editor 1-star review trend reversed</div></div>
+          <div class="phase-cell"><div class="pc-l">Dependencies</div><div class="pc-v">Access to Crashlytics data; backend cart API; promotion eligibility API</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase ph2">
+      <div class="phase-header">
+        <div class="phase-num">2</div>
+        <div class="phase-title">
+          <h3>Journey &amp; conversion optimisation</h3>
+          <p>Upload architecture, checkout, AI surface, iOS 26 baseline</p>
+        </div>
+        <div class="phase-timeline">Weeks 4–8</div>
+      </div>
+      <div class="phase-body">
+        <ul class="phase-items">
+          <li>🔵 Background upload: URLSession .background + chunked upload with resumption</li>
+          <li>🔵 UICollectionView virtualisation for photo grid (50K+ library support)</li>
+          <li>🔵 Apple Pay: PKPaymentRequest native integration</li>
+          <li>🔵 Server-side cart state persistence (decouple from session)</li>
+          <li>🔵 AI Auto-Fill surface at product creation entry point (UX routing)</li>
+          <li>🔵 Predictive re-order push notification sequence (CRM config)</li>
+          <li>🔵 Upload progress states redesign (background upload + system notification)</li>
+          <li>🟡 iOS 26 SDK recompile + standard component Liquid Glass auto-adoption</li>
+          <li>🟡 SDK audit: identify binary bloat contributors; defer non-critical SDK init</li>
+          <li>🟡 Calendar order year fix</li>
+          <li>🟡 Deep-link state preservation through login redirect</li>
+        </ul>
+        <div class="phase-row">
+          <div class="phase-cell"><div class="pc-l">Owner</div><div class="pc-v">iOS Engineering + Backend + Design + CRM</div></div>
+          <div class="phase-cell"><div class="pc-l">Expected impact</div><div class="pc-v">Checkout conversion +15%; storage value prop functional; AI Auto-Fill usage +300%; iOS 26 visual compliance</div></div>
+          <div class="phase-cell"><div class="pc-l">Success metrics</div><div class="pc-v">Cart-to-order +15%; AI Auto-Fill usage rate; background upload completion ≥95%; App Store no Liquid Glass complaints</div></div>
+          <div class="phase-cell"><div class="pc-l">Dependencies</div><div class="pc-v">Phase 1 complete; Apple Pay merchant setup; backend chunked upload API; CRM platform access</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase ph3">
+      <div class="phase-header">
+        <div class="phase-num">3</div>
+        <div class="phase-title">
+          <h3>Editor, personalisation &amp; iOS 26 features</h3>
+          <p>Native editor migration begins; AI homepage; Foundation Models</p>
+        </div>
+        <div class="phase-timeline">Weeks 8–12</div>
+      </div>
+      <div class="phase-body">
+        <ul class="phase-items">
+          <li>🔵 Phase 3a: Native SwiftUI editor text layer — replace WKWebView text editing with SwiftUI .richText editor</li>
+          <li>🔵 Phase 3b: Native photo frame layer — Core Animation based photo placement replacing WKWebView canvas</li>
+          <li>🔵 Personalised homepage — seasonal occasion card + resume in-progress + storage stat</li>
+          <li>🔵 Smart cart upsells — coordinated product suggestions at cart</li>
+          <li>🔵 Preview: page-by-page progressive generation + server-side page cache</li>
+          <li>🟡 iOS 26 Foundation Models: migrate Magic Writer to on-device caption generation</li>
+          <li>🟡 iOS 26 custom Liquid Glass UI component adaptation (product cards, editor toolbar)</li>
+          <li>🟡 AI photo pre-selection ("Best of" suggested photos via Vision framework)</li>
+          <li>🟡 SDK binary reduction programme execution</li>
+          <li>🟡 Post-purchase re-engagement card in order tracking</li>
+          <li>🟡 VoiceOver accessibility baseline test and fixes for native app flows</li>
+        </ul>
+        <div class="phase-row">
+          <div class="phase-cell"><div class="pc-l">Owner</div><div class="pc-v">iOS Engineering (lead) + Design + Data/ML + Backend</div></div>
+          <div class="phase-cell"><div class="pc-l">Expected impact</div><div class="pc-v">Photo book completion rate +30%; homepage engagement +15%; editor performance step-change</div></div>
+          <div class="phase-cell"><div class="pc-l">Success metrics</div><div class="pc-v">Editor completion time &minus;30%; personalised homepage CTR; Foundation Models caption generation latency &lt;500ms</div></div>
+          <div class="phase-cell"><div class="pc-l">Dependencies</div><div class="pc-v">Phase 2 complete; iOS 26 SDK; recommendation API; Vision ML model for photo scoring</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase ph4">
+      <div class="phase-header">
+        <div class="phase-num">4</div>
+        <div class="phase-title">
+          <h3>AI-assisted creation &amp; scalable experimentation</h3>
+          <p>Full AI-first creation path, smart gifting, A/B programme</p>
+        </div>
+        <div class="phase-timeline">Weeks 12+</div>
+      </div>
+      <div class="phase-body">
+        <ul class="phase-items">
+          <li>🟣 Native SwiftUI editor — complete WKWebView replacement for all editor interactions</li>
+          <li>🟣 Smart event/trip grouping — automatic library organisation by ML date + GPS clustering</li>
+          <li>🟣 Smart gifting suggestions — occasion-aware product recommendations with photo context</li>
+          <li>🟣 iOS 26 Foundation Models — product description generation, structured gift copy</li>
+          <li>🟣 A/B experimentation programme — feature flag infrastructure for all new flows</li>
+          <li>🟣 Full accessibility audit + remediation for native editor</li>
+          <li>🟣 Subscription / recurring print model evaluation</li>
+          <li>🟣 Explore iOS 27 early access opportunities (foldable iPhone targeting)</li>
+        </ul>
+        <div class="phase-row">
+          <div class="phase-cell"><div class="pc-l">Owner</div><div class="pc-v">Full product team; Platform Engineering</div></div>
+          <div class="phase-cell"><div class="pc-l">Expected impact</div><div class="pc-v">Best-in-category mobile creation experience; 90-day repeat purchase +12%; AOV +10%</div></div>
+          <div class="phase-cell"><div class="pc-l">Success metrics</div><div class="pc-v">App Store percentile rank P80+; repeat purchase rate; AI-assisted order share ≥40%</div></div>
+          <div class="phase-cell"><div class="pc-l">Dependencies</div><div class="pc-v">Phase 3 complete; Feature flag infrastructure; ML platform; iOS 27 beta access</div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══ 13. METRICS ═══ -->
+<section class="section" id="metrics">
+  <p class="s-eyebrow">Section 13</p>
+  <h2>Success Metrics</h2>
+
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kc-cat">Performance</div>
+      <div class="kc-metric">App cold start p90</div>
+      <div class="kc-target">Target: &lt;2.0s (iPhone 12, cellular)</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kc-cat">Performance</div>
+      <div class="kc-metric">Crash-free session rate</div>
+      <div class="kc-target">Target: ≥99.5% (from baseline)</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kc-cat">Performance</div>
+      <div class="kc-metric">App binary size</div>
+      <div class="kc-target">Target: &lt;180 MB</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kc-cat">Performance</div>
+      <div class="kc-metric">Photo grid scroll frame rate</div>
+      <div class="kc-target">Target: ≥55fps (large library)</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kc-cat">Upload</div>
+      <div class="kc-metric">HEIF upload success rate</div>
+      <div class="kc-target">Target: ≥98% on iOS 18+</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kc-cat">Upload</div>
+      <div class="kc-metric">Background upload completion</div>
+      <div class="kc-target">Target: ≥95% for 1K+ batches</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kc-cat">Upload</div>
+      <div class="kc-metric">Photo upload time (100 photos)</div>
+      <div class="kc-target">Target: &lt;60s on 4G</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kc-cat">Editor</div>
+      <div class="kc-metric">Editor completion rate</div>
+      <div class="kc-target">Target: +30% vs current baseline</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kc-cat">Editor</div>
+      <div class="kc-metric">Time to complete 20-page book</div>
+      <div class="kc-target">Target: &minus;30% vs current median</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kc-cat">Editor</div>
+      <div class="kc-metric">Drag-and-drop success rate</div>
+      <div class="kc-target">Target: 100% to 100+ interactions</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kc-cat">Cart &amp; checkout</div>
+      <div class="kc-metric">Cart load timeout rate</div>
+      <div class="kc-target">Target: 0% (from confirmed failures)</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kc-cat">Cart &amp; checkout</div>
+      <div class="kc-metric">Cart-to-order conversion rate</div>
+      <div class="kc-target">Target: +15% vs baseline</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kc-cat">Cart &amp; checkout</div>
+      <div class="kc-metric">Apple Pay checkout adoption</div>
+      <div class="kc-target">Target: ≥50% of eligible sessions</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kc-cat">Cart &amp; checkout</div>
+      <div class="kc-metric">Coupon-related CS contacts</div>
+      <div class="kc-target">Target: &minus;40% per order</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kc-cat">Personalisation</div>
+      <div class="kc-metric">AI Auto-Fill usage rate</div>
+      <div class="kc-target">Target: +300% from near-zero baseline</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kc-cat">Personalisation</div>
+      <div class="kc-metric">Homepage-to-product-start rate</div>
+      <div class="kc-target">Target: +15% with personalised homepage</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kc-cat">Retention</div>
+      <div class="kc-metric">90-day repeat purchase rate</div>
+      <div class="kc-target">Target: +8% with re-order push</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kc-cat">Retention</div>
+      <div class="kc-metric">Push notification CTR</div>
+      <div class="kc-target">Target: +25% (personalised vs broadcast)</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kc-cat">App Store</div>
+      <div class="kc-metric">App Store percentile rank</div>
+      <div class="kc-target">Target: P75+ (from current P68)</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kc-cat">App Store</div>
+      <div class="kc-metric">Editor-related 1-star review rate</div>
+      <div class="kc-target">Target: Trend reversal within 45 days of P1 fixes</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 14. BUSINESS IMPACT ═══ -->
+<section class="section" id="business-impact">
+  <p class="s-eyebrow">Section 14</p>
+  <h2>Expected Business Impact</h2>
+
+  <div class="tw">
+    <table>
+      <thead><tr><th>Business area</th><th>Phase 1 impact (0–4 weeks)</th><th>Phase 2 impact (4–8 weeks)</th><th>Phase 3+ impact (8–12 weeks+)</th></tr></thead>
+      <tbody>
+        <tr><td>Checkout conversion rate</td><td>Cart timeout fix stops confirmed abandonment. Estimated +5–8% from zero-timeout cart recovery.</td><td>Apple Pay + coupon pre-validation. Estimated +12–18% total lift vs pre-POC baseline.</td><td>Personalised homepage routes users to products faster. Incremental +3–5%.</td></tr>
+        <tr><td>Revenue per session</td><td>HEIF fix unblocks all iOS 18 users from ordering. Direct revenue recovery for a blocked segment.</td><td>AI Auto-Fill surface increases photo book start rate +25%. Books have highest AOV.</td><td>Smart cart upsells + gifting suggestions. Estimated AOV +8–12%.</td></tr>
+        <tr><td>Repeat purchase rate</td><td>Session persistence fix reduces checkout-adjacent abandonment — preserves intent to repurchase.</td><td>Seasonal re-order push sequences activate predictable repeat buyers.</td><td>Full personalisation engine + post-purchase hooks. 90-day repeat purchase +8–12%.</td></tr>
+        <tr><td>App Store rating</td><td>Editor fixes stop the active 1-star review surge from the 2026 regression. Trend reversal expected within 45 days.</td><td>Upload fix + Apple Pay + coupon resolution remove three categories of negative review trigger.</td><td>iOS 26 Liquid Glass adoption + native editor = positive editorial coverage. P68 → P75+.</td></tr>
+        <tr><td>Customer support load</td><td>HEIF fix, permission education banner, and cart error messaging resolve the 3 highest-volume complaint categories.</td><td>Coupon pre-validation eliminates the most emotionally charged CS trigger (failed promo at checkout).</td><td>Image quality gate pre-empts reprint requests — each prevented reprint saves direct fulfilment cost.</td></tr>
+        <tr><td>Engineering velocity</td><td>MetricKit instrumentation makes regressions detectable in hours, not weeks (public reviews).</td><td>SDK consolidation reduces binary bloat and weekly patch pressure.</td><td>Native editor rewrite eliminates the WKWebView technical debt that causes the majority of editor issues.</td></tr>
+        <tr><td>Competitive positioning</td><td>Stops the immediate defection to Mixbook triggered by the editor regression.</td><td>AI Auto-Fill parity with Mixbook Auto-Create; Apple Pay parity with standard apps.</td><td>iOS 26 Foundation Models + Liquid Glass positions Shutterfly as the most modern photo printing app on the platform.</td></tr>
+        <tr><td>Brand experience</td><td>Removing silent failures (spinner, no error) restores basic trust in the app's reliability.</td><td>Proactive seasonal suggestions and personalised homepage signals that Shutterfly understands the user — not just sells to them.</td><td>A native iOS 26 editor with on-device AI creates an experience that feels premium, matching the quality of Shutterfly's physical products.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══ 15. FINAL RECOMMENDATION ═══ -->
+<section class="section" id="recommendation">
+  <p class="s-eyebrow">Section 15</p>
+  <h2>Final Recommendation</h2>
+
+  <div class="alert a-danger">
+    <strong>Fix first, build later.</strong> The Shutterfly iOS app has genuine competitive advantages — unlimited storage, product breadth, brand trust — that are being eroded, not protected, by the current experience. The biggest risk is not under-investing in new features. It is allowing confirmed P1 bugs to continue while building new capability on a broken foundation.
+  </div>
+
+  <div class="reco-grid">
+    <div class="reco-card r1">
+      <h4>🔴 Fix immediately (Weeks 1–4)</h4>
+      <ul>
+        <li>HEIF upload failure — no iOS 18 user can upload without this</li>
+        <li>Editor canvas scale CSS patch — stop defection to Mixbook</li>
+        <li>Editor cut/paste WKWebView pasteboard fix</li>
+        <li>Editor drag-and-drop JS event listener leak</li>
+        <li>Cart 30s timeout + retry + error state</li>
+        <li>Auth token TTL extension + silent refresh</li>
+        <li>Photos permission education banner</li>
+      </ul>
+    </div>
+    <div class="reco-card r2">
+      <h4>🔵 Test in POC (Weeks 4–8)</h4>
+      <ul>
+        <li>AI Auto-Fill at product entry — measure book start rate lift</li>
+        <li>Apple Pay native integration — measure checkout conversion</li>
+        <li>Background URLSession upload — measure completion rate</li>
+        <li>Coupon pre-validation — measure abandonment reduction</li>
+        <li>Seasonal re-order push — measure push CTR and repeat purchase</li>
+        <li>UICollectionView virtualisation — measure large-library crash rate</li>
+      </ul>
+    </div>
+    <div class="reco-card r3">
+      <h4>🟢 Measure rigorously</h4>
+      <ul>
+        <li>MetricKit for launch time, hang rate, memory (instrument now)</li>
+        <li>Upload success rate by MIME type (track HEIF separately)</li>
+        <li>Cart load time p50/p90/p99 (currently untracked)</li>
+        <li>Editor drag interaction success per session</li>
+        <li>Cart-to-order conversion rate (A/B vs baseline)</li>
+        <li>App Store rating trend post-Phase 1 fixes</li>
+        <li>AI Auto-Fill usage rate before vs. after surface change</li>
+      </ul>
+    </div>
+    <div class="reco-card r4">
+      <h4>🟣 Long-term iOS roadmap</h4>
+      <ul>
+        <li>Native SwiftUI editor rewrite — phased, WKWebView-out</li>
+        <li>iOS 26 Foundation Models — on-device AI for caption generation</li>
+        <li>iOS 26 Liquid Glass full design system adoption</li>
+        <li>Personalised homepage and smart gifting engine</li>
+        <li>SDK consolidation and binary size programme</li>
+        <li>Subscription/recurring print model exploration</li>
+        <li>Accessibility-first native editor design</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="alert a-success" style="margin-top:8px;">
+    <strong>The strategic position:</strong> Shutterfly's unlimited photo storage is a genuine competitive moat that no major competitor can match. The brand trust built over 25 years is a real conversion asset. The AI Auto-Fill capability exists today. The path to winning on iOS is not building new things — it is removing every obstacle between the user and the products they already want to make. Fix the upload. Fix the editor. Fix the checkout. Surface the AI. Then build. In that order.
+  </div>
+</section>
+
+<footer style="margin-top:40px;padding-top:20px;border-top:0.5px solid var(--border);font-size:11.5px;color:var(--text3);line-height:1.65">
+  <p><strong style="color:var(--text2)">Basis:</strong> Stage 1 research (Shutterfly iOS app, App Store analysis, competitive teardown) + Stage 2 issue diagnosis (38 issues across UX, performance, architecture, and conversion) + iOS 26 platform documentation (Apple Newsroom, WWDC 2025, developer documentation). iOS 26 feature references sourced from Apple's official developer documentation and Xcode 26 release notes. All issue root causes and impact estimates are hypotheses that should be validated through device testing and A/B measurement as specified in the Stage 2 device testing requirements.</p>
+  <p style="margin-top:6px">Internal use only — Product · iOS Engineering · Design · Leadership</p>
+</footer>
+
+</body>
+</html>
