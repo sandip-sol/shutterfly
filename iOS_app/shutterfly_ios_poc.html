@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<title>Shutterfly iOS App Performance &amp; Experience Improvement POC</title>
+<style>
+  :root{
+    --navy:#102a43;--ink:#243b53;--muted:#627d98;--line:#d9e2ec;
+    --soft:#f4f7fa;--soft2:#eaf2f8;--white:#fff;--blue:#176b87;
+    --teal:#087f8c;--green:#20744a;--amber:#9b5b00;--red:#b42318;
+    --purple:#6941c6;--shadow:0 10px 30px rgba(16,42,67,.08);
+    --radius:14px;--small:9px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--white);color:var(--ink);font:14px/1.62 -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+  a{color:var(--blue);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .page{max-width:1180px;margin:auto;padding:36px 28px 80px}
+  .hero{background:linear-gradient(135deg,#102a43 0%,#176b87 72%,#087f8c 100%);color:#fff;border-radius:22px;padding:48px;box-shadow:var(--shadow)}
+  .eyebrow{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#9fe2e8}
+  .hero h1{max-width:850px;margin:10px 0 14px;font-size:42px;line-height:1.12;letter-spacing:-.025em}
+  .hero .lead{max-width:830px;margin:0 0 24px;font-size:18px;color:#e6f3f6}
+  .meta{display:flex;flex-wrap:wrap;gap:9px}
+  .meta span{padding:6px 10px;border:1px solid rgba(255,255,255,.25);border-radius:999px;background:rgba(255,255,255,.08);font-size:12px}
+  .toc{margin:22px 0 42px;padding:20px 22px;background:var(--soft);border:1px solid var(--line);border-radius:var(--radius)}
+  .toc strong{display:block;margin-bottom:10px;color:var(--navy)}
+  .toc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px 18px}
+  .toc a{font-size:12.5px}
+  section{margin-top:52px;scroll-margin-top:20px}
+  .section-head{display:flex;gap:14px;align-items:flex-start;margin-bottom:18px;padding-bottom:12px;border-bottom:2px solid var(--soft2)}
+  .section-no{min-width:34px;height:34px;display:grid;place-items:center;border-radius:50%;background:var(--soft2);color:var(--blue);font-weight:800}
+  h2{margin:0;color:var(--navy);font-size:25px;line-height:1.25}
+  h3{margin:24px 0 10px;color:var(--navy);font-size:17px}
+  h4{margin:0 0 7px;color:var(--navy);font-size:14px}
+  .section-intro{margin:0 0 18px;color:var(--muted);max-width:940px}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  .grid.two{grid-template-columns:repeat(2,1fr)}
+  .grid.three{grid-template-columns:repeat(3,1fr)}
+  .card{padding:18px;background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 4px 14px rgba(16,42,67,.04)}
+  .card p{margin:0;color:var(--muted)}
+  .card ul{margin:7px 0 0;padding-left:18px;color:var(--muted)}
+  .card li{margin:4px 0}
+  .metric{background:var(--soft);border-top:4px solid var(--teal)}
+  .metric .value{font-size:24px;font-weight:800;color:var(--navy);line-height:1.15}
+  .metric .label{margin-top:5px;color:var(--muted);font-size:12px}
+  .callout{margin:16px 0;padding:14px 16px;border-left:4px solid var(--blue);border-radius:var(--small);background:var(--soft2)}
+  .callout.warn{border-color:var(--amber);background:#fff8e8}
+  .callout.good{border-color:var(--green);background:#edf8f1}
+  .callout strong{color:var(--navy)}
+  .table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 4px 14px rgba(16,42,67,.03)}
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th{padding:10px 11px;text-align:left;background:var(--soft);color:var(--navy);font-size:10px;letter-spacing:.055em;text-transform:uppercase;white-space:nowrap}
+  td{padding:10px 11px;vertical-align:top;border-top:1px solid var(--line);color:#486581}
+  td:first-child{color:var(--ink);font-weight:650}
+  tr:hover td{background:#fbfdff}
+  code{font-size:11.5px;color:#174f62;background:#edf5f7;padding:1px 4px;border-radius:4px}
+  .badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:999px;font-size:10px;font-weight:800;white-space:nowrap}
+  .p1,.high{color:var(--red);background:#feeceb}
+  .p2,.medium{color:var(--amber);background:#fff3d6}
+  .p3,.low{color:var(--blue);background:#e9f2f8}
+  .confirmed{color:var(--green);background:#e7f5ec}
+  .likely{color:var(--amber);background:#fff3d6}
+  .validate{color:var(--purple);background:#f0ebff}
+  .feasible{color:var(--teal);background:#e5f6f6}
+  .issue{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;margin:12px 0}
+  .issue-head{display:flex;align-items:center;gap:10px;padding:13px 16px;background:var(--soft)}
+  .issue-head h3{margin:0;flex:1;font-size:15px}
+  .issue-body{padding:14px 16px}
+  .issue-body p{margin:0 0 7px}
+  .issue-meta{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
+  .issue-meta div{padding:9px;background:var(--soft);border-radius:var(--small)}
+  .issue-meta b{display:block;color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:.06em}
+  .matrix{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .quadrant{padding:18px;border:1px solid var(--line);border-radius:var(--radius)}
+  .quadrant ul{margin:8px 0 0;padding-left:18px;color:var(--muted)}
+  .quadrant.a{border-top:4px solid var(--green)}.quadrant.b{border-top:4px solid var(--blue)}
+  .quadrant.c{border-top:4px solid var(--purple)}.quadrant.d{border-top:4px solid var(--muted)}
+  .timeline{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .phase{position:relative;padding:18px;border:1px solid var(--line);border-radius:var(--radius);background:#fff}
+  .phase:before{content:"";position:absolute;top:0;left:0;right:0;height:5px;background:var(--blue);border-radius:var(--radius) var(--radius) 0 0}
+  .phase:nth-child(2):before{background:var(--teal)}.phase:nth-child(3):before{background:var(--purple)}.phase:nth-child(4):before{background:var(--amber)}
+  .phase .time{color:var(--muted);font-size:11px;font-weight:750;text-transform:uppercase}
+  .phase ul{padding-left:17px;color:var(--muted)}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .kpi{padding:13px;background:var(--soft);border-radius:var(--small)}
+  .kpi b{display:block;color:var(--navy)}
+  .kpi span{font-size:11px;color:var(--muted)}
+  .source-list{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+  .source{padding:13px;border:1px solid var(--line);border-radius:var(--small);background:#fff}
+  .source b{display:block;color:var(--navy)}
+  .source span{display:block;color:var(--muted);font-size:12px}
+  footer{margin-top:46px;padding-top:20px;border-top:1px solid var(--line);color:var(--muted);font-size:11.5px}
+  @media(max-width:900px){
+    .grid,.timeline,.kpis{grid-template-columns:repeat(2,1fr)}
+    .toc-grid{grid-template-columns:repeat(2,1fr)}
+    .issue-meta{grid-template-columns:repeat(2,1fr)}
+  }
+  @media(max-width:600px){
+    .page{padding:18px 12px 50px}.hero{padding:30px 22px}.hero h1{font-size:31px}
+    .grid,.grid.two,.grid.three,.timeline,.kpis,.matrix,.source-list,.toc-grid{grid-template-columns:1fr}
+    .issue-meta{grid-template-columns:1fr}
+  }
+  @media print{
+    body{font-size:11px}.page{max-width:none;padding:0}.hero{box-shadow:none;border-radius:0}
+    .toc{display:none}section{break-inside:avoid;margin-top:30px}.table-wrap{box-shadow:none}
+    a{color:inherit;text-decoration:none}
+  }
+</style>
+</head>
+<body>
+<main class="page">
+
+<header class="hero">
+  <div class="eyebrow">Final proof of concept report</div>
+  <h1>Shutterfly iOS App Performance &amp; Experience Improvement POC</h1>
+  <p class="lead">A practical plan to reduce creation friction, improve media and checkout reliability, strengthen iPhone usability, and turn existing AI capability into a measurable mobile advantage.</p>
+  <div class="meta">
+    <span>Product: Shutterfly</span><span>Platform: iOS</span>
+    <span>Audience: Product, UX, Engineering, Leadership</span>
+    <span>Prepared: June 12, 2026</span><span>Public evidence checked: June 12, 2026</span>
+  </div>
+</header>
+
+<nav class="toc" aria-label="Report contents">
+  <strong>Report contents</strong>
+  <div class="toc-grid">
+    <a href="#executive">1. Executive Summary</a><a href="#verification">2. Verification Summary</a>
+    <a href="#context">3. Product Context</a><a href="#current">4. Current State Analysis</a>
+    <a href="#issues">5. Key Issue Blocks</a><a href="#diagnosis">6. Detailed Issue Diagnosis</a>
+    <a href="#root-causes">7. Root Cause Analysis</a><a href="#solutions">8. Proposed Solution Plan</a>
+    <a href="#performance">9. iOS Performance Plan</a><a href="#ux">10. iOS UX Plan</a>
+    <a href="#compatibility">11. iOS Platform Readiness</a><a href="#ai">12. AI &amp; Personalisation</a>
+    <a href="#matrix">13. Feasibility vs Impact</a><a href="#roadmap">14. Implementation Roadmap</a>
+    <a href="#metrics">15. Success Metrics</a><a href="#business">16. Expected Business Impact</a>
+    <a href="#risk">17. Risk &amp; Validation</a><a href="#recommendation">18. Final Recommendation</a>
+    <a href="#sources">19. Sources &amp; Evidence Notes</a>
+  </div>
+</nav>
+
+<section id="executive">
+  <div class="section-head"><div class="section-no">1</div><div><h2>Executive Summary</h2></div></div>
+  <p class="section-intro">Shutterfly has scale, trust, broad product choice, a strong aggregate App Store rating, and newly promoted AI-assisted photo-book capabilities. Its mobile risk is not lack of value; it is the amount of work and technical uncertainty between a user opening a large camera roll and completing a personalised order.</p>
+  <div class="callout good"><strong>Confirmed public position:</strong> The US App Store lists version 16.10.1, a 4.7 rating from about 587K ratings, a 298.8 MB download, iOS 17.0 minimum support, frequent releases, photo upload, prints, books, cards, gifts, wall art, active-customer unlimited storage, and a 24-hour designer service. Current screenshots also promote AI-powered photo-book tools.</div>
+  <div class="grid">
+    <div class="card"><h4>UX friction</h4><p>A wide catalogue, promotion rules, photo permissions, media selection, editing, preview and checkout create a long, stateful mobile journey. The POC should prove a shorter task-first path.</p></div>
+    <div class="card"><h4>Performance bottlenecks</h4><p>The app is media-heavy and large. Startup, thumbnail grids, iCloud assets, uploads, editor rendering, preview and checkout latency are material risks, but their current production values require direct measurement.</p></div>
+    <div class="card"><h4>Conversion blockers</h4><p>Upload interruption, unclear price composition, coupon rejection, lost project state, slow preview and generic failures can destroy intent after users have invested time. These are priority validation areas, not publicly confirmed defects.</p></div>
+    <div class="card"><h4>AI opportunity</h4><p>Auto-Fill and Magic Writer are publicly confirmed. The opportunity is to surface assisted creation earlier, add quality checks, and personalise return journeys while preserving user control and privacy.</p></div>
+  </div>
+  <h3>What the POC is designed to prove</h3>
+  <div class="grid three">
+    <div class="card"><h4>Faster creation</h4><p>A user can move from launch to a credible first photo-book draft with fewer decisions and less waiting.</p></div>
+    <div class="card"><h4>Reliable completion</h4><p>Interrupted media work, backgrounding and recoverable service failures do not force a restart or lose project state.</p></div>
+    <div class="card"><h4>Measurable value</h4><p>Performance and UX changes improve project starts, upload completion, editor completion, preview-to-cart and checkout conversion against a controlled baseline.</p></div>
+  </div>
+</section>
+
+<section id="verification">
+  <div class="section-head"><div class="section-no">2</div><div><h2>Verification Summary</h2></div></div>
+  <p class="section-intro">Public evidence can confirm product claims and market positioning, but it cannot reveal the production architecture, internal funnel data, crash signatures, API latency or device-specific failure rates. Those are explicitly separated below.</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Area reviewed</th><th>Verification source</th><th>Confirmed</th><th>Hypothesis / unknown</th><th>Confidence</th></tr></thead>
+      <tbody>
+        <tr><td>Apple App Store listing</td><td>Apple App Store and iTunes Lookup, checked June 12, 2026</td><td>Version 16.10.1; 4.7 / about 587K; 298.8 MB; iOS 17+; broad product catalogue; active-customer storage claim.</td><td>Actual startup, crash, hang, upload and conversion performance.</td><td><span class="badge confirmed">Confirmed</span></td></tr>
+        <tr><td>Recent App Store reviews</td><td>Public App Store page and Apple review RSS endpoint</td><td>Featured reviews include historical complaints about iPhone bugs, freezes, editing difficulty, discounts and shipping clarity.</td><td>The public RSS endpoint returned no review entries on June 12, so a current sentiment trend or 2026 complaint spike could not be established.</td><td><span class="badge validate">Needs validation</span></td></tr>
+        <tr><td>App screenshots</td><td>Current US App Store screenshot set</td><td>Brand-led entry, photo books, explicit photo-upload flow, prints, cards, gifts and wall art; photo books are promoted with AI-powered tools.</td><td>Actual in-app navigation depth, editor behavior and checkout flow are not visible in the marketing set.</td><td><span class="badge confirmed">Confirmed</span></td></tr>
+        <tr><td>iOS user journey</td><td>Public product claims plus inferred commerce flow</td><td>Users must select/upload photos, configure products, customise, preview and order.</td><td>Exact step count, account gates, state recovery and error handling.</td><td><span class="badge likely">Likely</span></td></tr>
+        <tr><td>Performance complaints</td><td>Featured App Store reviews and generic release notes</td><td>Historical public complaints mention app freezes/crashes and awkward editing; releases frequently cite bug fixes and performance improvements.</td><td>Current reproducibility, affected versions, root cause and severity.</td><td><span class="badge likely">Likely</span></td></tr>
+        <tr><td>Competitor comparison</td><td>Current public App Store metadata for Mixbook, Popsa and FreePrints</td><td>Competitors position around speed, auto-layout, on-device AI, Apple Pay, simplified ordering or recurring value. Mixbook is about 164 MB versus Shutterfly at about 299 MB.</td><td>Comparable task performance and conversion require the same-device benchmark.</td><td><span class="badge confirmed">Confirmed</span></td></tr>
+        <tr><td>iOS best practices</td><td>Apple HIG, PhotoKit/Photos picker, MetricKit, Xcode performance guidance</td><td>Native permission timing, accessible controls, responsive feedback, measurement and memory-safe media processing are appropriate standards.</td><td>Current compliance and implementation quality inside Shutterfly.</td><td><span class="badge confirmed">Confirmed standard</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="context">
+  <div class="section-head"><div class="section-no">3</div><div><h2>Product Context</h2></div></div>
+  <div class="grid two">
+    <div class="card">
+      <h4>What Shutterfly offers</h4>
+      <p>Photo books, prints, cards and invitations, wall art, calendars, mugs, blankets and other personalised gifts, supported by photo storage and a designer-assisted book service.</p>
+    </div>
+    <div class="card">
+      <h4>Main iOS use cases</h4>
+      <p>Upload phone photos, order prints, create and edit products, resume projects, apply promotions, complete payment, track orders and return for seasonal or occasion-led purchases.</p>
+    </div>
+    <div class="card">
+      <h4>Target users</h4>
+      <p>Parents and families, gift buyers, memory keepers, event and holiday shoppers, school communities, wedding customers and repeat print buyers with large mobile photo libraries.</p>
+    </div>
+    <div class="card">
+      <h4>Mobile value proposition</h4>
+      <p>Turn photos already on the iPhone into physical products without moving files to a desktop. Mobile matters because intent is often triggered by a recent event, a reminder or an urgent gifting deadline.</p>
+    </div>
+  </div>
+  <div class="callout"><strong>Commercial implication:</strong> The iOS funnel combines creative effort with commerce. Every reliability failure becomes more expensive as the user progresses because invested time, emotional attachment and purchase intent all increase. Saving project state and making progress visible are therefore conversion features, not merely technical polish.</div>
+</section>
+
+<section id="current">
+  <div class="section-head"><div class="section-no">4</div><div><h2>Current State Analysis</h2></div></div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>App area</th><th>Current observation</th><th>Issue type</th><th>User impact</th><th>Business impact</th><th>Evidence</th></tr></thead>
+      <tbody>
+        <tr><td>First launch</td><td>Public screenshots lead with brand trust and breadth. Time to first interactive action is unknown.</td><td>Performance / proposition</td><td>Medium</td><td>Medium</td><td><span class="badge validate">Needs validation</span></td></tr>
+        <tr><td>Onboarding</td><td>No public evidence confirms an intent-led first-run flow for prints, books, cards, gifts or project resume.</td><td>UX</td><td>Medium</td><td>Medium</td><td><span class="badge validate">Needs validation</span></td></tr>
+        <tr><td>Sign-in / sign-up</td><td>Account supports projects, orders and storage; timing of authentication gates and recovery is unknown.</td><td>UX / identity</td><td>High</td><td>High</td><td><span class="badge validate">Needs validation</span></td></tr>
+        <tr><td>Photos permission</td><td>Photo upload is a core advertised path. Full, limited and denied permission handling is not publicly observable.</td><td>iOS UX / privacy</td><td>High</td><td>High</td><td><span class="badge validate">Needs validation</span></td></tr>
+        <tr><td>Homepage</td><td>Product breadth and promotions create a likely prioritisation challenge; personalisation depth is unknown.</td><td>IA / merchandising</td><td>Medium</td><td>High</td><td><span class="badge likely">Likely</span></td></tr>
+        <tr><td>Navigation</td><td>Books, prints, cards, gifts, wall art, projects, photos, orders and account must coexist on a small screen.</td><td>Information architecture</td><td>Medium</td><td>Medium</td><td><span class="badge likely">Likely</span></td></tr>
+        <tr><td>Product discovery</td><td>The catalogue is broad and occasion-rich. Public evidence does not show intent, recipient, budget or delivery-speed filtering.</td><td>Discovery / conversion</td><td>High</td><td>High</td><td><span class="badge likely">Likely</span></td></tr>
+        <tr><td>Search / filter</td><td>Search quality, filter coverage and no-result recovery need direct inspection.</td><td>UX / data</td><td>Medium</td><td>Medium</td><td><span class="badge validate">Needs validation</span></td></tr>
+        <tr><td>Product detail</td><td>Price, photo count, delivery, shipping and promotion eligibility must be understood before creation begins.</td><td>Trust / conversion</td><td>High</td><td>High</td><td><span class="badge likely">Likely</span></td></tr>
+        <tr><td>Photo selection / upload</td><td>A native-looking grid is shown publicly. Large-library, iCloud-only, HEIF/RAW, interruption and background behavior are unknown.</td><td>Media / reliability</td><td>High</td><td>High</td><td><span class="badge validate">Needs direct test</span></td></tr>
+        <tr><td>Customisation / editor</td><td>Listing claims move, resize, rearrange, layout changes and smoother editing. Historical reviews describe awkwardness and freezes.</td><td>UX / performance</td><td>High</td><td>High</td><td><span class="badge likely">Likely risk</span></td></tr>
+        <tr><td>Preview</td><td>Preview is part of Shutterfly's published AI book flow. Render speed, zoom fidelity and print-quality warnings are unknown.</td><td>Performance / trust</td><td>High</td><td>High</td><td><span class="badge validate">Needs validation</span></td></tr>
+        <tr><td>Cart</td><td>Promotions and shipping are publicly prominent. Cart persistence, totals and failure recovery need testing.</td><td>Commerce UX</td><td>High</td><td>High</td><td><span class="badge validate">Needs validation</span></td></tr>
+        <tr><td>Checkout</td><td>Apple Pay availability and payment recovery are not confirmed by the Shutterfly listing.</td><td>Payments / conversion</td><td>High</td><td>High</td><td><span class="badge validate">Needs validation</span></td></tr>
+        <tr><td>Order tracking</td><td>Current tracking depth, proactive exceptions and reorder paths are not visible publicly.</td><td>Post-purchase</td><td>Medium</td><td>Medium</td><td><span class="badge validate">Needs validation</span></td></tr>
+        <tr><td>Push notifications</td><td>Order, project and promotional push strategy is not public.</td><td>Retention</td><td>Medium</td><td>Medium</td><td><span class="badge validate">Needs validation</span></td></tr>
+        <tr><td>Account / profile</td><td>Storage eligibility depends on a purchase every 18 months; clarity of status and controls needs inspection.</td><td>UX / retention</td><td>Medium</td><td>Medium</td><td><span class="badge confirmed">Policy confirmed</span></td></tr>
+        <tr><td>App performance</td><td>298.8 MB download and frequent generic performance releases are confirmed; production metrics are not.</td><td>Performance</td><td>High</td><td>High</td><td><span class="badge likely">Risk confirmed, impact unknown</span></td></tr>
+        <tr><td>iPhone compatibility</td><td>App supports iOS 17+ and a broad device list. Layout quality across screen sizes requires device testing.</td><td>Compatibility</td><td>Medium</td><td>Medium</td><td><span class="badge validate">Needs direct test</span></td></tr>
+        <tr><td>iOS compatibility</td><td>Stable iOS 26.5.1 is current; iOS 27 beta was released June 8, 2026. Production acceptance and beta readiness should remain separate.</td><td>Platform readiness</td><td>High</td><td>High</td><td><span class="badge confirmed">Confirmed</span></td></tr>
+        <tr><td>Personalisation</td><td>App Store privacy disclosure includes product personalisation; actual mobile relevance and controls are unknown.</td><td>Data / product</td><td>Medium</td><td>High</td><td><span class="badge validate">Needs validation</span></td></tr>
+        <tr><td>Analytics / monitoring</td><td>Privacy disclosure lists crash and performance data. Coverage of funnel-level RUM cannot be confirmed publicly.</td><td>Observability</td><td>Low</td><td>High</td><td><span class="badge validate">Needs internal audit</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="issues">
+  <div class="section-head"><div class="section-no">5</div><div><h2>Key Issue Blocks</h2></div></div>
+  <p class="section-intro">Each block states what matters, the evidence level and the direct validation needed. None of the technical root causes below should be treated as facts until code, telemetry or profiling confirms them.</p>
+
+  <div class="issue"><div class="issue-head"><h3>Mobile journey friction</h3><span class="badge p1">P1</span></div><div class="issue-body"><p><strong>Problem:</strong> Users may arrive with a product, occasion, recent photos, promotion or unfinished project in mind, while the catalogue presents many possible starts.</p><p><strong>Why it matters:</strong> Excess decisions before creation suppress project starts and make promotions compete with intent.</p><div class="issue-meta"><div><b>User impact</b>Slower first action</div><div><b>Business impact</b>Lower project starts</div><div><b>Evidence</b><span class="badge likely">Likely</span></div><div><b>Validation</b>First-click study and funnel</div></div></div></div>
+  <div class="issue"><div class="issue-head"><h3>Product discovery complexity</h3><span class="badge p2">P2</span></div><div class="issue-body"><p><strong>Problem:</strong> A wide catalogue is difficult to scan by category alone on iPhone.</p><p><strong>Why it matters:</strong> Occasion, recipient, budget, required photo count and delivery deadline are stronger mobile decision shortcuts.</p><div class="issue-meta"><div><b>User impact</b>Choice overload</div><div><b>Business impact</b>Missed PDP views</div><div><b>Evidence</b><span class="badge likely">Likely</span></div><div><b>Validation</b>Tree test and search logs</div></div></div></div>
+  <div class="issue"><div class="issue-head"><h3>Photos permission and upload friction</h3><span class="badge p1">P1</span></div><div class="issue-body"><p><strong>Problem:</strong> Limited access, iCloud-only assets, large libraries, mixed formats, backgrounding and poor networks create many failure states.</p><p><strong>Why it matters:</strong> Upload is the gateway to almost every personalised product.</p><div class="issue-meta"><div><b>User impact</b>Missing photos or restarts</div><div><b>Business impact</b>Funnel-entry loss</div><div><b>Evidence</b><span class="badge validate">Needs direct test</span></div><div><b>Validation</b>Format/network/device matrix</div></div></div></div>
+  <div class="issue"><div class="issue-head"><h3>Heavy image and media handling</h3><span class="badge p1">P1</span></div><div class="issue-body"><p><strong>Problem:</strong> Thumbnail decoding, full-resolution assets, caching, upload transforms and preview rendering can compete for memory, CPU, network and battery.</p><p><strong>Why it matters:</strong> Media inefficiency appears to users as jank, heat, freezes or unexplained termination.</p><div class="issue-meta"><div><b>User impact</b>Slow and unstable flows</div><div><b>Business impact</b>Abandonment and reviews</div><div><b>Evidence</b><span class="badge likely">Inherent risk</span></div><div><b>Validation</b>Instruments and MetricKit</div></div></div></div>
+  <div class="issue"><div class="issue-head"><h3>Customisation and editor performance</h3><span class="badge p1">P1</span></div><div class="issue-body"><p><strong>Problem:</strong> Complex books and products require responsive gestures, clear state, autosave and error-free text/layout controls.</p><p><strong>Why it matters:</strong> The editor contains the highest invested effort and is a major determinant of high-value order completion.</p><div class="issue-meta"><div><b>User impact</b>Fear of lost work</div><div><b>Business impact</b>Lower editor completion</div><div><b>Evidence</b><span class="badge likely">Historical signal</span></div><div><b>Validation</b>20/50/100-photo projects</div></div></div></div>
+  <div class="issue"><div class="issue-head"><h3>Cart and checkout friction</h3><span class="badge p1">P1</span></div><div class="issue-body"><p><strong>Problem:</strong> Shipping, tax, promotions, product options and payment can change the understood total late in the journey.</p><p><strong>Why it matters:</strong> Surprise or unrecoverable errors at payment waste the entire creation investment.</p><div class="issue-meta"><div><b>User impact</b>Price uncertainty</div><div><b>Business impact</b>Cart abandonment</div><div><b>Evidence</b><span class="badge likely">Likely</span></div><div><b>Validation</b>Checkout task and funnel</div></div></div></div>
+  <div class="issue"><div class="issue-head"><h3>iPhone and iOS compatibility risks</h3><span class="badge p1">P1</span></div><div class="issue-body"><p><strong>Problem:</strong> The app must span iOS 17 through current stable iOS 26.5.1, multiple iPhone sizes and a new iOS 27 beta cycle.</p><p><strong>Why it matters:</strong> Permission, navigation, keyboard, payment and rendering regressions can block core journeys.</p><div class="issue-meta"><div><b>User impact</b>OS-specific failure</div><div><b>Business impact</b>Release risk</div><div><b>Evidence</b><span class="badge confirmed">Platform fact</span></div><div><b>Validation</b>Device/OS regression suite</div></div></div></div>
+  <div class="issue"><div class="issue-head"><h3>Retention and push gaps</h3><span class="badge p2">P2</span></div><div class="issue-body"><p><strong>Problem:</strong> Generic discount pushes are less useful than project, delivery, anniversary and reorder triggers.</p><p><strong>Why it matters:</strong> Photo commerce has natural seasonal and lifecycle recurrence.</p><div class="issue-meta"><div><b>User impact</b>Irrelevant interruptions</div><div><b>Business impact</b>Lower repeat rate</div><div><b>Evidence</b><span class="badge validate">Needs CRM audit</span></div><div><b>Validation</b>Push taxonomy and A/B test</div></div></div></div>
+  <div class="issue"><div class="issue-head"><h3>Weakly surfaced AI and personalisation</h3><span class="badge p2">P2</span></div><div class="issue-body"><p><strong>Problem:</strong> Auto-Fill and Magic Writer are confirmed, but their app placement and adoption are not. Competitors prominently promise auto-created books and fast layouts.</p><p><strong>Why it matters:</strong> The strongest automation should remove blank-page anxiety before the user enters a complex editor.</p><div class="issue-meta"><div><b>User impact</b>Manual effort</div><div><b>Business impact</b>Slower starts</div><div><b>Evidence</b><span class="badge confirmed">Capability confirmed</span></div><div><b>Validation</b>Placement and adoption audit</div></div></div></div>
+  <div class="issue"><div class="issue-head"><h3>Performance monitoring gaps</h3><span class="badge p1">P1</span></div><div class="issue-body"><p><strong>Problem:</strong> Public privacy disclosures confirm performance data collection, not whether it covers each critical funnel step with useful dimensions.</p><p><strong>Why it matters:</strong> Teams need device, OS, network, app version and journey context to prioritise the highest-value fixes.</p><div class="issue-meta"><div><b>User impact</b>Long-lived regressions</div><div><b>Business impact</b>Slow diagnosis</div><div><b>Evidence</b><span class="badge validate">Needs internal audit</span></div><div><b>Validation</b>Event and dashboard review</div></div></div></div>
+  <div class="issue"><div class="issue-head"><h3>Design system inconsistency</h3><span class="badge p2">P2</span></div><div class="issue-body"><p><strong>Problem:</strong> Mature commerce and editor surfaces often accumulate inconsistent loading, errors, CTAs, pricing and sheets.</p><p><strong>Why it matters:</strong> Inconsistency adds cognitive load and multiplies implementation work.</p><div class="issue-meta"><div><b>User impact</b>Unpredictable controls</div><div><b>Business impact</b>Slower delivery</div><div><b>Evidence</b><span class="badge validate">Needs UI inventory</span></div><div><b>Validation</b>Component audit</div></div></div></div>
+  <div class="issue"><div class="issue-head"><h3>Technical scalability risks</h3><span class="badge p2">P2</span></div><div class="issue-body"><p><strong>Problem:</strong> Media, editor, catalogue, promotions, payments, experimentation and third-party SDKs form a complex dependency graph.</p><p><strong>Why it matters:</strong> Poor ownership boundaries make regressions harder to isolate and experiments slower to ship.</p><div class="issue-meta"><div><b>User impact</b>Inconsistent reliability</div><div><b>Business impact</b>Higher change cost</div><div><b>Evidence</b><span class="badge validate">Needs code audit</span></div><div><b>Validation</b>Architecture and SDK review</div></div></div></div>
+</section>
+
+<section id="diagnosis">
+  <div class="section-head"><div class="section-no">6</div><div><h2>Detailed Issue Diagnosis</h2></div></div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Priority</th><th>Issue block</th><th>Issue description</th><th>Evidence</th><th>Likely root cause</th><th>User impact</th><th>Business impact</th><th>Perf.</th><th>Complexity</th><th>Feasibility</th><th>Validation required</th></tr></thead>
+      <tbody>
+        <tr><td><span class="badge p1">P1</span></td><td>Observability baseline</td><td>No public proof of step-level performance and conversion instrumentation.</td><td>Privacy disclosure only</td><td>Fragmented events or dashboards</td><td>Indirect</td><td>Wrong prioritisation</td><td>High</td><td>Medium</td><td><span class="badge feasible">High</span></td><td>Telemetry inventory</td></tr>
+        <tr><td><span class="badge p1">P1</span></td><td>Startup</td><td>Large 298.8 MB app creates launch and update risk; measured launch time unknown.</td><td>App Store metadata</td><td>Eager SDK init, assets, synchronous I/O</td><td>Slow first action</td><td>Session loss</td><td>High</td><td>Medium</td><td><span class="badge feasible">High</span></td><td>Cold/warm traces</td></tr>
+        <tr><td><span class="badge p1">P1</span></td><td>Photo access</td><td>Limited/denied/iCloud states may make photos appear unavailable.</td><td>Core flow + iOS behavior</td><td>Permission requested too early or weak recovery</td><td>Confusion</td><td>Lower project starts</td><td>Medium</td><td>Low</td><td><span class="badge feasible">High</span></td><td>Permission-state matrix</td></tr>
+        <tr><td><span class="badge p1">P1</span></td><td>Large library</td><td>Grid responsiveness with 5K-50K assets is unknown.</td><td>Media-heavy risk</td><td>Oversized thumbnails, poor preheat/cancellation, main-thread work</td><td>Jank / termination</td><td>Upload abandonment</td><td>High</td><td>Medium</td><td><span class="badge feasible">High</span></td><td>Instruments + test libraries</td></tr>
+        <tr><td><span class="badge p1">P1</span></td><td>Upload reliability</td><td>Format, interruption and background completion behavior is unverified.</td><td>No public evidence</td><td>Non-resumable jobs, weak idempotency, format mismatch</td><td>Restart / lost progress</td><td>Lost orders</td><td>High</td><td>High</td><td><span class="badge medium">Medium</span></td><td>HEIF/JPEG/RAW/network tests</td></tr>
+        <tr><td><span class="badge p1">P1</span></td><td>Editor</td><td>Complex project responsiveness and autosave recovery need proof.</td><td>Historical reviews</td><td>Render workload, state coupling, save latency</td><td>Frustration / anxiety</td><td>Lower high-AOV completion</td><td>High</td><td>High</td><td><span class="badge medium">Medium</span></td><td>Long-session profiling</td></tr>
+        <tr><td><span class="badge p1">P1</span></td><td>Preview quality</td><td>Users need fast, trustworthy final output and actionable warnings.</td><td>Published preview step</td><td>Server render latency, weak progressive states</td><td>Low confidence</td><td>Drop-off or reprints</td><td>High</td><td>Medium</td><td><span class="badge feasible">High</span></td><td>Render timing and print QA</td></tr>
+        <tr><td><span class="badge p1">P1</span></td><td>Checkout</td><td>Final-price clarity, Apple Pay, coupon and recovery behavior are unknown.</td><td>Historical review themes</td><td>Serial APIs, promotion complexity, weak state persistence</td><td>Surprise / failure</td><td>Abandonment</td><td>Medium</td><td>Medium</td><td><span class="badge feasible">High</span></td><td>Task test + API traces</td></tr>
+        <tr><td><span class="badge p2">P2</span></td><td>Discovery</td><td>Catalogue may not align to occasion, recipient, budget or deadline.</td><td>Broad public catalogue</td><td>Category-first IA and incomplete product tags</td><td>Slow decision</td><td>Lower PDP entry</td><td>Low</td><td>Medium</td><td><span class="badge feasible">High</span></td><td>Search analytics and tree test</td></tr>
+        <tr><td><span class="badge p2">P2</span></td><td>AI entry</td><td>Confirmed AI value may not be surfaced before manual editing.</td><td>Official AI claims</td><td>Capability separated from mobile entry flow</td><td>More effort</td><td>Lower assisted starts</td><td>Medium</td><td>Low</td><td><span class="badge feasible">High</span></td><td>Placement audit and A/B test</td></tr>
+        <tr><td><span class="badge p2">P2</span></td><td>Retention</td><td>Project and reorder reminders may be less mature than promotions.</td><td>No public visibility</td><td>Limited lifecycle triggers or deep-link state</td><td>Missed value</td><td>Lower repeat rate</td><td>Low</td><td>Medium</td><td><span class="badge medium">Medium</span></td><td>CRM and deep-link audit</td></tr>
+        <tr><td><span class="badge p2">P2</span></td><td>Compatibility</td><td>Stable iOS 26.5.1 plus iOS 27 beta increases regression surface.</td><td>Apple releases</td><td>Custom components, keyboard, Photos and payment changes</td><td>OS-specific defects</td><td>Release risk</td><td>Medium</td><td>Medium</td><td><span class="badge feasible">High</span></td><td>Automated and device QA</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="root-causes">
+  <div class="section-head"><div class="section-no">7</div><div><h2>Root Cause Analysis</h2></div></div>
+  <p class="section-intro">These are investigation categories, not claims about the current codebase.</p>
+  <div class="grid three">
+    <div class="card"><h4>UX and design causes</h4><ul><li>Catalogue-first rather than task-first entry</li><li>Permission education separated from need</li><li>Inconsistent loading, error and recovery patterns</li><li>Late price and promo explanation</li><li>Expert editor controls exposed too early</li></ul></div>
+    <div class="card"><h4>iOS technical causes</h4><ul><li>Main-thread launch or image work</li><li>Incorrect thumbnail target sizes</li><li>Unbounded media concurrency</li><li>Weak state restoration</li><li>Custom controls lagging platform behavior</li></ul></div>
+    <div class="card"><h4>Backend and API causes</h4><ul><li>Serial pricing and shipping calls</li><li>Non-idempotent upload jobs</li><li>Session-bound cart or project state</li><li>Inconsistent timeouts and retry contracts</li><li>Missing endpoint-level traces</li></ul></div>
+    <div class="card"><h4>Image and media pipeline causes</h4><ul><li>Full-resolution decode too early</li><li>Weak memory/disk cache policy</li><li>Format conversion without product-aware thresholds</li><li>No resumable upload protocol</li><li>Preview work repeated after small edits</li></ul></div>
+    <div class="card"><h4>Product strategy causes</h4><ul><li>Promotion volume competing with user intent</li><li>Automation treated as a feature, not the default starting option</li><li>Insufficient ownership of end-to-end completion</li><li>Roadmap not tied to funnel economics</li></ul></div>
+    <div class="card"><h4>Data and personalisation causes</h4><ul><li>Weak event taxonomy</li><li>Limited real-time project context</li><li>Recommendations not constrained by deadline, price and photo readiness</li><li>Privacy controls not designed with the feature</li></ul></div>
+    <div class="card"><h4>Analytics and monitoring causes</h4><ul><li>Technical and product metrics separated</li><li>No journey labels on hangs, crashes or latency</li><li>Missing alert thresholds by version and OS</li><li>Review mining not linked to telemetry clusters</li></ul></div>
+  </div>
+</section>
+
+<section id="solutions">
+  <div class="section-head"><div class="section-no">8</div><div><h2>Proposed Solution Plan</h2></div></div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Issue block</th><th>Proposed fix and operation</th><th>UX</th><th>iOS</th><th>Backend</th><th>Dependencies</th><th>Feasibility</th><th>Impact</th><th>Complexity</th><th>Priority</th><th>Success metric</th></tr></thead>
+      <tbody>
+        <tr><td>Journey friction</td><td>Task-first home: Resume, Print Photos, Create Book, Make Cards, Make a Gift; preserve promotion modules below intent.</td><td>M</td><td>M</td><td>L</td><td>CMS, experiments</td><td><span class="badge feasible">High</span></td><td>High</td><td>M</td><td><span class="badge p1">P1</span></td><td>Time to first action; project starts</td></tr>
+        <tr><td>Discovery</td><td>Add occasion, recipient, budget, photo count and delivery filters using a shared product taxonomy.</td><td>M</td><td>M</td><td>M</td><td>Product tags</td><td><span class="badge feasible">High</span></td><td>Medium</td><td>M</td><td><span class="badge p2">P2</span></td><td>Search success; PDP views</td></tr>
+        <tr><td>Photo permission</td><td>Use the system picker where full-library access is unnecessary; request broader access only at the moment of value with clear limited-access recovery.</td><td>L</td><td>M</td><td>L</td><td>Privacy review</td><td><span class="badge feasible">High</span></td><td>High</td><td>M</td><td><span class="badge p1">P1</span></td><td>Selection completion; permission recovery</td></tr>
+        <tr><td>Upload</td><td>Create a persistent upload queue with per-item state, idempotency keys, retry, resumable chunks where justified, and background <code>URLSession</code>.</td><td>M</td><td>H</td><td>H</td><td>Upload contract</td><td><span class="badge medium">Medium</span></td><td>High</td><td>H</td><td><span class="badge p1">P1</span></td><td>Success and recovery rate</td></tr>
+        <tr><td>Media handling</td><td>Downsample to display size, preheat thumbnails, cancel reused-cell work, cap concurrency and use memory/disk cache budgets.</td><td>L</td><td>H</td><td>M</td><td>CDN variants</td><td><span class="badge feasible">High</span></td><td>High</td><td>M</td><td><span class="badge p1">P1</span></td><td>FPS, peak memory, image latency</td></tr>
+        <tr><td>Editor</td><td>Add guided and advanced modes, explicit autosave state, deterministic undo/redo and incremental rendering; refactor only after profiling identifies boundaries.</td><td>H</td><td>H</td><td>M</td><td>Editor architecture</td><td><span class="badge medium">Medium</span></td><td>High</td><td>H</td><td><span class="badge p1">P1</span></td><td>Completion, hang rate, recovery</td></tr>
+        <tr><td>Preview</td><td>Generate progressive preview, cache by project revision and show blur, crop, safe-area and resolution warnings before cart.</td><td>M</td><td>M</td><td>H</td><td>Render and quality service</td><td><span class="badge medium">Medium</span></td><td>High</td><td>H</td><td><span class="badge p1">P1</span></td><td>Time to first preview; preview-to-cart</td></tr>
+        <tr><td>Cart / checkout</td><td>Persist cart server-side, show estimated total earlier, validate promotions inline, parallelise eligible calls and prioritise Apple Pay if commercially supported.</td><td>M</td><td>M</td><td>H</td><td>Commerce APIs</td><td><span class="badge medium">Medium</span></td><td>High</td><td>H</td><td><span class="badge p1">P1</span></td><td>Cart abandonment; checkout completion</td></tr>
+        <tr><td>Compatibility</td><td>Build an iOS 17-26 regression suite and iOS 27 beta lane covering permissions, keyboard, editor, payment, backgrounding and accessibility.</td><td>L</td><td>M</td><td>L</td><td>Device lab, CI</td><td><span class="badge feasible">High</span></td><td>High</td><td>M</td><td><span class="badge p1">P1</span></td><td>Critical-flow pass rate</td></tr>
+        <tr><td>Retention</td><td>Lifecycle pushes for unfinished projects, upload completion, delivery exceptions, annual products and reorder moments with exact deep links.</td><td>M</td><td>M</td><td>M</td><td>CRM and events</td><td><span class="badge feasible">High</span></td><td>Medium</td><td>M</td><td><span class="badge p2">P2</span></td><td>Open, resume and repeat rate</td></tr>
+        <tr><td>AI / personalisation</td><td>Present "Build a first draft for me" at creation entry; add quality scoring and relevant homepage modules with transparent controls.</td><td>M</td><td>M</td><td>M</td><td>Existing AI, consent</td><td><span class="badge feasible">High</span></td><td>High</td><td>M</td><td><span class="badge p2">P2</span></td><td>Assisted starts; editor completion</td></tr>
+        <tr><td>Monitoring</td><td>Join MetricKit, crash/hang data, API traces and funnel events through shared journey and project identifiers.</td><td>L</td><td>M</td><td>M</td><td>Data governance</td><td><span class="badge feasible">High</span></td><td>High</td><td>M</td><td><span class="badge p1">P1</span></td><td>Coverage, MTTD, MTTR</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="performance">
+  <div class="section-head"><div class="section-no">9</div><div><h2>iOS Performance Improvement Plan</h2></div></div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Item</th><th>Current problem</th><th>Recommended fix</th><th>Expected impact</th><th>Feasibility</th><th>Complexity</th><th>Measurement</th></tr></thead>
+      <tbody>
+        <tr><td>App startup</td><td>Unknown launch cost; large package raises risk.</td><td>Profile pre-main and first-frame path; remove sync I/O and eager work.</td><td>Faster first interaction</td><td>High</td><td>M</td><td>Cold p50/p95; time to interactive</td></tr>
+        <tr><td>Cold start</td><td>Third-party and config work may block launch.</td><td>Defer nonessential SDKs; load remote configuration after usable shell.</td><td>Lower cold-start tail</td><td>High</td><td>M</td><td>MetricKit + signposts</td></tr>
+        <tr><td>Warm start</td><td>State restoration may repeat work.</td><td>Cache stable catalogue/config and restore the last safe route.</td><td>Faster return</td><td>High</td><td>L</td><td>Warm/resume p95</td></tr>
+        <tr><td>Screen load</td><td>Catalogue and imagery may gate content.</td><td>Prioritise critical API calls, cache metadata, use honest skeletons.</td><td>Lower perceived wait</td><td>High</td><td>M</td><td>Route ready p50/p95</td></tr>
+        <tr><td>Image resizing</td><td>Full-size decode wastes memory.</td><td>Downsample with Image I/O to exact display/export requirements.</td><td>Lower memory and CPU</td><td>High</td><td>M</td><td>Peak RSS; decode time</td></tr>
+        <tr><td>Local image cache</td><td>Repeated thumbnails cause rework.</td><td>Bound memory cache and versioned disk cache with pressure eviction.</td><td>Smoother repeat views</td><td>High</td><td>M</td><td>Cache hit rate; frame time</td></tr>
+        <tr><td>Remote image cache</td><td>Oversized product assets increase latency.</td><td>Request CDN variants by pixel size; validate cache headers.</td><td>Lower network and decode cost</td><td>High</td><td>M</td><td>Bytes/image; CDN hit rate</td></tr>
+        <tr><td>Progressive loading</td><td>High-quality assets may delay useful UI.</td><td>Show low-resolution preview then replace without layout shift.</td><td>Faster visual response</td><td>High</td><td>M</td><td>Time to first image</td></tr>
+        <tr><td>Photo library access</td><td>Large and iCloud libraries have variable latency.</td><td>Use system picker where possible; preheat visible assets; handle cloud progress.</td><td>Faster, clearer selection</td><td>High</td><td>M</td><td>Grid ready; scroll FPS</td></tr>
+        <tr><td>Upload compression</td><td>One-size conversion may hurt speed or print quality.</td><td>Use product-aware dimensions and quality thresholds; avoid needless re-encoding.</td><td>Less data with protected quality</td><td>Medium</td><td>H</td><td>Bytes, duration, print QA</td></tr>
+        <tr><td>Upload retry</td><td>Transient failures may restart work.</td><td>Classify retryable errors, exponential backoff, item-level retry and idempotency.</td><td>Higher completion</td><td>High</td><td>M</td><td>Recovery rate</td></tr>
+        <tr><td>Background upload</td><td>Backgrounding can interrupt long jobs.</td><td>Use background <code>URLSession</code>, persist queue metadata and reconcile on launch.</td><td>Less abandonment</td><td>Medium</td><td>H</td><td>Background completion</td></tr>
+        <tr><td>Editor rendering</td><td>Complex projects can overload main thread.</td><td>Profile first; render visible content incrementally and move decode/layout work off main.</td><td>Responsive gestures</td><td>Medium</td><td>H</td><td>Hang rate; p95 frame time</td></tr>
+        <tr><td>Preview generation</td><td>Full preview may block confidence.</td><td>Generate first useful page/product view early and cache by revision.</td><td>Earlier confidence</td><td>Medium</td><td>H</td><td>Time to first/full preview</td></tr>
+        <tr><td>Memory</td><td>Image-rich flows can exceed device budgets.</td><td>Set per-flow budgets, cap concurrency, release off-screen assets, respond to pressure.</td><td>Fewer jetsam exits</td><td>High</td><td>M</td><td>Peak RSS; memory exits</td></tr>
+        <tr><td>Crash reduction</td><td>Current top signatures are unknown.</td><td>Cluster by journey, app version and OS; fix top user-impact weighted signatures.</td><td>Higher stability</td><td>High</td><td>M</td><td>Crash-free users/sessions</td></tr>
+        <tr><td>Freeze reduction</td><td>Hangs may not be visible as crashes.</td><td>Use MetricKit hang diagnostics and signposts around media/editor/checkout.</td><td>More responsive sessions</td><td>High</td><td>M</td><td>Hang seconds / session</td></tr>
+        <tr><td>Battery</td><td>Decode, upload and repeated render can consume energy.</td><td>Batch work, stop invisible work, avoid polling and duplicate transforms.</td><td>Lower heat and drain</td><td>Medium</td><td>M</td><td>Energy Log; user reports</td></tr>
+        <tr><td>SDK audit</td><td>App size and launch can grow through SDK accumulation.</td><td>Inventory purpose, size, startup work, privacy and duplicate capability.</td><td>Smaller and simpler app</td><td>High</td><td>M</td><td>Binary map; launch waterfall</td></tr>
+        <tr><td>Network requests</td><td>Duplicate or serial requests extend wait.</td><td>Coalesce, cache, cancel stale calls and parallelise independent commerce calls.</td><td>Faster routes and checkout</td><td>High</td><td>M</td><td>Calls/route; critical path</td></tr>
+        <tr><td>API latency</td><td>Backend delay may be hidden in app totals.</td><td>Distributed trace IDs and endpoint p50/p95/p99 by operation.</td><td>Faster diagnosis</td><td>High</td><td>M</td><td>Endpoint SLOs</td></tr>
+        <tr><td>Checkout performance</td><td>Pricing, promo, shipping and payment may serialize.</td><td>Precompute eligible estimates and execute independent calls concurrently.</td><td>Higher completion</td><td>Medium</td><td>H</td><td>Checkout p95; conversion</td></tr>
+        <tr><td>Real-user monitoring</td><td>Step-level coverage unknown.</td><td>Unified RUM by device, OS, network, app version and funnel stage.</td><td>Evidence-led roadmap</td><td>High</td><td>M</td><td>Coverage; MTTD; MTTR</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="ux">
+  <div class="section-head"><div class="section-no">10</div><div><h2>iOS UX Improvement Plan</h2></div></div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>UX area</th><th>Recommended improvement</th><th>Expected result</th><th>Priority</th><th>Evidence</th></tr></thead>
+      <tbody>
+        <tr><td>Onboarding</td><td>Ask intent only when it changes the first screen; allow skip and show value before account creation.</td><td>Faster first meaningful action</td><td>P2</td><td>Needs validation</td></tr>
+        <tr><td>Permission timing</td><td>Use the picker without broad access where possible; request expansion in context.</td><td>Higher trust and completion</td><td>P1</td><td>Apple best practice</td></tr>
+        <tr><td>Navigation</td><td>Keep creation, projects, cart and account consistently reachable.</td><td>Better orientation</td><td>P1</td><td>Needs audit</td></tr>
+        <tr><td>Category hierarchy</td><td>Group by task, occasion, recipient, budget and deadline.</td><td>Reduced choice overload</td><td>P2</td><td>Likely opportunity</td></tr>
+        <tr><td>Search / filter</td><td>Support synonyms, no-result recovery and delivery-aware filters.</td><td>Higher search success</td><td>P2</td><td>Needs validation</td></tr>
+        <tr><td>Product cards</td><td>Show starting price, photo need, delivery estimate and promo eligibility.</td><td>Better pre-creation decisions</td><td>P1</td><td>Likely opportunity</td></tr>
+        <tr><td>Path to creation</td><td>Offer Resume, Start from recent photos and Build a draft for me.</td><td>More project starts</td><td>P1</td><td>AI capability confirmed</td></tr>
+        <tr><td>Photo selection</td><td>Date/event groups, selected count, screenshot exclusion option and quality cues.</td><td>Faster useful selection</td><td>P1</td><td>Needs direct test</td></tr>
+        <tr><td>Upload states</td><td>Persistent queue with item counts, background status, pause/retry and failed-item reasons.</td><td>Higher upload trust</td><td>P1</td><td>Best practice</td></tr>
+        <tr><td>Editor guidance</td><td>Guided defaults first; reveal advanced controls progressively.</td><td>Lower cognitive load</td><td>P1</td><td>Historical signal</td></tr>
+        <tr><td>Autosave</td><td>Show Saving, Saved and Offline with recoverable local project state.</td><td>Confidence to continue</td><td>P1</td><td>Needs direct test</td></tr>
+        <tr><td>Preview</td><td>Zoomable output, print boundary, low-resolution, blur and face-crop warnings.</td><td>Higher purchase confidence</td><td>P1</td><td>Likely opportunity</td></tr>
+        <tr><td>Error states</td><td>Explain what happened, preserve work and offer one primary recovery action.</td><td>Lower abandonment</td><td>P1</td><td>Apple HIG alignment</td></tr>
+        <tr><td>Cart / checkout</td><td>Expose estimated total earlier; validate promos inline; prioritise express payment.</td><td>Lower surprise and time</td><td>P1</td><td>Historical review theme</td></tr>
+        <tr><td>Order tracking</td><td>Show status, exceptions, support, reorder and exact delivery context.</td><td>Higher post-purchase trust</td><td>P2</td><td>Needs validation</td></tr>
+        <tr><td>Accessibility / HIG</td><td>VoiceOver, Dynamic Type, contrast, Reduce Motion, focus order, 44pt targets, native sheets and clear feedback.</td><td>Inclusive, native-feeling app</td><td>P1</td><td>App Store support not declared</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="compatibility">
+  <div class="section-head"><div class="section-no">11</div><div><h2>iOS Platform Readiness and Compatibility</h2></div></div>
+  <div class="callout warn"><strong>Date clarification:</strong> As of June 12, 2026, iOS 26.5.1 is the current stable release. Apple released the first iOS 27 beta on June 8, 2026. Production acceptance should target stable iOS 26.5.1, while a separate readiness lane tests iOS 27 beta without making beta behavior a launch dependency.</div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Area</th><th>Opportunity / requirement</th><th>Status</th><th>Validation</th></tr></thead>
+      <tbody>
+        <tr><td>Stable OS compatibility</td><td>Full critical-flow pass on iOS 26.5.1: launch, auth, Photos, upload, editor, preview, cart, payment, push and tracking.</td><td><span class="badge p1">P1</span></td><td>Direct device testing</td></tr>
+        <tr><td>Submission toolchain</td><td>Apple requires uploads since April 28, 2026 to use Xcode 26 or later and the relevant 26 SDK.</td><td><span class="badge confirmed">Confirmed</span></td><td>Build pipeline audit</td></tr>
+        <tr><td>iOS 27 beta</td><td>Run smoke and visual regression tests; log Apple beta defects separately from app defects.</td><td><span class="badge p2">Readiness</span></td><td>Beta devices / simulators</td></tr>
+        <tr><td>Liquid Glass and system materials</td><td>Audit custom navigation, tab bars, sheets, editor overlays and controls for legibility, hierarchy and motion. Prefer current system components where they preserve the Shutterfly brand and improve platform consistency.</td><td><span class="badge p2">P2</span></td><td>Design-system and accessibility review</td></tr>
+        <tr><td>Screen sizes</td><td>Test small, standard and Max/Air layouts, landscape editor states and keyboard avoidance.</td><td><span class="badge validate">Needs test</span></td><td>Snapshot + manual QA</td></tr>
+        <tr><td>Photos picker</td><td>Prefer privacy-preserving system selection; support limited access, iCloud fetch, Live Photos and mixed formats.</td><td><span class="badge p1">P1</span></td><td>Permission matrix</td></tr>
+        <tr><td>Privacy / tracking</td><td>Ensure ATT purpose, photo use, personalisation and marketing choices are understandable and data-minimised.</td><td><span class="badge p1">P1</span></td><td>Privacy review</td></tr>
+        <tr><td>Widgets / App Intents</td><td>Consider Resume Project, Track Order and Start Prints only after core deep-link state is reliable.</td><td><span class="badge p3">P3</span></td><td>POC after Phase 2</td></tr>
+        <tr><td>Foundation Models</td><td>Prototype private, on-device caption and copy assistance with explicit availability checks, editable output and a non-AI fallback. Do not make core creation dependent on Apple Intelligence eligibility.</td><td><span class="badge p3">Selective</span></td><td>Supported-device, region and quality evaluation</td></tr>
+        <tr><td>Live Activities</td><td>Use only for time-sensitive production/delivery states where update frequency and user value justify it.</td><td><span class="badge p3">Selective</span></td><td>Product validation</td></tr>
+        <tr><td>Push experience</td><td>Preserve destination through authentication and support granular preference categories.</td><td><span class="badge p2">P2</span></td><td>Deep-link suite</td></tr>
+        <tr><td>Accessibility</td><td>Declare supported accessibility features only after verified VoiceOver, Dynamic Type, contrast and motion testing.</td><td><span class="badge p1">P1</span></td><td>Accessibility audit</td></tr>
+        <tr><td>Performance profiling</td><td>Profile stable and beta OS separately on older supported and current devices.</td><td><span class="badge p1">P1</span></td><td>Instruments + MetricKit</td></tr>
+        <tr><td>Backward compatibility</td><td>Maintain a representative iOS 17/18/26 matrix; avoid latest-OS-only core functionality.</td><td><span class="badge p1">P1</span></td><td>CI and device lab</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="ai">
+  <div class="section-head"><div class="section-no">12</div><div><h2>AI and Personalisation Opportunity Plan</h2></div></div>
+  <p class="section-intro">AI should reduce effort and prevent mistakes, not hide irreversible decisions. Every POC retains preview, edit and opt-out control.</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Idea</th><th>Use case</th><th>User benefit</th><th>Business benefit</th><th>Data required</th><th>Feasibility</th><th>Impact</th><th>POC</th></tr></thead>
+      <tbody>
+        <tr><td>Photo quality detection</td><td>Flag blur, low resolution, darkness and risky crop.</td><td>Avoid disappointing prints</td><td>Lower reprints/support</td><td>Pixels, product thresholds</td><td>High</td><td>High</td><td>V1</td></tr>
+        <tr><td>Smart photo grouping</td><td>Cluster by time, location and visual similarity.</td><td>Faster selection</td><td>More project starts</td><td>Metadata, on-device features</td><td>Medium</td><td>High</td><td>V1</td></tr>
+        <tr><td>Auto-layout books</td><td>Create a complete editable first draft.</td><td>No blank-page start</td><td>Higher editor completion</td><td>Selected photos, layout rules</td><td>High, existing capability</td><td>High</td><td>V1</td></tr>
+        <tr><td>Occasion templates</td><td>Recommend designs for travel, baby, graduation, wedding and holidays.</td><td>Less browsing</td><td>Higher relevance</td><td>Intent and catalogue tags</td><td>High</td><td>High</td><td>V1</td></tr>
+        <tr><td>Personalised homepage</td><td>Resume projects, recent photo moments and relevant seasonal tasks.</td><td>Faster return journey</td><td>Repeat engagement</td><td>Projects, orders, consent</td><td>Medium</td><td>High</td><td>V2</td></tr>
+        <tr><td>Smart gifting</td><td>Suggest product by recipient, deadline, budget and photo availability.</td><td>Better decisions</td><td>Higher AOV</td><td>Intent, product graph</td><td>Medium</td><td>Medium</td><td>V2</td></tr>
+        <tr><td>Predictive reorder</td><td>Annual cards, calendars, books and repeat prints.</td><td>Timely convenience</td><td>Higher repeat rate</td><td>Order history, season</td><td>High</td><td>Medium</td><td>V2</td></tr>
+        <tr><td>On-device caption assistance</td><td>Use Apple Foundation Models where available to suggest short, editable page captions; retain Magic Writer or manual entry as fallback.</td><td>Private, responsive drafting</td><td>More completed captions and books</td><td>Page context, consent, availability</td><td>Medium</td><td>Medium</td><td>V2</td></tr>
+        <tr><td>AI design assistant</td><td>Natural-language layout, style and caption adjustments.</td><td>Less manual editing</td><td>Differentiation</td><td>Project state, design constraints</td><td>Medium</td><td>High</td><td>V3</td></tr>
+        <tr><td>Smart cart upsells</td><td>Recommend only relevant companion products using the same photo set.</td><td>Useful add-ons</td><td>Higher AOV</td><td>Cart, product compatibility</td><td>High</td><td>Medium</td><td>V2</td></tr>
+        <tr><td>Personalised promotions</td><td>Apply relevant eligible offer rather than forcing code hunting.</td><td>Less coupon friction</td><td>Efficient discounting</td><td>Eligibility, intent, consent</td><td>Medium</td><td>High</td><td>V2</td></tr>
+        <tr><td>Push personalisation</td><td>Project, order, occasion and memory reminders.</td><td>More useful alerts</td><td>Resume and repeat lift</td><td>Events, preferences</td><td>High</td><td>Medium</td><td>V1</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="matrix">
+  <div class="section-head"><div class="section-no">13</div><div><h2>Feasibility vs Impact Matrix</h2></div></div>
+  <div class="matrix">
+    <div class="quadrant a"><h4>A. Quick Wins</h4><ul><li>Journey and performance telemetry baseline</li><li>Contextual Photos permission education</li><li>Actionable loading and error states</li><li>Autosave status visibility</li><li>AI first-draft entry point</li><li>Inline promo eligibility messaging</li><li>Critical accessibility fixes</li></ul></div>
+    <div class="quadrant b"><h4>B. High-Impact Strategic Improvements</h4><ul><li>Persistent resumable upload queue</li><li>Media pipeline and large-library optimisation</li><li>Progressive preview with quality warnings</li><li>Server-persisted cart and faster checkout</li><li>Guided editor mode</li><li>Task-first personalised homepage</li></ul></div>
+    <div class="quadrant c"><h4>C. Long-Term Platform Improvements</h4><ul><li>Editor architecture refactor based on profiling</li><li>Unified product taxonomy and recommendation platform</li><li>Cross-service tracing and experimentation platform</li><li>On-device photo intelligence at scale</li><li>Design system consolidation</li><li>iOS 27 production adoption after stable release</li></ul></div>
+    <div class="quadrant d"><h4>D. Lower-Priority Improvements</h4><ul><li>Live Activities without a time-critical use case</li><li>Decorative platform effects before accessibility</li><li>3D preview before 2D fidelity is proven</li><li>Broad contact/calendar access for gifting</li><li>Subscription exploration before core completion improves</li></ul></div>
+  </div>
+</section>
+
+<section id="roadmap">
+  <div class="section-head"><div class="section-no">14</div><div><h2>Implementation Roadmap</h2></div></div>
+  <div class="timeline">
+    <div class="phase"><div class="time">Phase 1 | 0-4 weeks</div><h3>Performance and UX baseline</h3><ul><li>Instrument launch, hangs, media, editor and checkout</li><li>iOS 26.5.1 critical-flow QA</li><li>Permission, error and autosave-state improvements</li><li>Startup and SDK audit</li><li>AI-entry prototype</li></ul><p><strong>Owners:</strong> iOS, QA, Analytics, UX</p><p><strong>Metrics:</strong> Baselines, pass rate, MTTD</p><p><strong>Dependencies:</strong> Telemetry access, device lab</p></div>
+    <div class="phase"><div class="time">Phase 2 | 4-8 weeks</div><h3>Journey, upload and checkout</h3><ul><li>Task-first home experiment</li><li>Large-library optimisation</li><li>Persistent upload queue POC</li><li>Cart persistence and promo clarity</li><li>Express payment validation</li></ul><p><strong>Owners:</strong> Product, iOS, Backend, Commerce</p><p><strong>Metrics:</strong> Upload success, cart abandonment</p><p><strong>Dependencies:</strong> Upload and commerce APIs</p></div>
+    <div class="phase"><div class="time">Phase 3 | 8-12 weeks</div><h3>Editor, preview and personalisation</h3><ul><li>Guided editor experiment</li><li>Progressive preview and quality gate</li><li>Personalised resume/occasion modules</li><li>Lifecycle push triggers</li><li>Liquid Glass/custom-component audit</li><li>iOS 27 beta regression lane</li></ul><p><strong>Owners:</strong> UX, iOS, Media, Data, CRM</p><p><strong>Metrics:</strong> Editor and preview completion</p><p><strong>Dependencies:</strong> Project state, quality service</p></div>
+    <div class="phase"><div class="time">Phase 4 | 12+ weeks</div><h3>AI-assisted creation at scale</h3><ul><li>Best-photo and event grouping</li><li>Design assistant</li><li>Recommendation and experimentation platform</li><li>Architecture refactor where telemetry supports it</li><li>Broader accessibility certification</li></ul><p><strong>Owners:</strong> Platform, ML, Product, Design</p><p><strong>Metrics:</strong> Assisted-order share, repeat rate</p><p><strong>Dependencies:</strong> Consent, ML evaluation, platform capacity</p></div>
+  </div>
+</section>
+
+<section id="metrics">
+  <div class="section-head"><div class="section-no">15</div><div><h2>Success Metrics</h2></div></div>
+  <p class="section-intro">Targets should be set after a two-week representative baseline. POC decisions use statistically credible relative improvement, not invented absolute promises.</p>
+  <div class="kpis">
+    <div class="kpi"><b>App startup time</b><span>First frame and time to interactive, p50/p95</span></div>
+    <div class="kpi"><b>Cold start</b><span>By device and OS cohort</span></div>
+    <div class="kpi"><b>Warm start</b><span>Foreground/resume p50/p95</span></div>
+    <div class="kpi"><b>Screen load time</b><span>Home, category, PDP, project, cart</span></div>
+    <div class="kpi"><b>Crash-free sessions</b><span>Increase; journey-weighted review</span></div>
+    <div class="kpi"><b>App freeze rate</b><span>Hang seconds and sessions affected</span></div>
+    <div class="kpi"><b>Memory warning / exit</b><span>Reduce by media flow</span></div>
+    <div class="kpi"><b>Photos permission completion</b><span>Selection success by permission path</span></div>
+    <div class="kpi"><b>Upload success</b><span>By format, count, network and background state</span></div>
+    <div class="kpi"><b>Upload completion time</b><span>20/50/100 photos, p50/p95</span></div>
+    <div class="kpi"><b>Editor completion</b><span>Project entry to preview</span></div>
+    <div class="kpi"><b>Preview completion</b><span>Preview opened and quality issues resolved</span></div>
+    <div class="kpi"><b>Add-to-cart rate</b><span>By product and assisted/manual path</span></div>
+    <div class="kpi"><b>Cart abandonment</b><span>Reduce by failure and price reason</span></div>
+    <div class="kpi"><b>Checkout completion</b><span>By payment method and latency cohort</span></div>
+    <div class="kpi"><b>Order completion</b><span>Project start to successful order</span></div>
+    <div class="kpi"><b>Push open rate</b><span>Lifecycle versus promotional</span></div>
+    <div class="kpi"><b>Repeat purchase</b><span>30/90/365-day cohorts</span></div>
+    <div class="kpi"><b>Average order value</b><span>Guardrail against conversion-only gains</span></div>
+    <div class="kpi"><b>Personalisation engagement</b><span>CTR and downstream order lift</span></div>
+    <div class="kpi"><b>App Store reputation</b><span>Rating and complaint taxonomy trend</span></div>
+    <div class="kpi"><b>Support ticket rate</b><span>Upload, editor, promo, checkout per order</span></div>
+  </div>
+</section>
+
+<section id="business">
+  <div class="section-head"><div class="section-no">16</div><div><h2>Expected Business Impact</h2></div></div>
+  <div class="grid three">
+    <div class="card"><h4>Conversion and revenue</h4><p>More successful uploads, completed edits, trustworthy previews and recoverable checkout sessions should increase order completion. The size of lift must be measured through controlled releases.</p></div>
+    <div class="card"><h4>Average order value</h4><p>Relevant, compatible add-ons can improve basket value without adding noise. Guardrails should track conversion, returns and promotion cost.</p></div>
+    <div class="card"><h4>Retention</h4><p>Project resume, annual-product reminders and order-led lifecycle messaging can create more repeat behavior than generic promotions.</p></div>
+    <div class="card"><h4>Engagement and satisfaction</h4><p>Faster creation and visible progress reduce frustration; quality warnings and transparent totals increase confidence.</p></div>
+    <div class="card"><h4>App Store reputation</h4><p>Improved stability and clearer recovery should reduce recurring complaint themes, but rating movement will lag product changes.</p></div>
+    <div class="card"><h4>Engineering efficiency</h4><p>Shared journey telemetry, component standards and explicit API contracts reduce diagnosis time and make experiments easier to evaluate.</p></div>
+    <div class="card"><h4>Competitive position</h4><p>Shutterfly can combine broader catalogue and brand scale with a creation speed closer to AI-first and focused competitors.</p></div>
+    <div class="card"><h4>Brand experience</h4><p>A calm, native, reliable app better matches the emotional and quality expectations attached to physical memories and gifts.</p></div>
+  </div>
+</section>
+
+<section id="risk">
+  <div class="section-head"><div class="section-no">17</div><div><h2>Risk and Validation Plan</h2></div></div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Assumption</th><th>Risk</th><th>Validation method</th><th>Data needed</th><th>Owner</th><th>Decision criteria</th></tr></thead>
+      <tbody>
+        <tr><td>Startup is a material problem</td><td>Optimising a non-bottleneck</td><td>Cold/warm profiling on supported devices</td><td>p50/p95 by device/OS</td><td>iOS Performance</td><td>Prioritise only if tail exceeds agreed budget or predicts drop-off</td></tr>
+        <tr><td>Large libraries cause selection friction</td><td>Wrong media investment</td><td>500/5K/20K/50K photo tests</td><td>Grid ready, FPS, memory, exits</td><td>iOS + QA</td><td>Proceed if scale materially degrades completion or stability</td></tr>
+        <tr><td>HEIF/mixed formats fail</td><td>Fabricated defect claim</td><td>Format matrix on current build</td><td>Per-format selection/upload result</td><td>Media team</td><td>Fix only reproduced failures; monitor all formats regardless</td></tr>
+        <tr><td>Background upload is valuable</td><td>Complexity exceeds user benefit</td><td>Interruption study and prototype</td><td>Batch size, foreground time, abandonment</td><td>Product + iOS</td><td>Build when long jobs or background exits drive measurable loss</td></tr>
+        <tr><td>Editor is the main completion blocker</td><td>Backend or pricing may dominate</td><td>Funnel analytics, session replay, user tests</td><td>Drop-off and hang/error reasons</td><td>Product Analytics</td><td>Invest by attributable lost-order value</td></tr>
+        <tr><td>Price clarity reduces abandonment</td><td>Users may be price-sensitive regardless</td><td>A/B earlier estimate and promo status</td><td>Cart entry, exit, conversion, margin</td><td>Commerce</td><td>Ship if completion improves without unacceptable margin loss</td></tr>
+        <tr><td>AI entry increases starts</td><td>Users distrust automation</td><td>A/B assisted versus manual entry</td><td>Starts, edits, completion, undo rate</td><td>Product + Data</td><td>Ship if completion rises and quality/support guardrails hold</td></tr>
+        <tr><td>Lifecycle push improves retention</td><td>Notification fatigue</td><td>Preference-aware holdout test</td><td>Open, opt-out, resume, order</td><td>CRM</td><td>Positive incremental orders with stable opt-out rate</td></tr>
+        <tr><td>iOS 27 beta exposes regressions</td><td>Chasing beta-only issues</td><td>Separate beta smoke lane</td><td>Reproduction on stable and beta</td><td>QA</td><td>Block only app-owned or likely release-impacting defects</td></tr>
+        <tr><td>Public review themes reflect current app</td><td>Old or unrepresentative evidence</td><td>App Store Connect review export and support mining</td><td>Recent review/ticket taxonomy</td><td>Customer Insights</td><td>Use themes only when recent volume and telemetry agree</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout"><strong>Required test conditions:</strong> current and older supported iPhones; iOS 17, representative iOS 18, stable iOS 26.5.1 and iOS 27 beta; low storage; thermal pressure; Wi-Fi, cellular, packet loss and offline recovery; limited Photos access; iCloud-only assets; 20/50/100-photo editor projects; VoiceOver, Dynamic Type and Reduce Motion; Apple Pay and card checkout where available.</div>
+</section>
+
+<section id="recommendation">
+  <div class="section-head"><div class="section-no">18</div><div><h2>Final Recommendation</h2></div></div>
+  <div class="callout good"><strong>Recommended decision:</strong> Approve a 12-week POC centred on one instrumented end-to-end journey: launch, choose photo book, select photos, create an AI-assisted first draft, edit, preview with quality checks, understand total cost, pay, and receive a deep-linked project/order update.</div>
+  <div class="grid">
+    <div class="card"><h4>Fix first</h4><ul><li>Observability gaps</li><li>Permission and media selection failures</li><li>Lost upload/project state</li><li>Editor hangs and unclear autosave</li><li>Checkout recovery and price clarity</li></ul></div>
+    <div class="card"><h4>Test in the POC</h4><ul><li>Task-first home</li><li>Persistent upload queue</li><li>Guided editor</li><li>Progressive preview</li><li>AI first-draft entry</li><li>Express checkout</li></ul></div>
+    <div class="card"><h4>Measure</h4><ul><li>Startup and route latency</li><li>Upload success/recovery</li><li>Editor and preview completion</li><li>Cart abandonment</li><li>Order completion</li><li>Support and review themes</li></ul></div>
+    <div class="card"><h4>Long-term roadmap</h4><ul><li>Evidence-led editor architecture</li><li>Media and recommendation platform</li><li>Unified design system</li><li>Lifecycle personalisation</li><li>Accessibility maturity</li><li>Stable iOS 27 adoption</li></ul></div>
+  </div>
+  <p><strong>Strategic direction:</strong> Move the iOS experience from "choose a product and manually construct it" toward "start from a meaningful photo moment and receive a trustworthy, editable product draft quickly." Shutterfly already has the catalogue, brand and AI ingredients; the POC should prove that mobile execution can connect them without sacrificing control, privacy or reliability.</p>
+</section>
+
+<section id="sources">
+  <div class="section-head"><div class="section-no">19</div><div><h2>Sources and Evidence Notes</h2></div></div>
+  <div class="source-list">
+    <div class="source"><b>Apple App Store - Shutterfly listing</b><span>Rating, size, compatibility, screenshots, product claims, version history and privacy disclosure.</span><a href="https://apps.apple.com/us/app/shutterfly-prints-cards-gifts/id309465525">Open source</a></div>
+    <div class="source"><b>Apple iTunes Lookup - Shutterfly</b><span>Version 16.10.1, June 10, 2026 release date, 298,763,264 bytes, iOS 17 minimum and current screenshot URLs.</span><a href="https://itunes.apple.com/lookup?id=309465525&amp;country=us">Open source</a></div>
+    <div class="source"><b>Shutterfly - AI photo book guide</b><span>Official confirmation of Auto-Fill, Magic Writer, automatic layouts, captions, preview and edit control. Updated April 13, 2026.</span><a href="https://www.shutterfly.com/ideas/create-a-photo-book-with-ai-in-minutes/">Open source</a></div>
+    <div class="source"><b>Apple Developer - Upcoming Requirements</b><span>Xcode 26 and iOS 26 SDK submission requirement effective April 28, 2026.</span><a href="https://developer.apple.com/news/upcoming-requirements/">Open source</a></div>
+    <div class="source"><b>Apple Developer - Software Releases</b><span>iOS 26.5.1 released June 1, 2026; iOS 27 beta released June 8, 2026.</span><a href="https://developer.apple.com/news/releases/">Open source</a></div>
+    <div class="source"><b>Apple Human Interface Guidelines</b><span>Platform interaction, feedback, accessibility and visual design standards.</span><a href="https://developer.apple.com/design/human-interface-guidelines/">Open source</a></div>
+    <div class="source"><b>Apple Developer - Liquid Glass</b><span>Official technology overview for adopting Apple system materials and current platform visual behavior.</span><a href="https://developer.apple.com/documentation/technologyoverviews/liquid-glass">Open source</a></div>
+    <div class="source"><b>Apple Developer - Foundation Models</b><span>Official framework documentation and WWDC guidance for private on-device language-model features, availability checks and structured generation.</span><a href="https://developer.apple.com/documentation/foundationmodels">Documentation</a> | <a href="https://developer.apple.com/videos/play/wwdc2025/286/">WWDC session</a></div>
+    <div class="source"><b>Apple PhotoKit and system picker guidance</b><span>Privacy-preserving photo selection and limited-library patterns.</span><a href="https://developer.apple.com/documentation/photokit/selecting-photos-and-videos-in-ios">Open source</a></div>
+    <div class="source"><b>Apple MetricKit and Xcode performance guidance</b><span>Production diagnostics and profiling foundation.</span><a href="https://developer.apple.com/documentation/metrickit">MetricKit</a> | <a href="https://developer.apple.com/documentation/xcode/improving-your-app-s-performance">Performance</a></div>
+    <div class="source"><b>Public competitor App Store listings</b><span>Mixbook: on-device AI and Story Mode; Popsa: fast layouts and Apple Pay; FreePrints: simplified recurring print value.</span><a href="https://apps.apple.com/us/app/mixbook-photo-book-creator/id1562974920">Mixbook</a> | <a href="https://apps.apple.com/us/app/popsa-print-your-photos/id936799728">Popsa</a> | <a href="https://apps.apple.com/us/app/freeprints-print-photos/id518158653">FreePrints</a></div>
+    <div class="source"><b>Public review evidence limitation</b><span>The App Store page exposed featured historical reviews. Apple's public recent-review RSS endpoint returned no review entries on June 12, 2026; current review-trend claims therefore remain unverified.</span><a href="https://itunes.apple.com/us/rss/customerreviews/id=309465525/sortBy=mostRecent/json">Review feed</a></div>
+  </div>
+  <div class="callout warn"><strong>Claims requiring direct iPhone or internal validation:</strong> actual startup time; HEIF/RAW upload behavior; limited Photos recovery; large-library performance; background upload; editor technology and responsiveness; autosave recovery; preview latency and fidelity; cart persistence; coupon behavior; Apple Pay availability; checkout latency; push deep links; production crash/hang rates; analytics coverage; current review sentiment; and all forecast conversion or revenue lifts.</div>
+</section>
+
+<footer>
+  <p><strong>Evidence policy:</strong> "Confirmed" means supported by a current public first-party source or a platform requirement. "Likely" means a reasonable product or technical risk supported by the nature of the journey or historical public signal. "Needs validation" means no public evidence is sufficient; direct testing, internal data, source review or controlled experimentation is required.</p>
+  <p>Prepared for Shutterfly product, iOS engineering, UX/design and leadership review. Standalone HTML; no external CSS or JavaScript dependencies.</p>
+</footer>
+
+</main>
+</body>
+</html>

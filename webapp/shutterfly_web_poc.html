@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<meta name="description" content="Shutterfly web application proof of concept report covering product discovery, creation, performance, checkout, accessibility, SEO, AI personalisation, roadmap, and success metrics.">
+<title>Shutterfly Web Application Experience Acceleration POC</title>
+<style>
+  :root{
+    --navy:#102a43;--ink:#243b53;--muted:#627d98;--line:#d9e2ec;
+    --soft:#f4f7fa;--soft2:#eaf2f8;--white:#fff;--blue:#176b87;
+    --teal:#087f8c;--green:#20744a;--amber:#9b5b00;--red:#b42318;
+    --purple:#6941c6;--shadow:0 10px 30px rgba(16,42,67,.08);
+    --radius:14px;--small:9px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--white);color:var(--ink);font:14px/1.62 -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+  a{color:var(--blue);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .page{max-width:1180px;margin:auto;padding:36px 28px 80px}
+  .hero{background:linear-gradient(135deg,#102a43 0%,#176b87 72%,#087f8c 100%);color:#fff;border-radius:22px;padding:48px;box-shadow:var(--shadow)}
+  .eyebrow{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#9fe2e8}
+  .hero h1{max-width:900px;margin:10px 0 14px;font-size:42px;line-height:1.12;letter-spacing:-.025em}
+  .hero .lead{max-width:860px;margin:0 0 24px;font-size:18px;color:#e6f3f6}
+  .meta{display:flex;flex-wrap:wrap;gap:9px}
+  .meta span{padding:6px 10px;border:1px solid rgba(255,255,255,.25);border-radius:999px;background:rgba(255,255,255,.08);font-size:12px}
+  .toc{margin:22px 0 42px;padding:20px 22px;background:var(--soft);border:1px solid var(--line);border-radius:var(--radius)}
+  .toc strong{display:block;margin-bottom:10px;color:var(--navy)}
+  .toc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px 18px}
+  .toc a{font-size:12.5px}
+  section{margin-top:52px;scroll-margin-top:20px}
+  .section-head{display:flex;gap:14px;align-items:flex-start;margin-bottom:18px;padding-bottom:12px;border-bottom:2px solid var(--soft2)}
+  .section-no{min-width:34px;height:34px;display:grid;place-items:center;border-radius:50%;background:var(--soft2);color:var(--blue);font-weight:800}
+  h2{margin:0;color:var(--navy);font-size:25px;line-height:1.25}
+  h3{margin:24px 0 10px;color:var(--navy);font-size:17px}
+  h4{margin:0 0 7px;color:var(--navy);font-size:14px}
+  p{margin-top:0}
+  .section-intro{margin:0 0 18px;color:var(--muted);max-width:980px}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  .grid.two{grid-template-columns:repeat(2,1fr)}
+  .grid.three{grid-template-columns:repeat(3,1fr)}
+  .card{padding:18px;background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 4px 14px rgba(16,42,67,.04)}
+  .card p{margin:0;color:var(--muted)}
+  .card ul{margin:7px 0 0;padding-left:18px;color:var(--muted)}
+  .card li{margin:4px 0}
+  .metric{background:var(--soft);border-top:4px solid var(--teal)}
+  .metric .value{font-size:24px;font-weight:800;color:var(--navy);line-height:1.15}
+  .metric .label{margin-top:5px;color:var(--muted);font-size:12px}
+  .callout{margin:16px 0;padding:14px 16px;border-left:4px solid var(--blue);border-radius:var(--small);background:var(--soft2)}
+  .callout.warn{border-color:var(--amber);background:#fff8e8}
+  .callout.good{border-color:var(--green);background:#edf8f1}
+  .callout.risk{border-color:var(--red);background:#fff1f0}
+  .callout strong{color:var(--navy)}
+  .table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 4px 14px rgba(16,42,67,.03)}
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th{padding:10px 11px;text-align:left;background:var(--soft);color:var(--navy);font-size:10px;letter-spacing:.055em;text-transform:uppercase;white-space:nowrap}
+  td{padding:10px 11px;vertical-align:top;border-top:1px solid var(--line);color:#486581}
+  td:first-child{color:var(--ink);font-weight:650}
+  tr:hover td{background:#fbfdff}
+  code{font-size:11.5px;color:#174f62;background:#edf5f7;padding:1px 4px;border-radius:4px}
+  .badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:999px;font-size:10px;font-weight:800;white-space:nowrap}
+  .p1,.high{color:var(--red);background:#feeceb}
+  .p2,.medium{color:var(--amber);background:#fff3d6}
+  .p3,.low{color:var(--blue);background:#e9f2f8}
+  .confirmed{color:var(--green);background:#e7f5ec}
+  .likely{color:var(--amber);background:#fff3d6}
+  .validate{color:var(--purple);background:#f0ebff}
+  .feasible{color:var(--teal);background:#e5f6f6}
+  .issue{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;margin:12px 0}
+  .issue-head{display:flex;align-items:center;gap:10px;padding:13px 16px;background:var(--soft)}
+  .issue-head h3{margin:0;flex:1;font-size:15px}
+  .issue-body{padding:14px 16px}
+  .issue-body p{margin:0 0 7px}
+  .issue-meta{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
+  .issue-meta div{padding:9px;background:var(--soft);border-radius:var(--small)}
+  .issue-meta b{display:block;color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:.06em}
+  .matrix{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .quadrant{padding:18px;border:1px solid var(--line);border-radius:var(--radius)}
+  .quadrant ul{margin:8px 0 0;padding-left:18px;color:var(--muted)}
+  .quadrant.a{border-top:4px solid var(--green)}.quadrant.b{border-top:4px solid var(--blue)}
+  .quadrant.c{border-top:4px solid var(--purple)}.quadrant.d{border-top:4px solid var(--muted)}
+  .timeline{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .phase{position:relative;padding:18px;border:1px solid var(--line);border-radius:var(--radius);background:#fff}
+  .phase:before{content:"";position:absolute;top:0;left:0;right:0;height:5px;background:var(--blue);border-radius:var(--radius) var(--radius) 0 0}
+  .phase:nth-child(2):before{background:var(--teal)}.phase:nth-child(3):before{background:var(--purple)}.phase:nth-child(4):before{background:var(--amber)}
+  .phase .time{color:var(--muted);font-size:11px;font-weight:750;text-transform:uppercase}
+  .phase ul{padding-left:17px;color:var(--muted)}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .kpi{padding:13px;background:var(--soft);border-radius:var(--small)}
+  .kpi b{display:block;color:var(--navy)}
+  .kpi span{font-size:11px;color:var(--muted)}
+  .reco{padding:28px;background:linear-gradient(135deg,#102a43,#174f62);border-radius:var(--radius);color:#e6f3f6}
+  .reco h3{margin-top:0;color:#fff;font-size:21px}
+  .reco ol{padding-left:20px}
+  .reco li{margin:8px 0}
+  .source-list{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+  .source{padding:13px;border:1px solid var(--line);border-radius:var(--small);background:#fff}
+  .source b{display:block;color:var(--navy)}
+  .source span{display:block;color:var(--muted);font-size:12px}
+  footer{margin-top:46px;padding-top:20px;border-top:1px solid var(--line);color:var(--muted);font-size:11.5px}
+  @media(max-width:900px){
+    .grid,.timeline,.kpis{grid-template-columns:repeat(2,1fr)}
+    .toc-grid{grid-template-columns:repeat(2,1fr)}
+    .issue-meta{grid-template-columns:repeat(2,1fr)}
+  }
+  @media(max-width:600px){
+    .page{padding:18px 12px 50px}.hero{padding:30px 22px}.hero h1{font-size:31px}
+    .grid,.grid.two,.grid.three,.timeline,.kpis,.matrix,.source-list,.toc-grid{grid-template-columns:1fr}
+    .issue-meta{grid-template-columns:1fr}
+  }
+  @media print{
+    body{font-size:11px}.page{max-width:none;padding:0}.hero{box-shadow:none;border-radius:0}
+    .toc{display:none}section{break-inside:avoid;margin-top:30px}.table-wrap{box-shadow:none}
+    a{color:inherit;text-decoration:none}
+  }
+</style>
+</head>
+<body>
+<main class="page">
+
+<header class="hero">
+  <div class="eyebrow">Final proof of concept report</div>
+  <h1>Shutterfly Web Application Experience Acceleration POC</h1>
+  <p class="lead">A practical product, UX, performance and AI plan to make discovery, photo creation, cart and checkout faster, clearer and more dependable across desktop and mobile web.</p>
+  <div class="meta">
+    <span>Product: Shutterfly</span><span>Platform: Web application</span>
+    <span>Scope: Desktop and mobile web</span>
+    <span>Audience: Product, UX, Engineering, Data, Leadership</span>
+    <span>Prepared: June 12, 2026</span><span>Public pages checked: June 12, 2026</span>
+  </div>
+</header>
+
+<nav class="toc" aria-label="Report contents">
+  <strong>Report contents</strong>
+  <div class="toc-grid">
+    <a href="#executive">1. Executive Summary</a><a href="#verification">2. Verification Summary</a>
+    <a href="#context">3. Product Context</a><a href="#current">4. Current State Analysis</a>
+    <a href="#issues">5. Key Issue Blocks</a><a href="#diagnosis">6. Detailed Issue Diagnosis</a>
+    <a href="#root-causes">7. Root Cause Analysis</a><a href="#solutions">8. Proposed Solution Plan</a>
+    <a href="#performance">9. Web Performance Plan</a><a href="#ux">10. Web UX Plan</a>
+    <a href="#ai">11. AI &amp; Personalisation</a><a href="#matrix">12. Feasibility vs Impact</a>
+    <a href="#roadmap">13. Implementation Roadmap</a><a href="#metrics">14. Success Metrics</a>
+    <a href="#business">15. Expected Business Impact</a><a href="#risk">16. Risk &amp; Validation</a>
+    <a href="#recommendation">17. Final Recommendation</a>
+  </div>
+</nav>
+
+<section id="executive">
+  <div class="section-head"><div class="section-no">1</div><div><h2>Executive Summary</h2></div></div>
+  <p class="section-intro">Shutterfly has a strong brand, an extensive catalogue and a distinctive emotional proposition: helping people turn personal photos into physical products. The web application already supports rich category browsing, ratings, starting prices, filters, projects, photo storage, seasonal merchandising and AI assistance. The opportunity is to reduce the amount of choice, waiting and uncertainty between user intent and a completed order.</p>
+  <div class="grid">
+    <div class="card"><h4>Discovery friction</h4><p>Promotions, seasonal campaigns, brands, categories, sizes, styles and product variants compete for attention. The catalogue is valuable, but new and time-constrained users need a clearer task-led route.</p></div>
+    <div class="card"><h4>Creation risk</h4><p>Uploading, arranging, editing, previewing and saving photos create a long stateful journey. Reliability, progress feedback and recovery matter more as invested effort increases.</p></div>
+    <div class="card"><h4>Performance risk</h4><p>Image-rich merchandising and browser-based editing create inherent LCP, INP, CLS, memory and upload risks. Production severity requires real-user measurement by route, device and project size.</p></div>
+    <div class="card"><h4>AI opportunity</h4><p>Ask Paige and designer-assisted creation are visible publicly. The next step is to make assistance contextual, explainable and outcome-led: choose photos, produce a draft, prevent print-quality mistakes and resume work.</p></div>
+  </div>
+  <div class="callout good"><strong>POC proposition:</strong> Make Shutterfly faster, simpler and more intelligent by combining task-led discovery, reliable creation, transparent pricing and delivery, performance instrumentation, and an AI-assisted first draft that always preserves user control.</div>
+  <h3>What this POC should prove</h3>
+  <div class="grid three">
+    <div class="card"><h4>Faster start</h4><p>Users can find the right product and enter creation with fewer decisions and a clearer understanding of price, effort and delivery.</p></div>
+    <div class="card"><h4>Higher completion</h4><p>Upload, editor, preview, cart and checkout changes improve completion without requiring a full platform rebuild.</p></div>
+    <div class="card"><h4>Measurable value</h4><p>Journey telemetry connects Core Web Vitals and service reliability to project starts, editor completion, conversion and repeat purchase.</p></div>
+  </div>
+</section>
+
+<section id="verification">
+  <div class="section-head"><div class="section-no">2</div><div><h2>Verification Summary</h2></div></div>
+  <p class="section-intro">The public Shutterfly web application was reviewed on June 12, 2026. Public pages confirm visible product and merchandising patterns, but they cannot prove authenticated editor behaviour, internal architecture, production error rates, checkout completion or real-user performance. Those areas remain explicitly labelled for validation.</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Area reviewed</th><th>Confirmed public evidence</th><th>What remains unknown</th><th>Confidence</th></tr></thead>
+      <tbody>
+        <tr><td>Homepage merchandising</td><td>Multiple concurrent offers, promo-detail links, shipping messaging, seasonal hero content, category modules and product-led campaigns are visible.</td><td>Incremental conversion value of each module, banner fatigue and performance cost.</td><td><span class="badge confirmed">Confirmed</span></td></tr>
+        <tr><td>Global navigation</td><td>Broad mega-menu structures cover photo books, cards, gifts, wall art, prints, calendars, wedding, graduation and deals. Projects, Photos, Cart, Search and Ask Paige are present.</td><td>Menu first-click success, search usage, returning-user re-entry time and mobile navigation completion.</td><td><span class="badge confirmed">Confirmed</span></td></tr>
+        <tr><td>Product listing</td><td>Photo-book listings show filters, customer-rating filters, ratings, review counts, favourites and starting prices.</td><td>How quickly users compare total configured price, delivery date, creation effort and product differences.</td><td><span class="badge confirmed">Confirmed</span></td></tr>
+        <tr><td>Product breadth</td><td>Extensive product, occasion, recipient, price-point and format coverage is visible across the public site.</td><td>Whether users can identify the best product without excessive browsing or support.</td><td><span class="badge confirmed">Confirmed</span></td></tr>
+        <tr><td>AI and assistance</td><td>Ask Paige is present in the site header and a free 24-hour photo-book designer service is promoted.</td><td>Capability depth, adoption, hand-off into creation and contribution to conversion.</td><td><span class="badge confirmed">Confirmed</span></td></tr>
+        <tr><td>Delivery communication</td><td>Seasonal shipping deadlines and multiple delivery-speed options are prominently merchandised.</td><td>Accuracy at product, cart and checkout level after configuration and fulfilment load are applied.</td><td><span class="badge likely">Likely risk</span></td></tr>
+        <tr><td>Editor, upload and autosave</td><td>The public journey clearly depends on photo upload and browser-based customisation.</td><td>Upload resilience, autosave, project recovery, large-project performance, error handling and mobile-web editing quality.</td><td><span class="badge validate">Needs validation</span></td></tr>
+        <tr><td>Cart and checkout</td><td>Cart and promotion systems are visible, with detailed promotional terms available publicly.</td><td>Promo success rate, add-to-cart latency, final-price comprehension, payment options and failure recovery.</td><td><span class="badge validate">Needs validation</span></td></tr>
+        <tr><td>Core Web Vitals</td><td>The site is image-rich and interaction-heavy, creating material web-performance exposure.</td><td>Field LCP, INP and CLS by route, browser, connection, viewport and logged-in state.</td><td><span class="badge validate">Needs validation</span></td></tr>
+        <tr><td>Accessibility and SEO</td><td>Skip links, an accessibility statement, semantic headings and descriptive image text are visible on public pages.</td><td>Full WCAG 2.2 AA conformance, editor keyboard use, screen-reader flow, structured data quality and indexation efficiency.</td><td><span class="badge validate">Needs validation</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout warn"><strong>Evidence discipline:</strong> Exact conversion, revenue, traffic, editor-failure and performance figures are intentionally excluded unless an internal analytics baseline confirms them. Targets in this report are POC goals, not claims about current production results.</div>
+</section>
+
+<section id="context">
+  <div class="section-head"><div class="section-no">3</div><div><h2>Product Context</h2></div></div>
+  <div class="grid two">
+    <div class="card"><h4>What the web application does</h4><p>Supports discovery, photo storage, project creation, product customisation, preview, promotions, cart, checkout and post-purchase management across photo books, cards, prints, wall art, calendars and personalised gifts.</p></div>
+    <div class="card"><h4>Primary user intents</h4><p>Create a keepsake, print recent photos, prepare event stationery, buy a personalised gift, resume an unfinished project, reorder a seasonal product or meet an occasion deadline.</p></div>
+    <div class="card"><h4>Target users</h4><p>Families, memory keepers, gift buyers, wedding and event customers, holiday shoppers, repeat purchasers, schools and users managing large personal photo libraries.</p></div>
+    <div class="card"><h4>Commercial model</h4><p>Conversion depends on both commerce and creation. Users do not simply select a finished item; they invest time to produce it. Product confidence, editor reliability and delivery trust are therefore inseparable.</p></div>
+  </div>
+  <h3>Core web journey</h3>
+  <div class="grid">
+    <div class="card metric"><div class="value">1</div><div class="label">Discover by product, occasion, recipient, promotion or search</div></div>
+    <div class="card metric"><div class="value">2</div><div class="label">Select format, style, size, price point and delivery expectation</div></div>
+    <div class="card metric"><div class="value">3</div><div class="label">Upload or select photos and create the personalised product</div></div>
+    <div class="card metric"><div class="value">4</div><div class="label">Preview, resolve quality warnings, cart, pay and track delivery</div></div>
+  </div>
+  <div class="callout"><strong>Web-specific implication:</strong> The experience must work across pointer and touch input, desktop and narrow viewports, current evergreen browsers, variable networks, large image sets, session interruptions and deep links from search, email, social and promotional campaigns.</div>
+</section>
+
+<section id="current">
+  <div class="section-head"><div class="section-no">4</div><div><h2>Current State Analysis</h2></div></div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Area</th><th>Current observation</th><th>Issue type</th><th>User impact</th><th>Business impact</th><th>Evidence</th></tr></thead>
+      <tbody>
+        <tr><td>Homepage</td><td>Multiple promotions, seasonal messages, product campaigns and category modules compete above and below the fold.</td><td>UX / merchandising</td><td>Slower orientation for users with a clear task.</td><td>Potentially lower project-start efficiency.</td><td><span class="badge confirmed">Confirmed</span></td></tr>
+        <tr><td>Navigation</td><td>Mega-menus expose extensive product, size, style, occasion and service choices.</td><td>Information architecture</td><td>High cognitive load, especially on narrow screens.</td><td>Discovery depth may not translate into efficient conversion.</td><td><span class="badge confirmed">Confirmed</span></td></tr>
+        <tr><td>Search</td><td>Search is available with visible popular-query suggestions in the public page structure.</td><td>Discovery</td><td>Useful high-intent route, but semantic relevance is unknown.</td><td>Search conversion and zero-result leakage are unknown.</td><td><span class="badge validate">Needs validation</span></td></tr>
+        <tr><td>Product discovery</td><td>Category, occasion, recipient and price-led paths are available, but the catalogue remains extensive.</td><td>UX / product strategy</td><td>Users may know the occasion but not the best product.</td><td>Missed guided-selling and cross-category opportunity.</td><td><span class="badge confirmed">Confirmed</span></td></tr>
+        <tr><td>Product listing</td><td>Photo-book cards include ratings, review counts, starting prices and favourites; filters include size, theme, cover, orientation and rating.</td><td>Commerce UX</td><td>Strong comparison foundation.</td><td>Supports trust, but total-price and effort clarity still need testing.</td><td><span class="badge confirmed">Confirmed</span></td></tr>
+        <tr><td>Product detail</td><td>Configured price, delivery expectation, upgrade effects and creation effort can vary by product.</td><td>Trust / conversion</td><td>Users may not understand final cost or time commitment early enough.</td><td>Potential pre-editor or cart abandonment.</td><td><span class="badge likely">Likely</span></td></tr>
+        <tr><td>Photo upload</td><td>Photo selection and upload are essential to personalised products.</td><td>Reliability / performance</td><td>Large batches, weak networks, unsupported files and interruption can block creation.</td><td>Upload abandonment directly removes purchase opportunity.</td><td><span class="badge likely">Likely risk</span></td></tr>
+        <tr><td>Customisation editor</td><td>The editor must coordinate photos, layouts, text, previews, saves and product rules in the browser.</td><td>UX / engineering</td><td>Complex controls or slow state updates can create fear of lost work.</td><td>Editor completion is a critical high-value funnel metric.</td><td><span class="badge validate">Needs validation</span></td></tr>
+        <tr><td>Preview and print readiness</td><td>Users need confidence that crop, resolution, text and page coverage will print as expected.</td><td>Quality / trust</td><td>Late warnings create rework or poor outcomes.</td><td>Refund, reprint and support exposure.</td><td><span class="badge likely">Likely risk</span></td></tr>
+        <tr><td>Cart</td><td>Promotion eligibility, shipping thresholds and product configuration can interact in the cart.</td><td>Commerce UX</td><td>Users may not understand the best offer or final savings.</td><td>Cart abandonment and promo-support contacts.</td><td><span class="badge likely">Likely</span></td></tr>
+        <tr><td>Checkout</td><td>Final price, tax, shipping speed, delivery date, account state and payment must be resolved after a long creation journey.</td><td>Conversion / reliability</td><td>Late surprise has a disproportionate trust cost.</td><td>Direct revenue leakage.</td><td><span class="badge validate">Needs validation</span></td></tr>
+        <tr><td>Mobile web</td><td>The catalogue and image-led pages are responsive in intent, but creation complexity is materially harder on small touch screens.</td><td>Responsive UX</td><td>Dense controls, uploads and editor gestures can increase effort.</td><td>Mobile traffic may underperform desktop.</td><td><span class="badge likely">Likely</span></td></tr>
+        <tr><td>Performance</td><td>Large images, campaign modules, third-party tags and editor JavaScript are inherent performance risks.</td><td>Core Web Vitals</td><td>Slow rendering or delayed interaction.</td><td>SEO, conversion and satisfaction risk.</td><td><span class="badge likely">Likely risk</span></td></tr>
+        <tr><td>Accessibility</td><td>Public pages expose positive foundations such as skip links and an accessibility statement.</td><td>Inclusive design</td><td>Full keyboard, focus, contrast, form and editor access remain unknown.</td><td>Audience exclusion, legal and brand risk.</td><td><span class="badge validate">Needs validation</span></td></tr>
+        <tr><td>SEO</td><td>The catalogue creates many indexable product, category, occasion and editorial pages.</td><td>Technical SEO</td><td>Strong discovery potential, with duplicate and performance risks.</td><td>Organic acquisition depends on crawlability, structured data and CWV.</td><td><span class="badge likely">Likely opportunity</span></td></tr>
+        <tr><td>Browser compatibility</td><td>Image upload, drag-and-drop, editing and payments depend on modern browser capabilities.</td><td>Compatibility</td><td>Browser-specific failures can block core tasks.</td><td>Conversion loss hidden inside aggregate analytics.</td><td><span class="badge validate">Needs validation</span></td></tr>
+        <tr><td>Personalisation</td><td>Ask Paige, Projects and Photos are visible; depth of returning-user homepage personalisation is not publicly verifiable.</td><td>AI / retention</td><td>Returning users may still repeat navigation and setup work.</td><td>Missed repeat-order and project-resume value.</td><td><span class="badge validate">Needs validation</span></td></tr>
+        <tr><td>Analytics and monitoring</td><td>Public pages do not reveal route-level RUM, upload telemetry, editor saves, service errors or funnel diagnostics.</td><td>Observability</td><td>Persistent failures may be difficult to isolate.</td><td>Slower prioritisation and regression detection.</td><td><span class="badge validate">Needs internal audit</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="issues">
+  <div class="section-head"><div class="section-no">5</div><div><h2>Key Issue Blocks</h2></div></div>
+  <p class="section-intro">The key issues are ordered by their effect on user progress and commercial value. Technical causes are treated as working theories until telemetry, code inspection and controlled tests confirm them.</p>
+
+  <div class="issue"><div class="issue-head"><h3>Journey and promotion overload</h3><span class="badge p1">P1</span></div><div class="issue-body"><p><strong>Problem:</strong> Multiple deals, seasonal messages, product campaigns and navigation choices can delay the first meaningful action.</p><p><strong>Need:</strong> A task-first hierarchy for Create a Photo Book, Find a Gift, Print Photos, Make Cards and Continue a Project, with promotions supporting rather than replacing orientation.</p><div class="issue-meta"><div><b>User impact</b>Slower first decision</div><div><b>Business impact</b>Lower project-start efficiency</div><div><b>Evidence</b><span class="badge confirmed">Confirmed</span></div><div><b>Validation</b>First-click and module incrementality</div></div></div></div>
+
+  <div class="issue"><div class="issue-head"><h3>Product discovery complexity</h3><span class="badge p1">P1</span></div><div class="issue-body"><p><strong>Problem:</strong> Category breadth is strong, but users often think by occasion, recipient, budget, creation time and delivery date rather than product taxonomy.</p><p><strong>Need:</strong> Guided selling that translates intent into a short ranked set of products while retaining full browse and search paths.</p><div class="issue-meta"><div><b>User impact</b>Choice overload</div><div><b>Business impact</b>Missed product starts</div><div><b>Evidence</b><span class="badge confirmed">Breadth confirmed</span></div><div><b>Validation</b>Tree test and finder experiment</div></div></div></div>
+
+  <div class="issue"><div class="issue-head"><h3>Photo upload resilience</h3><span class="badge p1">P1</span></div><div class="issue-body"><p><strong>Problem:</strong> Large batches, slow connections, browser tab changes and image processing create many interruption points.</p><p><strong>Need:</strong> Resumable background upload, progress, retry, duplicate handling, accepted-format guidance and quality preflight.</p><div class="issue-meta"><div><b>User impact</b>Waiting or restart</div><div><b>Business impact</b>Creation-entry abandonment</div><div><b>Evidence</b><span class="badge likely">Likely risk</span></div><div><b>Validation</b>Batch and network test matrix</div></div></div></div>
+
+  <div class="issue"><div class="issue-head"><h3>Editor performance and state confidence</h3><span class="badge p1">P1</span></div><div class="issue-body"><p><strong>Problem:</strong> Browser editing combines complex UI, media, state, rendering and server persistence. Any lag or uncertainty grows more damaging as project effort accumulates.</p><p><strong>Need:</strong> Fast first render, explicit autosave status, recoverable history, progressive page loading and clear error recovery.</p><div class="issue-meta"><div><b>User impact</b>Fear of lost work</div><div><b>Business impact</b>Lower editor completion</div><div><b>Evidence</b><span class="badge validate">Needs validation</span></div><div><b>Validation</b>20/60/100-page projects</div></div></div></div>
+
+  <div class="issue"><div class="issue-head"><h3>Price, promotion and delivery confidence</h3><span class="badge p1">P1</span></div><div class="issue-body"><p><strong>Problem:</strong> Starting price, product upgrades, page count, promotions, shipping threshold, tax and delivery speed can change the final amount.</p><p><strong>Need:</strong> A persistent estimated total, best-eligible-offer logic and delivery windows that update as configuration changes.</p><div class="issue-meta"><div><b>User impact</b>Late surprise</div><div><b>Business impact</b>Cart abandonment</div><div><b>Evidence</b><span class="badge likely">Likely</span></div><div><b>Validation</b>Price comprehension study</div></div></div></div>
+
+  <div class="issue"><div class="issue-head"><h3>Mobile-web creation constraints</h3><span class="badge p1">P1</span></div><div class="issue-body"><p><strong>Problem:</strong> Full customisation can overwhelm narrow screens and touch interaction, even when browsing pages are responsive.</p><p><strong>Need:</strong> A constrained mobile creation path with auto-layout, essential text edits, quality review, sticky actions and reliable checkout.</p><div class="issue-meta"><div><b>User impact</b>High task effort</div><div><b>Business impact</b>Mobile conversion gap</div><div><b>Evidence</b><span class="badge likely">Likely</span></div><div><b>Validation</b>Mobile usability benchmark</div></div></div></div>
+
+  <div class="issue"><div class="issue-head"><h3>Image and JavaScript performance</h3><span class="badge p1">P1</span></div><div class="issue-body"><p><strong>Problem:</strong> Hero media, product grids, fonts, scripts, personalisation and editor bundles can compete for bandwidth and main-thread time.</p><p><strong>Need:</strong> Route budgets, responsive media, critical-request prioritisation, code splitting and third-party governance tied to field CWV.</p><div class="issue-meta"><div><b>User impact</b>Slow load and response</div><div><b>Business impact</b>SEO and conversion risk</div><div><b>Evidence</b><span class="badge likely">Inherent risk</span></div><div><b>Validation</b>CrUX, RUM and lab profile</div></div></div></div>
+
+  <div class="issue"><div class="issue-head"><h3>Accessibility and browser reliability</h3><span class="badge p1">P1</span></div><div class="issue-body"><p><strong>Problem:</strong> Dynamic menus, filters, upload controls, drag interactions, dialogs, editor tools and checkout forms require more than responsive layout.</p><p><strong>Need:</strong> WCAG 2.2 AA coverage, keyboard alternatives, focus management, screen-reader announcements and a supported-browser regression matrix.</p><div class="issue-meta"><div><b>User impact</b>Blocked or confusing tasks</div><div><b>Business impact</b>Exclusion and compliance risk</div><div><b>Evidence</b><span class="badge validate">Needs validation</span></div><div><b>Validation</b>Automated and manual audit</div></div></div></div>
+
+  <div class="issue"><div class="issue-head"><h3>SEO and landing-page efficiency</h3><span class="badge p2">P2</span></div><div class="issue-body"><p><strong>Problem:</strong> Large catalogues can create duplicate combinations, weak canonicals, inefficient crawl paths and campaign pages that load heavily or mismatch intent.</p><p><strong>Need:</strong> Structured data, canonical and faceted-navigation rules, indexation monitoring, useful copy and CWV governance for organic landing pages.</p><div class="issue-meta"><div><b>User impact</b>Lower landing relevance</div><div><b>Business impact</b>Organic acquisition loss</div><div><b>Evidence</b><span class="badge likely">Likely risk</span></div><div><b>Validation</b>Search Console and crawl audit</div></div></div></div>
+
+  <div class="issue"><div class="issue-head"><h3>Underused personal context</h3><span class="badge p2">P2</span></div><div class="issue-body"><p><strong>Problem:</strong> Returning users may have projects, photos, past products and seasonal patterns that can remove repeated setup work.</p><p><strong>Need:</strong> Continue-project, repeat-order, recent-photo and occasion modules with clear controls and privacy-safe explanations.</p><div class="issue-meta"><div><b>User impact</b>Repeated effort</div><div><b>Business impact</b>Missed retention value</div><div><b>Evidence</b><span class="badge validate">Needs validation</span></div><div><b>Validation</b>Logged-in experience audit</div></div></div></div>
+
+  <div class="issue"><div class="issue-head"><h3>Observability and experimentation gaps</h3><span class="badge p1">P1</span></div><div class="issue-body"><p><strong>Problem:</strong> Page speed alone cannot explain where upload, editor, cart or checkout failures affect revenue.</p><p><strong>Need:</strong> Route-level RUM and journey events joined through a privacy-safe session and project identifier, with release annotations and alert thresholds.</p><div class="issue-meta"><div><b>User impact</b>Long-lived regressions</div><div><b>Business impact</b>Slow diagnosis</div><div><b>Evidence</b><span class="badge validate">Needs internal audit</span></div><div><b>Validation</b>Telemetry inventory</div></div></div></div>
+</section>
+
+<section id="diagnosis">
+  <div class="section-head"><div class="section-no">6</div><div><h2>Detailed Issue Diagnosis</h2></div></div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Priority</th><th>Issue</th><th>Diagnosis</th><th>Potential root cause</th><th>User impact</th><th>Business impact</th><th>Feasibility</th><th>Validation required</th></tr></thead>
+      <tbody>
+        <tr><td><span class="badge p1">P1</span></td><td>Promo-heavy entry</td><td>Orientation and offers compete for the same attention.</td><td>Campaign modules optimised independently rather than as one homepage decision system.</td><td>Slower first action.</td><td>Lower project starts.</td><td><span class="badge feasible">High</span></td><td>Module holdout and first-click test.</td></tr>
+        <tr><td><span class="badge p1">P1</span></td><td>Navigation depth</td><td>Many visible subcategories expose catalogue complexity before user intent is known.</td><td>Taxonomy mirrors organisational catalogue structure.</td><td>Decision fatigue.</td><td>Discovery leakage.</td><td><span class="badge feasible">High</span></td><td>Tree test, search logs, menu analytics.</td></tr>
+        <tr><td><span class="badge p1">P1</span></td><td>Guided discovery gap</td><td>Existing filters are product-centric; recipient, effort and delivery urgency can be stronger decision factors.</td><td>Product data is not expressed as user decision attributes.</td><td>Uncertain product choice.</td><td>Lower finder-to-create conversion.</td><td><span class="badge feasible">High</span></td><td>Guided-finder A/B test.</td></tr>
+        <tr><td><span class="badge p1">P1</span></td><td>Upload interruption</td><td>A long batch can fail or stall without useful recovery.</td><td>Potential monolithic requests, weak retry semantics or incomplete client state.</td><td>Restart and waiting.</td><td>Upload abandonment.</td><td><span class="badge medium">Medium</span></td><td>Network throttling, tab suspend, 20/100/500-file tests.</td></tr>
+        <tr><td><span class="badge p1">P1</span></td><td>Image quality risk</td><td>Print suitability may be discovered after placement rather than before.</td><td>Quality rules separated from upload and product dimensions.</td><td>Rework or poor print.</td><td>Refunds and support.</td><td><span class="badge feasible">High</span></td><td>Warning precision and override study.</td></tr>
+        <tr><td><span class="badge p1">P1</span></td><td>Editor time-to-ready</td><td>Large projects may mount too much UI and media before the first useful interaction.</td><td>Potential bundle, page and thumbnail over-fetching.</td><td>Slow start.</td><td>Editor abandonment.</td><td><span class="badge medium">Medium</span></td><td>Performance trace by project size.</td></tr>
+        <tr><td><span class="badge p1">P1</span></td><td>Project state confidence</td><td>Users need explicit proof that work is saved and recoverable.</td><td>Save state may be invisible, delayed or conflict-prone.</td><td>Fear of lost work.</td><td>Lower completion and trust.</td><td><span class="badge feasible">High</span></td><td>Autosave event and recovery audit.</td></tr>
+        <tr><td><span class="badge p1">P1</span></td><td>Price comprehension</td><td>Starting price may not explain configuration, pages, shipping and promo effects.</td><td>Pricing services exposed late or inconsistently.</td><td>Unexpected total.</td><td>Cart abandonment.</td><td><span class="badge feasible">High</span></td><td>Five-second and task comprehension tests.</td></tr>
+        <tr><td><span class="badge p1">P1</span></td><td>Promotion complexity</td><td>Users must understand eligibility, exclusions, codes and thresholds.</td><td>Multiple campaign rules and manual code entry.</td><td>Uncertainty and retries.</td><td>Promo leakage and support.</td><td><span class="badge medium">Medium</span></td><td>Promo failure taxonomy.</td></tr>
+        <tr><td><span class="badge p1">P1</span></td><td>Mobile editor density</td><td>Desktop editing patterns may not map cleanly to touch and narrow viewports.</td><td>Shared interface without a constrained mobile task model.</td><td>High effort and errors.</td><td>Mobile conversion gap.</td><td><span class="badge medium">Medium</span></td><td>Same-task desktop/mobile benchmark.</td></tr>
+        <tr><td><span class="badge p1">P1</span></td><td>Field performance visibility</td><td>Aggregate scores can hide route and cohort failures.</td><td>Incomplete RUM dimensions or disconnected funnel analytics.</td><td>Persistent slow journeys.</td><td>Misprioritised investment.</td><td><span class="badge feasible">High</span></td><td>Telemetry and dashboard audit.</td></tr>
+        <tr><td><span class="badge p2">P2</span></td><td>Third-party cost</td><td>Marketing, analytics and personalisation scripts may delay interaction.</td><td>No shared performance budget or owner expiry.</td><td>Jank and battery/network cost.</td><td>CWV and conversion risk.</td><td><span class="badge feasible">High</span></td><td>Tag inventory and holdout.</td></tr>
+        <tr><td><span class="badge p1">P1</span></td><td>Accessibility gaps</td><td>Dynamic controls may lack equivalent keyboard, focus and announcement behaviour.</td><td>Component-level accessibility not enforced in acceptance criteria.</td><td>Blocked tasks.</td><td>Compliance and market risk.</td><td><span class="badge medium">Medium</span></td><td>WCAG 2.2 AA audit.</td></tr>
+        <tr><td><span class="badge p2">P2</span></td><td>SEO duplication</td><td>Filter and campaign combinations can create low-value or duplicate URLs.</td><td>Faceted-navigation rules may be inconsistent.</td><td>Less relevant landing paths.</td><td>Crawl waste and ranking dilution.</td><td><span class="badge feasible">High</span></td><td>Log-file and crawl analysis.</td></tr>
+        <tr><td><span class="badge p2">P2</span></td><td>Personalised return path</td><td>Existing projects and history can shorten repeat journeys.</td><td>Account data not consistently activated in web modules.</td><td>Repeated navigation.</td><td>Lower repeat purchase.</td><td><span class="badge medium">Medium</span></td><td>Returning-user cohort test.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="root-causes">
+  <div class="section-head"><div class="section-no">7</div><div><h2>Root Cause Analysis</h2></div></div>
+  <p class="section-intro">These are probable systemic causes, not assertions about the production codebase. Each should be confirmed through analytics, architecture review, profiling and service ownership mapping.</p>
+  <div class="grid three">
+    <div class="card"><h4>Catalogue-first information architecture</h4><p>Navigation and pages may reflect product organisation more strongly than occasion, recipient, urgency or user confidence.</p></div>
+    <div class="card"><h4>Campaign-by-campaign optimisation</h4><p>Promotional modules can accumulate when each is measured locally without accounting for homepage clarity, performance and cannibalisation.</p></div>
+    <div class="card"><h4>Late decision data</h4><p>Price, delivery and quality information may depend on configuration services that appear after users have invested effort.</p></div>
+    <div class="card"><h4>Media-heavy browser workload</h4><p>High-resolution assets, thumbnails, previews and layout rendering can consume network, memory and main-thread capacity.</p></div>
+    <div class="card"><h4>Editor state complexity</h4><p>Local edits, server persistence, autosave, undo history, product rules and concurrent sessions create conflict and recovery risks.</p></div>
+    <div class="card"><h4>Shared desktop/mobile model</h4><p>A single interface may preserve feature parity but fail to simplify the task for touch input and narrow viewports.</p></div>
+    <div class="card"><h4>Fragmented commerce rules</h4><p>Pricing, promotion, shipping, tax and fulfilment logic may be owned by separate systems and exposed at different steps.</p></div>
+    <div class="card"><h4>Inconsistent component governance</h4><p>Mature surfaces can accumulate different loading, error, modal, card, filter and form behaviours without shared acceptance rules.</p></div>
+    <div class="card"><h4>Journey-level telemetry gaps</h4><p>Technical metrics and funnel analytics may not share route, project, release and failure context needed for causal prioritisation.</p></div>
+  </div>
+  <div class="callout"><strong>Root-cause principle:</strong> Fixing isolated page visuals will not be enough. The POC should connect information architecture, editor state, media delivery, commerce rules and measurement around one high-value journey.</div>
+</section>
+
+<section id="solutions">
+  <div class="section-head"><div class="section-no">8</div><div><h2>Proposed Solution Plan</h2></div></div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Issue block</th><th>Proposed solution</th><th>How it works</th><th>UX effort</th><th>Engineering effort</th><th>Dependencies</th><th>Impact</th><th>Priority</th><th>Primary metric</th></tr></thead>
+      <tbody>
+        <tr><td>Homepage orientation</td><td>Task-first entry and promotion hierarchy</td><td>Lead with five intent cards and one primary offer; personalise Continue Project for eligible returning users.</td><td>Medium</td><td>Medium</td><td>CMS, experimentation, project API</td><td>High</td><td><span class="badge p1">P1</span></td><td>Product-start rate</td></tr>
+        <tr><td>Navigation</td><td>Progressive mega-menu simplification</td><td>Expose top tasks and categories first; move long-tail sizes and styles into landing-page filters.</td><td>Medium</td><td>Low-Medium</td><td>IA research, merchandising sign-off</td><td>High</td><td><span class="badge p1">P1</span></td><td>First-click success</td></tr>
+        <tr><td>Discovery</td><td>Guided product and gift finder</td><td>Ask occasion, recipient, budget, photo count, creation time and required delivery date; return a ranked shortlist.</td><td>High</td><td>Medium</td><td>Product taxonomy, delivery data</td><td>High</td><td><span class="badge p1">P1</span></td><td>Finder-to-create conversion</td></tr>
+        <tr><td>Search</td><td>Intent-aware search and no-result recovery</td><td>Parse terms such as "gift for dad under $50" and surface products, categories and helpful alternatives.</td><td>Medium</td><td>High</td><td>Search index, attributes, query analytics</td><td>Medium-High</td><td><span class="badge p2">P2</span></td><td>Search conversion</td></tr>
+        <tr><td>Product choice</td><td>Decision-ready card and PDP information</td><td>Add creation time, delivery range, included configuration and concise "Best for" guidance beside existing ratings and prices.</td><td>Medium</td><td>Medium</td><td>Pricing and fulfilment APIs</td><td>High</td><td><span class="badge p1">P1</span></td><td>PDP-to-editor rate</td></tr>
+        <tr><td>Upload</td><td>Resumable parallel upload</td><td>Chunk files, retry failed parts, persist queue state and allow template selection while upload continues.</td><td>High</td><td>High</td><td>Object storage, upload API, browser worker</td><td>High</td><td><span class="badge p1">P1</span></td><td>Upload completion</td></tr>
+        <tr><td>Photo quality</td><td>Preflight quality and crop checks</td><td>Compare pixel dimensions with selected print size; flag blur, duplicate, crop and unsupported-format risks before layout completion.</td><td>Medium</td><td>Medium-High</td><td>Image rules, selected product geometry</td><td>High</td><td><span class="badge p1">P1</span></td><td>Resolved warning rate</td></tr>
+        <tr><td>Editor trust</td><td>Autosave, save status and recoverable history</td><td>Debounce saves after meaningful edits, show last-saved state, preserve versions and recover after reconnect or tab closure.</td><td>Medium</td><td>High</td><td>Project-state API, conflict rules</td><td>Very High</td><td><span class="badge p1">P1</span></td><td>Work-loss events</td></tr>
+        <tr><td>Editor performance</td><td>Progressive and virtualised rendering</td><td>Load the current spread first, defer tools and media, and mount only nearby pages.</td><td>Low</td><td>High</td><td>Editor architecture, profiling</td><td>High</td><td><span class="badge p1">P1</span></td><td>Time-to-editor-ready</td></tr>
+        <tr><td>Mobile web</td><td>Guided touch-first creation mode</td><td>Use auto-layout, essential text edits, clear preview and a persistent next action; keep advanced editing available on wider screens.</td><td>High</td><td>High</td><td>Responsive editor components</td><td>High</td><td><span class="badge p1">P1</span></td><td>Mobile editor completion</td></tr>
+        <tr><td>Cart and promotions</td><td>Best eligible offer and plain-language explanation</td><td>Evaluate offers automatically, show applied savings, exclusions and the next threshold without requiring code trial and error.</td><td>Medium</td><td>High</td><td>Promotion and pricing services</td><td>High</td><td><span class="badge p1">P1</span></td><td>Promo success / cart exit</td></tr>
+        <tr><td>Delivery</td><td>Dynamic delivery confidence</td><td>Update an earliest-to-latest delivery range as product, quantity, address and shipping method change.</td><td>Medium</td><td>High</td><td>Fulfilment capacity and carrier data</td><td>High</td><td><span class="badge p1">P1</span></td><td>Shipping-related exits</td></tr>
+        <tr><td>Accessibility</td><td>Accessible component acceptance gate</td><td>Add keyboard, focus, labels, announcements, contrast and zoom checks to design-system and release criteria.</td><td>Medium</td><td>Medium</td><td>Component owners, QA tooling</td><td>High</td><td><span class="badge p1">P1</span></td><td>Critical WCAG defects</td></tr>
+        <tr><td>Observability</td><td>Journey-level RUM and service telemetry</td><td>Join CWV, resource timing, errors and funnel events by route, device class, release and anonymised project session.</td><td>Low</td><td>Medium</td><td>Consent, analytics, monitoring</td><td>Very High</td><td><span class="badge p1">P1</span></td><td>MTTD and regression rate</td></tr>
+        <tr><td>Personalisation</td><td>Returning-user launchpad</td><td>Prioritise continue project, repeat order, recent photos and relevant seasonal actions with user controls.</td><td>Medium</td><td>Medium-High</td><td>Account, project and order data</td><td>High</td><td><span class="badge p2">P2</span></td><td>Repeat purchase rate</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="performance">
+  <div class="section-head"><div class="section-no">9</div><div><h2>Web Performance Improvement Plan</h2></div></div>
+  <p class="section-intro">Performance work should prioritise real-user outcomes by route. Homepage LCP, listing-page responsiveness, upload completion, editor readiness and checkout latency require different budgets and diagnostics.</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Performance area</th><th>Recommended change</th><th>Expected effect</th><th>Complexity</th><th>Measurement</th></tr></thead>
+      <tbody>
+        <tr><td>Hero and product imagery</td><td>Serve correctly sized AVIF/WebP with fallback, strong compression and explicit dimensions.</td><td>Lower transfer size, faster LCP, lower CLS.</td><td>Medium</td><td>LCP element, bytes by viewport, CLS attribution.</td></tr>
+        <tr><td>Responsive media</td><td>Use accurate <code>srcset</code>, <code>sizes</code> and art direction; avoid desktop assets on narrow screens.</td><td>Faster mobile-web rendering.</td><td>Medium</td><td>Image waste audit and field LCP.</td></tr>
+        <tr><td>Critical loading</td><td>Preload only the true LCP asset and primary font; preconnect only to required early origins.</td><td>Shorter critical path without over-prioritisation.</td><td>Low</td><td>Request priority and waterfall.</td></tr>
+        <tr><td>Below-fold content</td><td>Lazy-load media and low-priority campaign modules with reserved layout space.</td><td>Lower initial work and stable layout.</td><td>Low-Medium</td><td>Initial requests, CLS, LCP.</td></tr>
+        <tr><td>JavaScript bundles</td><td>Route-level splitting, component lazy loading and removal of unused polyfills and libraries after compatibility review.</td><td>Lower parse/execute cost and better INP.</td><td>High</td><td>Coverage, bundle map, long tasks.</td></tr>
+        <tr><td>Third-party scripts</td><td>Create an owner, purpose, expiry and performance budget for every tag; defer or remove low-value scripts.</td><td>Lower main-thread contention and network cost.</td><td>Medium</td><td>Third-party CPU, request count, holdout conversion.</td></tr>
+        <tr><td>Editor loading</td><td>Load the first editable spread and essential controls first; virtualise remaining pages and photo trays.</td><td>Faster time to first useful edit.</td><td>High</td><td>Editor-ready mark by project size.</td></tr>
+        <tr><td>Client image work</td><td>Move thumbnail generation, hashing and eligible quality checks to Web Workers; preserve originals for print.</td><td>Better INP and smoother upload UI.</td><td>High</td><td>Main-thread long tasks and worker timing.</td></tr>
+        <tr><td>Upload pipeline</td><td>Use multipart/resumable upload, bounded parallelism, retry with backoff and persistent queue state.</td><td>Higher completion on weak networks.</td><td>High</td><td>Upload success, duration and retry recovery.</td></tr>
+        <tr><td>Preview generation</td><td>Render a fast low-resolution preview, then replace it with print-quality output asynchronously.</td><td>Faster perceived progress.</td><td>High</td><td>Time to first preview and final preview.</td></tr>
+        <tr><td>API and checkout latency</td><td>Measure pricing, promo, cart, tax, shipping and payment calls independently; cache safe reference data.</td><td>Fewer checkout stalls and clearer ownership.</td><td>Medium</td><td>P50/P95/P99 service and step latency.</td></tr>
+        <tr><td>Caching</td><td>Use immutable caching for versioned assets, sensible stale-while-revalidate for catalogue data and CDN edge caching where safe.</td><td>Faster repeat visits and lower origin load.</td><td>Medium</td><td>Cache hit ratio and repeat-view timing.</td></tr>
+        <tr><td>Performance governance</td><td>Set CI budgets for route JS, images and Lighthouse checks; use RUM alerts for field regressions.</td><td>Prevents performance drift.</td><td>Medium</td><td>Budget failures and release annotations.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <h3>Core Web Vitals targets</h3>
+  <div class="kpis">
+    <div class="kpi"><b>LCP</b><span>75th percentile at or below 2.5 seconds by key route and mobile/desktop cohort.</span></div>
+    <div class="kpi"><b>INP</b><span>75th percentile at or below 200 milliseconds, including editor and filter interactions.</span></div>
+    <div class="kpi"><b>CLS</b><span>75th percentile at or below 0.1, with promo and image modules dimensionally stable.</span></div>
+    <div class="kpi"><b>Editor ready</b><span>Define a product-specific target after baseline; optimise the 75th and 95th percentiles by project size.</span></div>
+  </div>
+  <div class="callout warn"><strong>Important:</strong> Client-side compression must never discard resolution needed for print. Generate upload previews and transfer optimisations separately from the preserved production asset.</div>
+</section>
+
+<section id="ux">
+  <div class="section-head"><div class="section-no">10</div><div><h2>Web UX Improvement Plan</h2></div></div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>UX area</th><th>Recommended improvement</th><th>User benefit</th><th>Success metric</th></tr></thead>
+      <tbody>
+        <tr><td>Homepage</td><td>Lead with task cards and a returning-user project module; reduce simultaneous above-fold offer competition.</td><td>Faster orientation.</td><td>Product-start rate and first action time.</td></tr>
+        <tr><td>Navigation</td><td>Group by Products, Occasions, Gifts, Projects and Deals; reveal long-tail choices progressively.</td><td>Lower cognitive load.</td><td>First-click success and menu exits.</td></tr>
+        <tr><td>Guided discovery</td><td>Add occasion, recipient, budget, creation-time, photo-count and delivery-date questions.</td><td>A short, relevant product set.</td><td>Finder completion and create rate.</td></tr>
+        <tr><td>Search</td><td>Use rich autocomplete, recent searches, typo tolerance, semantic attributes and useful no-result recovery.</td><td>Faster high-intent discovery.</td><td>Search-to-product conversion.</td></tr>
+        <tr><td>Product cards</td><td>Retain ratings and starting prices; add creation time, delivery range and "Best for" context.</td><td>Easier comparison.</td><td>Card-to-PDP and PDP-to-editor rate.</td></tr>
+        <tr><td>Product detail</td><td>Explain included pages/options, likely total, upgrade effects and delivery before creation begins.</td><td>Better price and effort confidence.</td><td>Price comprehension and editor entry.</td></tr>
+        <tr><td>Upload</td><td>Show file requirements, progress, remaining time, retries, duplicates and quality warnings without blocking exploration.</td><td>Less uncertainty and fewer restarts.</td><td>Upload completion and recovery.</td></tr>
+        <tr><td>Editor onboarding</td><td>Offer Guided and Advanced modes, a short first-use tour and contextual help triggered by inactivity or repeated errors.</td><td>Faster competence.</td><td>First-session editor completion.</td></tr>
+        <tr><td>Editor state</td><td>Show last saved, connection status, recoverable history and a clear return path after session expiry.</td><td>Confidence that work is protected.</td><td>Work-loss and resume success.</td></tr>
+        <tr><td>Print readiness</td><td>Provide one checklist for low resolution, crop risk, text overflow, blank areas and incomplete pages.</td><td>Fewer mistakes and rework.</td><td>Warning resolution and refund rate.</td></tr>
+        <tr><td>Progress</td><td>Use a persistent journey model: Choose, Upload, Create, Review, Cart, Checkout.</td><td>Clear remaining effort.</td><td>Step-to-step completion.</td></tr>
+        <tr><td>Cart</td><td>Show best eligible offer, why it applies, threshold progress and a transparent line-item total.</td><td>Higher savings confidence.</td><td>Promo failure and cart exit.</td></tr>
+        <tr><td>Checkout</td><td>Show delivery range and final total early, preserve entered data, support browser wallet payments where eligible and provide recoverable errors.</td><td>Faster, safer completion.</td><td>Checkout completion and form errors.</td></tr>
+        <tr><td>Mobile web</td><td>Use sticky primary actions, 44px minimum targets, bottom sheets, compact filters and a simplified touch-first editor path.</td><td>Lower small-screen effort.</td><td>Mobile create and checkout conversion.</td></tr>
+        <tr><td>Accessibility</td><td>Support keyboard navigation, visible focus, semantic dialogs, labelled forms, status announcements, zoom/reflow and non-drag alternatives.</td><td>Inclusive task completion.</td><td>Critical WCAG defects and task success.</td></tr>
+        <tr><td>SEO landing UX</td><td>Match page titles, headings, copy, products and delivery messaging to search intent without duplicative filler.</td><td>Relevant landing experience.</td><td>Organic engagement and conversion.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout good"><strong>Design principle:</strong> Do not remove catalogue power. Reveal it progressively after the user has a confident starting point.</div>
+</section>
+
+<section id="ai">
+  <div class="section-head"><div class="section-no">11</div><div><h2>AI and Personalisation Opportunity Plan</h2></div></div>
+  <p class="section-intro">AI should reduce effort and prevent mistakes, not obscure decisions. Every recommendation should be editable, explainable and reversible, with clear data controls.</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Opportunity</th><th>Use case</th><th>User benefit</th><th>Business benefit</th><th>Data required</th><th>Feasibility</th><th>Impact</th><th>POC version</th></tr></thead>
+      <tbody>
+        <tr><td>Photo quality detection</td><td>Flag low resolution, blur, darkness, duplicate images and risky crops relative to the selected product.</td><td>Avoid poor print outcomes.</td><td>Lower refund, reprint and support cost.</td><td>Pixels, crop geometry, lightweight image features.</td><td>High</td><td>High</td><td>Resolution and crop checks first.</td></tr>
+        <tr><td>Smart photo grouping</td><td>Cluster uploads by date, event and visual similarity before layout.</td><td>Less manual sorting.</td><td>Faster project completion.</td><td>Timestamps and visual embeddings.</td><td>Medium</td><td>High</td><td>Date-based grouping.</td></tr>
+        <tr><td>Auto-layout first draft</td><td>Create an editable book or gift draft from selected photos, template and occasion.</td><td>Removes blank-page effort.</td><td>Higher editor completion.</td><td>Photos, layout rules, product geometry.</td><td>Medium</td><td>Very High</td><td>One photo-book format and template family.</td></tr>
+        <tr><td>Occasion template ranking</td><td>Rank templates after the user selects wedding, travel, baby, graduation, holiday or another intent.</td><td>Faster template choice.</td><td>Higher template-to-create conversion.</td><td>Explicit occasion and template metadata.</td><td>High</td><td>Medium</td><td>Rules-based ranking.</td></tr>
+        <tr><td>AI product finder</td><td>Convert natural-language needs into products based on recipient, budget, photo count and deadline.</td><td>Confident discovery.</td><td>Higher discovery conversion.</td><td>Product attributes, price and delivery data.</td><td>Medium</td><td>High</td><td>Structured recommendation with reasons.</td></tr>
+        <tr><td>Contextual Ask Paige</td><td>Place assistance inside product selection, upload, editor and review with awareness of the current task.</td><td>Help at the point of uncertainty.</td><td>Higher assistant-assisted completion.</td><td>Current route, selected product and safe editor context.</td><td>Medium</td><td>High</td><td>Product and template guidance.</td></tr>
+        <tr><td>Returning-user homepage</td><td>Show continue project, recent uploads, repeat last order and seasonal reminders.</td><td>Less repeated setup.</td><td>Higher repeat purchase and resume rate.</td><td>Projects, orders, photos and consent state.</td><td>High</td><td>High</td><td>Rules-based modules.</td></tr>
+        <tr><td>Predictive reorder</td><td>Prompt users before recurring events such as annual cards, calendars and year-in-review books.</td><td>Timely reminder and faster repeat.</td><td>Retention at low acquisition cost.</td><td>Order history and communication consent.</td><td>High</td><td>High</td><td>Top recurring product categories.</td></tr>
+        <tr><td>Design assistance</td><td>Suggest captions, page balance, layout alternatives and background choices inside the editor.</td><td>Reduced creative block.</td><td>Higher editor completion and AOV.</td><td>Editor state and selected theme.</td><td>Medium</td><td>High</td><td>Caption and layout suggestions.</td></tr>
+        <tr><td>Relevant cart additions</td><td>Recommend a small number of complementary products based on the created item and occasion.</td><td>Useful gift-set completion.</td><td>Higher attachment and AOV.</td><td>Current project and co-purchase patterns.</td><td>High</td><td>Medium</td><td>Rules-based recommendations.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout warn"><strong>AI safeguards:</strong> Obtain appropriate consent, minimise retained image-derived data, separate quality checks from identity inference, provide manual alternatives, disclose generated suggestions and measure acceptance rather than raw feature clicks.</div>
+</section>
+
+<section id="matrix">
+  <div class="section-head"><div class="section-no">12</div><div><h2>Feasibility vs Impact Matrix</h2></div></div>
+  <div class="matrix">
+    <div class="quadrant a"><h4>High feasibility / High impact</h4><ul><li>Journey-level RUM and funnel instrumentation</li><li>Homepage task hierarchy experiment</li><li>Navigation simplification test</li><li>Product decision metadata</li><li>Autosave status and recovery audit</li><li>Image format, sizing and layout stability work</li><li>Accessibility defects on shared components</li><li>Rules-based returning-user modules</li></ul></div>
+    <div class="quadrant b"><h4>Medium feasibility / High impact</h4><ul><li>Guided product and gift finder</li><li>Resumable upload with progress and retry</li><li>Photo-quality preflight</li><li>Best-eligible-offer service</li><li>Dynamic delivery ranges</li><li>Editor progressive loading</li><li>Touch-first guided creation mode</li><li>Auto-layout first draft</li></ul></div>
+    <div class="quadrant c"><h4>Strategic platform investments</h4><ul><li>Editor virtualisation and state modernisation</li><li>Unified pricing, promotion and fulfilment orchestration</li><li>Semantic search and recommendation platform</li><li>Cross-journey experimentation framework</li><li>Shared accessible design system migration</li><li>Advanced contextual design assistant</li></ul></div>
+    <div class="quadrant d"><h4>Lower priority or evidence-dependent</h4><ul><li>Decorative visual refresh without funnel change</li><li>Additional homepage campaign modules</li><li>Power-user editor features before baseline reliability</li><li>Broad ML personalisation before rules-based validation</li><li>Large architecture replacement without measured bottleneck</li><li>Cross-platform cart work unless web funnel data supports it</li></ul></div>
+  </div>
+</section>
+
+<section id="roadmap">
+  <div class="section-head"><div class="section-no">13</div><div><h2>Implementation Roadmap</h2></div></div>
+  <div class="timeline">
+    <div class="phase"><div class="time">Phase 1 | Weeks 0-4</div><h4>Measure and restore confidence</h4><ul><li>Instrument CWV and critical funnel events</li><li>Baseline desktop/mobile task performance</li><li>Audit autosave and project recovery</li><li>Fix highest-severity shared accessibility defects</li><li>Optimise hero/product image delivery</li><li>Add explicit cart and upload timeout recovery</li></ul></div>
+    <div class="phase"><div class="time">Phase 2 | Weeks 4-8</div><h4>Simplify discovery and commerce</h4><ul><li>Test task-first homepage</li><li>Test simplified navigation</li><li>Add product decision metadata</li><li>Launch guided finder MVP</li><li>Prototype best-offer explanation</li><li>Expose earlier delivery and total estimates</li></ul></div>
+    <div class="phase"><div class="time">Phase 3 | Weeks 8-12</div><h4>Improve creation completion</h4><ul><li>Ship upload progress, retry and resume</li><li>Launch quality preflight</li><li>Improve save status and recovery</li><li>Progressively load editor pages and tools</li><li>Release guided mobile-web creation path</li><li>Add print-readiness checklist</li></ul></div>
+    <div class="phase"><div class="time">Phase 4 | Week 12+</div><h4>Scale intelligence and platform quality</h4><ul><li>Auto-layout first draft</li><li>Contextual Ask Paige entry points</li><li>Rules-to-model personalisation progression</li><li>Semantic search expansion</li><li>Editor virtualisation</li><li>Design-system and experimentation scale-up</li></ul></div>
+  </div>
+  <h3>Phase gates</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Gate</th><th>Required evidence before continuing</th></tr></thead>
+      <tbody>
+        <tr><td>Phase 1 exit</td><td>Reliable baseline for CWV, upload, editor save, cart and checkout; top production failures have owners and alert thresholds.</td></tr>
+        <tr><td>Phase 2 exit</td><td>At least one discovery experiment improves project starts without reducing margin, organic engagement or downstream completion.</td></tr>
+        <tr><td>Phase 3 exit</td><td>Upload and editor improvements increase completion and reduce recoverable failures across desktop and mobile-web cohorts.</td></tr>
+        <tr><td>Phase 4 investment</td><td>AI-assisted draft demonstrates meaningful acceptance, editability, privacy compliance and incremental checkout conversion.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="metrics">
+  <div class="section-head"><div class="section-no">14</div><div><h2>Success Metrics</h2></div></div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Metric</th><th>Definition</th><th>POC target</th><th>Guardrail</th></tr></thead>
+      <tbody>
+        <tr><td>Product-start rate</td><td>Qualified landing sessions that begin a product journey.</td><td>Increase 10-15% versus control.</td><td>No material margin or bounce regression.</td></tr>
+        <tr><td>Time to first creation action</td><td>Time from landing to product selection, upload or project resume.</td><td>Decrease 20%.</td><td>Maintain product-choice confidence.</td></tr>
+        <tr><td>Guided-finder completion</td><td>Finder starts that reach a recommendation.</td><td>At least 70%.</td><td>Recommendation dismiss rate monitored.</td></tr>
+        <tr><td>Photo upload success</td><td>Upload batches completing without unrecovered error.</td><td>At least 98% for the defined POC batch range.</td><td>No loss of print-quality source asset.</td></tr>
+        <tr><td>Upload abandonment</td><td>Started upload sessions that do not reach editor-ready state.</td><td>Decrease 20-30%.</td><td>No increase in accidental uploads.</td></tr>
+        <tr><td>Time to editor ready</td><td>From editor navigation to first responsive editable state.</td><td>Decrease at least 30% at P75.</td><td>Stable save and preview quality.</td></tr>
+        <tr><td>Editor completion</td><td>Projects entering editor that reach print-ready preview.</td><td>Increase 15-20%.</td><td>No rise in refund or quality complaints.</td></tr>
+        <tr><td>Work-loss event rate</td><td>Sessions where confirmed edits cannot be recovered.</td><td>Approach zero.</td><td>Save latency and conflict rate monitored.</td></tr>
+        <tr><td>Time to first preview</td><td>From creation start to usable preview.</td><td>Decrease 25%.</td><td>Preview accurately represents output.</td></tr>
+        <tr><td>Add-to-cart success</td><td>Valid add attempts completed within service-level target.</td><td>At least 99%.</td><td>No duplicate cart items.</td></tr>
+        <tr><td>Promo success</td><td>Eligible offer attempts applied correctly.</td><td>At least 99% for POC offers.</td><td>Margin and exclusion compliance.</td></tr>
+        <tr><td>Checkout completion</td><td>Checkout starts reaching order confirmation.</td><td>Increase 8-12% versus control.</td><td>Fraud and payment failure stable.</td></tr>
+        <tr><td>Mobile-web conversion</td><td>Qualified mobile-web sessions reaching purchase.</td><td>Increase 15% relative to baseline.</td><td>Desktop conversion does not decline.</td></tr>
+        <tr><td>LCP / INP / CLS</td><td>Field Core Web Vitals at the 75th percentile.</td><td>Good thresholds on key routes.</td><td>Segment by route, browser and viewport.</td></tr>
+        <tr><td>Accessibility task success</td><td>Completion of core tasks using keyboard and screen reader.</td><td>No critical blockers in POC flow.</td><td>Manual testing required.</td></tr>
+        <tr><td>Organic landing conversion</td><td>Organic sessions reaching product start or purchase.</td><td>Increase after intent and CWV improvements.</td><td>Index coverage and rankings stable.</td></tr>
+        <tr><td>Repeat purchase rate</td><td>Eligible returning users ordering again in the measurement window.</td><td>Increase 5-8% in exposed cohorts.</td><td>Unsubscribe and complaint rate stable.</td></tr>
+        <tr><td>Support contact rate</td><td>Contacts per order or active project for targeted issues.</td><td>Decrease 15-25%.</td><td>Contact deflection quality monitored.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="business">
+  <div class="section-head"><div class="section-no">15</div><div><h2>Expected Business Impact</h2></div></div>
+  <div class="grid two">
+    <div class="card"><h4>Conversion</h4><p>Clearer entry points, faster upload, reliable editing, transparent totals and recoverable checkout errors should increase the proportion of high-intent sessions reaching purchase.</p></div>
+    <div class="card"><h4>Revenue quality</h4><p>Guided discovery and relevant complements can improve order value while best-offer logic reduces unnecessary discount confusion and protects eligibility rules.</p></div>
+    <div class="card"><h4>Retention</h4><p>Continue-project, repeat-order and occasion journeys reduce the cost of returning and make existing account history useful at the moment of intent.</p></div>
+    <div class="card"><h4>Customer trust</h4><p>Autosave visibility, print-quality checks, honest delivery ranges and clear failures protect users after they have invested time and emotional effort.</p></div>
+    <div class="card"><h4>Support and operations</h4><p>Better prevention, diagnostics and recovery should reduce contacts related to upload, saved work, promotions, delivery and print quality.</p></div>
+    <div class="card"><h4>Organic acquisition</h4><p>Improved Core Web Vitals, landing relevance, structured data and index control can strengthen search performance across a large catalogue.</p></div>
+    <div class="card"><h4>Engineering efficiency</h4><p>Route budgets, shared components, ownership maps and journey telemetry reduce reactive debugging and make regressions visible sooner.</p></div>
+    <div class="card"><h4>Competitive position</h4><p>An editable AI first draft combined with dependable print fulfilment can differentiate Shutterfly on both creative convenience and physical product breadth.</p></div>
+  </div>
+  <div class="callout warn"><strong>Business-case rule:</strong> Calculate financial impact from measured incremental orders, contribution margin, repeat behaviour, support savings and reprint reduction. Do not apply headline percentage lifts directly to total revenue without cohort and cannibalisation analysis.</div>
+</section>
+
+<section id="risk">
+  <div class="section-head"><div class="section-no">16</div><div><h2>Risk and Validation Plan</h2></div></div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Risk</th><th>Why it matters</th><th>Mitigation</th><th>Validation method</th><th>Owner</th></tr></thead>
+      <tbody>
+        <tr><td>Promotion revenue cannibalisation</td><td>Reducing visible offers may lower short-term clicks even if clarity improves.</td><td>Use module-level holdouts and measure contribution margin, not only CTR.</td><td>A/B test with downstream conversion.</td><td>Product / Marketing / Finance</td></tr>
+        <tr><td>Incorrect delivery confidence</td><td>Over-promising is worse than showing a wider honest range.</td><td>Use fulfilment-capacity inputs, buffers and clear confidence language.</td><td>Predicted versus actual delivery analysis.</td><td>Operations / Engineering</td></tr>
+        <tr><td>Print-quality false positives</td><td>Excess warnings can create anxiety and abandonment.</td><td>Use severity tiers, explain the reason and allow informed override.</td><td>Precision, override and complaint analysis.</td><td>Quality / UX / Data</td></tr>
+        <tr><td>Autosave conflict or data loss</td><td>Background saves can overwrite newer state or create false confidence.</td><td>Versioned writes, conflict handling, recovery snapshots and clear status.</td><td>Concurrency, offline and restore tests.</td><td>Editor Engineering</td></tr>
+        <tr><td>Upload memory and browser limits</td><td>Large batches can exhaust memory or fail when tabs are suspended.</td><td>Bounded concurrency, streaming, workers and persisted queue state.</td><td>Browser/network/batch test matrix.</td><td>Media Engineering</td></tr>
+        <tr><td>Mobile simplification removes control</td><td>Advanced users may reject a constrained flow.</td><td>Provide Guided and Advanced paths with easy hand-off.</td><td>Task success and mode-switch analysis.</td><td>UX / Product</td></tr>
+        <tr><td>AI produces poor layouts or copy</td><td>Low-quality suggestions can reduce trust.</td><td>Use constrained templates, quality scoring, editability and feedback.</td><td>Acceptance, edit distance and conversion.</td><td>AI / Design / Product</td></tr>
+        <tr><td>Privacy and consent concerns</td><td>Photos and personal history are sensitive.</td><td>Data minimisation, clear consent, retention limits and user controls.</td><td>Privacy review and consent audit.</td><td>Legal / Privacy / Security</td></tr>
+        <tr><td>Accessibility regression</td><td>Fast iteration can break keyboard or screen-reader paths.</td><td>Automated checks plus manual assistive-technology testing in release gates.</td><td>WCAG 2.2 AA acceptance suite.</td><td>Design System / QA</td></tr>
+        <tr><td>Browser-specific failure</td><td>Uploads, drag interactions and payments vary by browser.</td><td>Define supported versions and run critical-path regression tests.</td><td>Chrome, Safari, Firefox and Edge matrix.</td><td>Web QA</td></tr>
+        <tr><td>SEO index disruption</td><td>IA and URL changes can affect rankings.</td><td>Preserve URLs where possible; use redirects, canonicals and staged rollout.</td><td>Crawl, index and ranking monitoring.</td><td>SEO / Engineering</td></tr>
+        <tr><td>Telemetry affects performance</td><td>Excess instrumentation can add script and network cost.</td><td>Sample intelligently, batch events and enforce observability budgets.</td><td>SDK overhead profile and holdout.</td><td>Data / Performance</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <h3>Validation workbench</h3>
+  <div class="grid three">
+    <div class="card"><h4>Quantitative</h4><ul><li>Route and funnel analytics</li><li>RUM and service latency</li><li>Search and promo failure logs</li><li>Support contact taxonomy</li><li>Search Console and crawl data</li></ul></div>
+    <div class="card"><h4>Qualitative</h4><ul><li>First-click and tree testing</li><li>Moderated desktop/mobile tasks</li><li>Price and delivery comprehension</li><li>Editor trust interviews</li><li>Accessibility user testing</li></ul></div>
+    <div class="card"><h4>Technical</h4><ul><li>Performance profiles</li><li>Upload stress and interruption tests</li><li>Autosave conflict tests</li><li>Browser regression matrix</li><li>SEO and accessibility audits</li></ul></div>
+  </div>
+  <div class="callout"><strong>Cross-platform consistency note:</strong> Account, project, cart, promotion and order states should use consistent business rules across customer touchpoints. The web POC remains independently usable and measurable; it should not depend on switching users away from the browser to complete core tasks.</div>
+</section>
+
+<section id="recommendation">
+  <div class="section-head"><div class="section-no">17</div><div><h2>Final Recommendation</h2></div></div>
+  <div class="reco">
+    <h3>Run the POC around one complete, high-value web journey: photo-book creation from landing page to confirmed order.</h3>
+    <ol>
+      <li><strong>Measure first:</strong> instrument homepage entry, discovery, upload, editor readiness, save, preview, cart, promo, checkout and Core Web Vitals before judging solutions.</li>
+      <li><strong>Simplify the start:</strong> test a task-first homepage, progressive navigation and a guided finder while retaining full catalogue access.</li>
+      <li><strong>Protect user effort:</strong> make upload resumable, save state visible, project recovery dependable and print-quality issues actionable.</li>
+      <li><strong>Improve web speed where it matters:</strong> optimise media and JavaScript by route, progressively load the editor and govern third-party cost.</li>
+      <li><strong>Make price and delivery understandable:</strong> keep estimated total, best eligible offer and delivery range current throughout configuration.</li>
+      <li><strong>Treat mobile web as a completion surface:</strong> provide a guided touch-first path rather than a compressed desktop editor.</li>
+      <li><strong>Use AI to accelerate creation:</strong> validate quality checks, smart grouping and an editable first draft before expanding to broader personalisation.</li>
+      <li><strong>Scale only after evidence:</strong> fund deeper editor and recommendation-platform work when controlled results show incremental completion, margin and retention value.</li>
+    </ol>
+  </div>
+  <div class="callout good"><strong>Recommended outcome statement:</strong> Shutterfly should feel less like navigating a large catalogue and more like receiving dependable help to turn personal photos into the right product, with less effort, clearer expectations and greater confidence.</div>
+  <h3>Public verification references</h3>
+  <div class="source-list">
+    <div class="source"><b><a href="https://www.shutterfly.com/">Shutterfly homepage</a></b><span>Reviewed June 12, 2026 for promotions, navigation, categories, Ask Paige, projects, photos, cart and seasonal merchandising.</span></div>
+    <div class="source"><b><a href="https://www.shutterfly.com/t/photo-book-styles/">Photo Book Styles</a></b><span>Reviewed June 12, 2026 for listing filters, ratings, review counts, favourites, sizes, themes and starting prices.</span></div>
+    <div class="source"><b><a href="https://www.shutterfly.com/deals/promotions_details/">Promotion details</a></b><span>Reviewed as the public source for current offer terms, exclusions and code-related complexity.</span></div>
+    <div class="source"><b><a href="https://support.shutterfly.com/">Shutterfly support</a></b><span>Reference point for customer-facing policies, accessibility and journey support; internal production validation is still required.</span></div>
+  </div>
+</section>
+
+<footer>
+  This proof of concept is a decision and validation framework for the Shutterfly web application. Confirmed labels reflect public-page observations checked on June 12, 2026. Likely and Needs validation labels identify product or engineering risks that require internal analytics, code access, controlled testing or production telemetry before they are treated as facts.
+</footer>
+
+</main>
+</body>
+</html>

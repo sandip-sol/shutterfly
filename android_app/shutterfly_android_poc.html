@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shutterfly Android App Performance &amp; Experience Improvement POC</title>
+<style>
+:root{
+  --ink:#111827; --ink-2:#374151; --ink-3:#6B7280; --ink-4:#9CA3AF;
+  --bg:#F9FAFB; --surface:#FFFFFF; --border:#E5E7EB; --border-2:#D1D5DB;
+  --navy:#0F2744; --navy-2:#1E3A5F; --blue:#1D6FA4; --blue-light:#DBEAFE; --blue-pale:#EFF6FF;
+  --orange:#C2410C; --orange-bg:#FFF7ED; --orange-border:#FED7AA;
+  --red:#B91C1C; --red-bg:#FEF2F2; --red-border:#FECACA;
+  --amber:#B45309; --amber-bg:#FFFBEB; --amber-border:#FDE68A;
+  --green:#166534; --green-bg:#F0FDF4; --green-border:#BBF7D0;
+  --purple:#6D28D9; --purple-bg:#F5F3FF; --purple-border:#DDD6FE;
+  --font-serif:'Georgia','Times New Roman',serif;
+  --font-sans:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+  --font-mono:'JetBrains Mono','Fira Code',monospace;
+  --radius:8px; --radius-lg:12px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:15px;scroll-behavior:smooth}
+body{font-family:var(--font-sans);background:var(--bg);color:var(--ink);line-height:1.65}
+.w{max-width:1280px;margin:0 auto;padding:0 32px}
+
+/* COVER */
+.cover{background:var(--navy);color:#fff;display:flex;flex-direction:column}
+.cover-top{background:linear-gradient(135deg,#0a1f3d 0%,var(--navy) 50%,#162d50 100%);padding:64px 0 52px;position:relative;overflow:hidden}
+.cover-top::before{content:'';position:absolute;top:-60px;right:-60px;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(29,111,164,.18) 0%,transparent 70%)}
+.cover-top::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#1D6FA4,#3B82F6,#60A5FA,transparent)}
+.cover-stamp{display:inline-flex;align-items:center;gap:8px;background:rgba(29,111,164,.25);border:1px solid rgba(59,130,246,.35);border-radius:4px;padding:5px 12px;font-size:.7rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:#93C5FD;margin-bottom:26px}
+.cover-stamp::before{content:'';width:6px;height:6px;border-radius:50%;background:#3B82F6;box-shadow:0 0 8px #3B82F6}
+.cover h1{font-family:var(--font-serif);font-size:clamp(2rem,4.5vw,3.2rem);font-weight:700;line-height:1.12;color:#F9FAFB;margin-bottom:10px;max-width:860px}
+.cover h1 em{font-style:normal;color:#60A5FA}
+.cover-sub{font-size:1rem;color:#93C5FD;max-width:680px;margin-bottom:38px;line-height:1.55}
+.cover-meta-bar{display:flex;flex-wrap:wrap;border-top:1px solid rgba(255,255,255,.1);margin-top:8px}
+.cover-meta-item{display:flex;flex-direction:column;gap:3px;padding:18px 28px 18px 0;margin-right:28px;border-right:1px solid rgba(255,255,255,.08)}
+.cover-meta-item:last-child{border-right:none}
+.cover-meta-label{font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;color:#6B8FAD}
+.cover-meta-value{font-size:.86rem;font-weight:600;color:#CBD5E1}
+.cover-stats{background:rgba(255,255,255,.04);border-top:1px solid rgba(255,255,255,.08);padding:20px 0}
+.cover-stats-inner{display:flex;flex-wrap:wrap;gap:40px}
+.cover-stat{text-align:center}
+.cover-stat-num{font-family:var(--font-serif);font-size:1.8rem;font-weight:700;line-height:1;margin-bottom:3px}
+.cover-stat-num.red{color:#F87171}.cover-stat-num.amber{color:#FBB22E}.cover-stat-num.green{color:#34D399}.cover-stat-num.blue{color:#60A5FA}
+.cover-stat-label{font-size:.72rem;color:#6B8FAD}
+
+/* NAV */
+.sticky-nav{position:sticky;top:0;z-index:100;background:var(--navy-2);border-bottom:2px solid var(--blue)}
+.nav-inner{display:flex;align-items:center;overflow-x:auto;scrollbar-width:none}
+.nav-inner::-webkit-scrollbar{display:none}
+.nav-link{display:flex;align-items:center;gap:6px;padding:12px 14px;font-size:.7rem;font-weight:600;letter-spacing:.04em;color:#94A3B8;text-decoration:none;white-space:nowrap;border-bottom:2px solid transparent;margin-bottom:-2px;transition:color .15s,border-color .15s}
+.nav-link:hover{color:#E2E8F0;border-bottom-color:#3B82F6}
+.nav-n{font-size:.6rem;background:rgba(255,255,255,.08);border-radius:3px;padding:1px 5px;color:#60A5FA}
+
+/* SECTIONS */
+.sec{padding:58px 0 38px;border-bottom:1px solid var(--border)}
+.sec:last-of-type{border-bottom:none}
+.sec-head{display:flex;align-items:flex-start;gap:16px;margin-bottom:30px}
+.sec-num{font-size:.65rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;background:var(--blue-pale);color:var(--blue);border:1px solid var(--blue-light);border-radius:4px;padding:4px 8px;margin-top:7px;flex-shrink:0}
+.sec h2{font-family:var(--font-serif);font-size:clamp(1.35rem,2.8vw,1.85rem);font-weight:700;color:var(--navy);line-height:1.22}
+.sec h3{font-size:1rem;font-weight:700;color:var(--navy);margin:26px 0 10px;padding-left:14px;border-left:3px solid var(--blue)}
+.sec h4{font-size:.82rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3);margin:18px 0 8px}
+p.body{font-size:.91rem;color:var(--ink-2);margin-bottom:14px}
+ul.body{font-size:.88rem;color:var(--ink-2);margin:6px 0 14px 22px}
+ul.body li{margin-bottom:5px}
+
+/* CALLOUTS */
+.callout{display:flex;gap:14px;padding:16px 18px;border-radius:var(--radius);margin:20px 0;font-size:.88rem;line-height:1.55;border:1px solid}
+.callout-icon{font-size:1.15rem;flex-shrink:0;margin-top:1px}
+.callout-body{color:var(--ink-2)}.callout-body strong{color:var(--ink)}
+.callout.red{background:var(--red-bg);border-color:var(--red-border)}
+.callout.amber{background:var(--amber-bg);border-color:var(--amber-border)}
+.callout.blue{background:var(--blue-pale);border-color:var(--blue-light)}
+.callout.green{background:var(--green-bg);border-color:var(--green-border)}
+.callout.purple{background:var(--purple-bg);border-color:var(--purple-border)}
+
+/* PILLS */
+.pill{display:inline-block;font-size:.64rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border-radius:3px;padding:2px 7px;border:1px solid;white-space:nowrap}
+.pill.p1c{background:#FEF2F2;color:#B91C1C;border-color:#FECACA}
+.pill.p1{background:#FFF7ED;color:#C2410C;border-color:#FED7AA}
+.pill.p2{background:#FFFBEB;color:#B45309;border-color:#FDE68A}
+.pill.p3{background:var(--blue-pale);color:var(--blue);border-color:var(--blue-light)}
+.pill.hi{background:#FEF2F2;color:#B91C1C;border-color:#FECACA}
+.pill.med{background:#FFFBEB;color:#B45309;border-color:#FDE68A}
+.pill.lo{background:var(--green-bg);color:var(--green);border-color:var(--green-border)}
+.pill.vhi{background:#7F1D1D;color:#fff;border-color:#7F1D1D}
+.pill.conf{background:var(--green-bg);color:var(--green);border-color:var(--green-border)}
+.pill.likely{background:#FFFBEB;color:#B45309;border-color:#FDE68A}
+.pill.needs{background:var(--bg);color:var(--ink-3);border-color:var(--border-2)}
+.pill.hypo{background:#F5F3FF;color:#6D28D9;border-color:#DDD6FE}
+.pill.tag{background:var(--blue-pale);color:var(--blue);border-color:var(--blue-light)}
+.pill.perf{background:#F5F3FF;color:#6D28D9;border-color:#DDD6FE}
+.pill.ux{background:#FDF4FF;color:#86198F;border-color:#E879F9}
+.pill.conv{background:var(--orange-bg);color:var(--orange);border-color:var(--orange-border)}
+.pill.tech{background:var(--blue-pale);color:var(--blue);border-color:var(--blue-light)}
+.pill.ai{background:#F5F3FF;color:#5B21B6;border-color:#C4B5FD}
+
+/* TABLES */
+.tbl-wrap{overflow-x:auto;border-radius:var(--radius-lg);border:1px solid var(--border);margin:20px 0;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+table{width:100%;border-collapse:collapse;font-size:.8rem;background:var(--surface)}
+thead tr{background:var(--navy)}
+thead th{color:#E2E8F0;padding:10px 13px;text-align:left;font-weight:600;font-size:.66rem;letter-spacing:.06em;text-transform:uppercase;border-right:1px solid rgba(255,255,255,.07);white-space:nowrap}
+thead th:last-child{border-right:none}
+tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
+tbody tr:hover{background:var(--blue-pale)}
+tbody tr:nth-child(even){background:#FAFAFA}
+tbody tr:nth-child(even):hover{background:var(--blue-pale)}
+td{padding:10px 13px;vertical-align:top;border-right:1px solid #F3F4F6;color:var(--ink-2);line-height:1.45;font-size:.79rem}
+td:last-child{border-right:none}
+td.area{font-weight:700;color:var(--navy);font-size:.78rem;white-space:nowrap}
+td.strong{font-weight:600;color:var(--ink)}
+td.note{font-size:.76rem;color:var(--ink-3);font-style:italic}
+tr.row-crit td{border-left:3px solid #B91C1C}
+tr.row-high td{border-left:3px solid #C2410C}
+tr.row-med td{border-left:3px solid #B45309}
+tr.row-low td{border-left:3px solid var(--blue)}
+
+/* STAT / SUMMARY CARDS */
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;margin:24px 0}
+.summary-card{background:var(--surface);border:1px solid var(--border);border-top:4px solid var(--blue);border-radius:var(--radius-lg);padding:20px 18px}
+.summary-card.red{border-top-color:var(--red)}
+.summary-card.orange{border-top-color:var(--orange)}
+.summary-card.amber{border-top-color:var(--amber)}
+.summary-card.purple{border-top-color:var(--purple)}
+.summary-card h4{font-size:.92rem;font-weight:700;color:var(--navy);margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.summary-card p{font-size:.81rem;color:var(--ink-2);line-height:1.5}
+.summary-card .tagline{margin-top:10px}
+
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;margin:24px 0}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px 16px;text-align:center}
+.stat-card .num{font-family:var(--font-serif);font-size:2rem;font-weight:700;line-height:1;margin-bottom:5px}
+.stat-card .num.red{color:var(--red)}.stat-card .num.orange{color:var(--orange)}.stat-card .num.amber{color:var(--amber)}.stat-card .num.blue{color:var(--blue)}.stat-card .num.green{color:var(--green)}
+.stat-card .lbl{font-size:.74rem;color:var(--ink-3);line-height:1.3}
+
+/* ISSUE BLOCKS */
+.block-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:18px;margin:24px 0}
+.block-card{background:var(--surface);border:1px solid var(--border);border-top:4px solid var(--blue);border-radius:var(--radius-lg);padding:20px 18px}
+.block-card.red-top{border-top-color:var(--red)}
+.block-card.orange-top{border-top-color:var(--orange)}
+.block-card.amber-top{border-top-color:var(--amber)}
+.block-card.purple-top{border-top-color:var(--purple)}
+.block-card h4{font-size:.92rem;font-weight:700;color:var(--navy);margin-bottom:8px}
+.block-card p{font-size:.8rem;color:var(--ink-2);margin-bottom:8px;line-height:1.5}
+.block-card .lbl-mini{font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-3)}
+.block-meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+
+/* ROOT CAUSE */
+.rc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;margin:24px 0}
+.rc-card{background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--blue);border-radius:var(--radius);padding:16px 18px}
+.rc-card.perf{border-left-color:var(--purple)}
+.rc-card.ux{border-left-color:#86198F}
+.rc-card.api{border-left-color:var(--blue)}
+.rc-card.media{border-left-color:var(--orange)}
+.rc-card.strat{border-left-color:var(--red)}
+.rc-card.data{border-left-color:#5B21B6}
+.rc-card.mon{border-left-color:var(--green)}
+.rc-card h4{font-size:.85rem;font-weight:700;color:var(--navy);margin-bottom:8px}
+.rc-card ul{margin-left:18px}
+.rc-card li{font-size:.79rem;color:var(--ink-2);margin-bottom:5px;line-height:1.45}
+
+/* MATRIX */
+.matrix-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:24px 0}
+.matrix-cell{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px 18px}
+.matrix-label{font-size:.65rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;padding:4px 9px;border-radius:4px;margin-bottom:12px;display:inline-block}
+.matrix-a .matrix-label{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+.matrix-b .matrix-label{background:var(--blue-pale);color:var(--blue);border:1px solid var(--blue-light)}
+.matrix-c .matrix-label{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border)}
+.matrix-d .matrix-label{background:var(--bg);color:var(--ink-3);border:1px solid var(--border-2)}
+.matrix-cell h4{font-size:.88rem;font-weight:700;color:var(--navy);margin-bottom:6px}
+.matrix-item{display:flex;align-items:flex-start;gap:9px;padding:7px 0;border-bottom:1px solid var(--border);font-size:.8rem}
+.matrix-item:last-child{border-bottom:none;padding-bottom:0}
+.matrix-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.matrix-a .matrix-dot{background:var(--green)}.matrix-b .matrix-dot{background:var(--blue)}.matrix-c .matrix-dot{background:var(--amber)}.matrix-d .matrix-dot{background:var(--ink-4)}
+.matrix-text strong{display:block;color:var(--ink);font-size:.8rem}
+.matrix-text span{font-size:.74rem;color:var(--ink-3)}
+
+/* ROADMAP */
+.roadmap{margin:28px 0;display:flex;flex-direction:column;position:relative}
+.roadmap::before{content:'';position:absolute;left:28px;top:30px;bottom:30px;width:2px;background:linear-gradient(180deg,var(--red),var(--orange),var(--blue),var(--purple))}
+.phase{display:flex;gap:24px;padding:0 0 32px 0;position:relative}
+.phase-dot{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.75rem;flex-shrink:0;position:relative;z-index:1;color:#fff;border:3px solid var(--bg)}
+.phase-dot.ph1{background:var(--red)}.phase-dot.ph2{background:var(--orange)}.phase-dot.ph3{background:var(--blue)}.phase-dot.ph4{background:var(--purple)}
+.phase-body{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;flex:1;margin-top:4px}
+.phase-body h3{font-size:1rem;font-weight:700;color:var(--navy);margin-bottom:4px;padding:0;border:none}
+.phase-timeline{font-size:.72rem;font-weight:600;color:var(--ink-3);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.phase-timeline::before{content:'\1F5D3';font-size:.85rem}
+.phase-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.phase-col h5{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3);margin-bottom:8px}
+.phase-item{display:flex;gap:8px;font-size:.79rem;color:var(--ink-2);padding:4px 0;border-bottom:1px solid var(--border);line-height:1.4}
+.phase-item:last-child{border-bottom:none}
+.phase-item::before{content:'\2192';color:var(--blue);font-weight:700;flex-shrink:0}
+.phase-metrics{margin-top:12px;display:flex;flex-wrap:wrap;gap:6px}
+
+/* KPI */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px;margin:20px 0}
+.kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;display:flex;gap:12px;align-items:flex-start}
+.kpi-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+.kpi-icon.perf{background:var(--purple-bg)}.kpi-icon.ux{background:#FDF4FF}.kpi-icon.conv{background:var(--green-bg)}.kpi-icon.eng{background:var(--blue-pale)}.kpi-icon.biz{background:var(--orange-bg)}
+.kpi-title{font-size:.82rem;font-weight:700;color:var(--ink);margin-bottom:2px}
+.kpi-target{font-size:.75rem;color:var(--ink-3)}
+.kpi-target strong{color:var(--blue);font-weight:700}
+
+/* PERF ROWS */
+.perf-row{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:10px;padding:14px 16px;display:grid;grid-template-columns:1fr 1.2fr 1fr;gap:16px;align-items:start}
+.perf-row:hover{border-color:#93C5FD}
+.perf-area{font-weight:700;color:var(--navy);font-size:.84rem;margin-bottom:3px}
+.perf-problem{font-size:.77rem;color:var(--ink-3)}
+.perf-fix{font-size:.79rem;color:var(--ink-2)}
+.perf-fix code{background:var(--bg);border:1px solid var(--border);border-radius:3px;padding:1px 5px;font-family:var(--font-mono);font-size:.71rem;color:var(--purple)}
+.perf-meta{display:flex;flex-wrap:wrap;gap:5px}
+
+/* AI CARDS */
+.ai-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:16px;margin:24px 0}
+.ai-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px 16px;position:relative;overflow:hidden}
+.ai-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--purple),#8B5CF6,#A78BFA)}
+.ai-card h4{font-size:.88rem;font-weight:700;color:var(--navy);margin-bottom:6px}
+.ai-card p{font-size:.78rem;color:var(--ink-2);margin-bottom:10px}
+.ai-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;font-size:.74rem;gap:10px}
+.ai-label{color:var(--ink-3);font-weight:600;flex-shrink:0}
+.ai-row span:last-child{text-align:right}
+
+/* IMPACT */
+.impact-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(245px,1fr));gap:14px;margin:24px 0}
+.impact-card{background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--blue);border-radius:var(--radius);padding:16px}
+.impact-card.red{border-left-color:var(--red)}.impact-card.green{border-left-color:var(--green)}.impact-card.amber{border-left-color:var(--amber)}.impact-card.purple{border-left-color:var(--purple)}
+.impact-card h5{font-size:.82rem;font-weight:700;color:var(--navy);margin-bottom:6px}
+.impact-card p{font-size:.77rem;color:var(--ink-2);line-height:1.4}
+.impact-delta{font-family:var(--font-serif);font-size:1.45rem;font-weight:700;color:var(--green);margin-top:8px}
+.impact-delta.red{color:var(--red)}
+
+/* FINAL RECO */
+.reco-block{background:var(--navy);color:#fff;border-radius:var(--radius-lg);padding:36px 32px;margin:24px 0}
+.reco-block h3{font-family:var(--font-serif);font-size:1.5rem;color:#F9FAFB;margin-bottom:16px;padding:0;border:none}
+.reco-cols{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.reco-col h5{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#60A5FA;margin-bottom:10px}
+.reco-item{font-size:.82rem;color:#CBD5E1;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.07);display:flex;gap:10px}
+.reco-item:last-child{border-bottom:none}
+.reco-arrow{color:#3B82F6;font-weight:700;flex-shrink:0}
+
+/* LEGEND */
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin:14px 0;font-size:.78rem;color:var(--ink-3)}
+.legend span b{color:var(--ink-2)}
+
+footer{background:var(--navy);color:#4B6278;padding:28px 0;text-align:center;font-size:.75rem;margin-top:40px}
+footer span{color:#60A5FA}
+
+@media (max-width:768px){
+  .w{padding:0 16px}
+  .matrix-grid{grid-template-columns:1fr}
+  .phase-cols{grid-template-columns:1fr}
+  .reco-cols{grid-template-columns:1fr}
+  .perf-row{grid-template-columns:1fr}
+  .cover-meta-bar{flex-direction:column}
+}
+@media print{.sticky-nav{display:none}.sec{page-break-inside:avoid}table{font-size:.72rem}}
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="cover">
+  <div class="cover-top">
+    <div class="w">
+      <div class="cover-stamp">Proof of Concept &middot; Android Improvement Programme</div>
+      <h1>Shutterfly Android App<br><em>Performance &amp; Experience<br>Improvement POC</em></h1>
+      <p class="cover-sub">An evidence-backed plan to restore reliability, simplify the photo-to-checkout journey, and convert Shutterfly's brand and catalogue advantage into a best-in-class Android creation experience.</p>
+      <div class="cover-meta-bar">
+        <div class="cover-meta-item"><span class="cover-meta-label">Product</span><span class="cover-meta-value">Shutterfly: Prints Cards Gifts</span></div>
+        <div class="cover-meta-item"><span class="cover-meta-label">Platform</span><span class="cover-meta-value">Android Mobile App</span></div>
+        <div class="cover-meta-item"><span class="cover-meta-label">Prepared for</span><span class="cover-meta-value">Product &middot; Android Eng &middot; UX/Design &middot; Leadership</span></div>
+        <div class="cover-meta-item"><span class="cover-meta-label">Date</span><span class="cover-meta-value">12 June 2026</span></div>
+        <div class="cover-meta-item"><span class="cover-meta-label">Classification</span><span class="cover-meta-value">Confidential &middot; Internal</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="cover-stats">
+    <div class="w">
+      <div class="cover-stats-inner">
+        <div class="cover-stat"><div class="cover-stat-num amber">4.0&#9733;</div><div class="cover-stat-label">Play Store rating (~227K reviews) &mdash; down sharply post-2026 update</div></div>
+        <div class="cover-stat"><div class="cover-stat-num red">2026</div><div class="cover-stat-label">Platform update broke editor &amp; resolution checks</div></div>
+        <div class="cover-stat"><div class="cover-stat-num blue">12</div><div class="cover-stat-label">Issue blocks diagnosed &amp; prioritised</div></div>
+        <div class="cover-stat"><div class="cover-stat-num green">4</div><div class="cover-stat-label">Delivery phases (0&ndash;12+ weeks)</div></div>
+        <div class="cover-stat"><div class="cover-stat-num amber">11</div><div class="cover-stat-label">AI / personalisation opportunities</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav class="sticky-nav"><div class="w"><div class="nav-inner">
+  <a href="#exec" class="nav-link"><span class="nav-n">02</span>Executive Summary</a>
+  <a href="#verify" class="nav-link"><span class="nav-n">03</span>Verification</a>
+  <a href="#context" class="nav-link"><span class="nav-n">04</span>Product Context</a>
+  <a href="#current" class="nav-link"><span class="nav-n">05</span>Current State</a>
+  <a href="#blocks" class="nav-link"><span class="nav-n">06</span>Issue Blocks</a>
+  <a href="#diag" class="nav-link"><span class="nav-n">07</span>Diagnosis</a>
+  <a href="#root" class="nav-link"><span class="nav-n">08</span>Root Cause</a>
+  <a href="#solutions" class="nav-link"><span class="nav-n">09</span>Solutions</a>
+  <a href="#perf" class="nav-link"><span class="nav-n">10</span>Perf Plan</a>
+  <a href="#ux" class="nav-link"><span class="nav-n">11</span>UX Plan</a>
+  <a href="#ai" class="nav-link"><span class="nav-n">12</span>AI Plan</a>
+  <a href="#matrix" class="nav-link"><span class="nav-n">13</span>Matrix</a>
+  <a href="#roadmap" class="nav-link"><span class="nav-n">14</span>Roadmap</a>
+  <a href="#kpis" class="nav-link"><span class="nav-n">15</span>KPIs</a>
+  <a href="#impact" class="nav-link"><span class="nav-n">16</span>Business Impact</a>
+  <a href="#risk" class="nav-link"><span class="nav-n">17</span>Risk &amp; Validation</a>
+  <a href="#reco" class="nav-link"><span class="nav-n">18</span>Recommendation</a>
+</div></div></nav>
+
+<!-- 01/02 EXECUTIVE SUMMARY -->
+<div id="exec" class="sec"><div class="w">
+  <div class="sec-head"><div class="sec-num">02</div><h2>Executive Summary</h2></div>
+
+  <div class="callout red">
+    <span class="callout-icon">&#128680;</span>
+    <div class="callout-body"><strong>Headline:</strong> Shutterfly holds the strongest brand, the broadest catalogue, and a published machine-learning personalisation platform in the photo-personalisation category &mdash; yet a 2026 Android platform update has visibly degraded its highest-value flows. Public reviews confirm an editor that is slow and frequently unresponsive, the removal of the legacy advanced-editing mode, and false &ldquo;insufficient resolution&rdquo; warnings on valid photos. Long-tenured customers (15&ndash;20+ years) are publicly stating they are switching to competitors. This POC defines the path back to reliability &mdash; and forward to a competitive Android experience.</div>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat-card"><div class="num amber">4.0&#9733;</div><div class="lbl">Google Play rating from ~227K reviews <span class="pill conf">Confirmed</span></div></div>
+    <div class="stat-card"><div class="num red">2026</div><div class="lbl">Update reduced ease &amp; customisation; advanced editor removed <span class="pill conf">Confirmed</span></div></div>
+    <div class="stat-card"><div class="num blue">10M+</div><div class="lbl">Android installs &mdash; large loyalty base now at churn risk <span class="pill likely">Likely</span></div></div>
+    <div class="stat-card"><div class="num green">4.83&#9733;</div><div class="lbl">FreePrints rating (340K reviews) &mdash; the simplicity benchmark on prints <span class="pill conf">Confirmed</span></div></div>
+    <div class="stat-card"><div class="num green">4.8&#9733;</div><div class="lbl">Popsa rating (35K+ reviews) &mdash; the AI-fast photo-book benchmark <span class="pill conf">Confirmed</span></div></div>
+    <div class="stat-card"><div class="num purple">Ray + Databricks</div><div class="lbl">Published ML platform: billions of inference records across product categories <span class="pill conf">Confirmed</span></div></div>
+  </div>
+
+  <h3>Current state of the Android app</h3>
+  <p class="body">Shutterfly's Android app pairs a 25-year brand with the deepest catalogue in the category &mdash; photo books, prints, cards, gifts, wall art, calendars and stationery &mdash; backed by generous photo storage and a recommendation engine that the company has publicly described running on Ray and Databricks. The physical product quality remains widely praised. The problem is mobile execution: following a 2026 platform change, the editor (the single most valuable flow) is reported as laggy and often unresponsive, photo rearrangement frequently fails mid-session, the legacy advanced-editing mode was removed with no fallback, and a resolution check now flags valid images as too low-resolution. The result is a sharp sentiment decline and active churn of the brand's most loyal users.</p>
+
+  <h3>Core user-journey concerns</h3>
+  <p class="body">The Android creation-to-checkout journey is heavy, multi-step, image-intensive and promotion-heavy. Friction concentrates in media permission, large-library photo selection, upload reliability, editor responsiveness, preview confidence, promotion clarity and checkout completion &mdash; the exact stages where user effort is highest and abandonment is most costly.</p>
+
+  <h3>Main performance risks</h3>
+  <p class="body">Photo-heavy Android apps are sensitive to bitmap memory pressure, cold-start cost, main-thread work, large <code>MediaStore</code> queries and background-upload reliability. On mid-range devices (2&ndash;4&nbsp;GB RAM &mdash; the majority of the installed base) these risks translate directly into jank, ANRs, OOM crashes and lost work in the editor.</p>
+
+  <h3>Business opportunity &amp; what this POC proves</h3>
+  <p class="body">Every point of Android conversion recovered is incremental &mdash; the audience, brand and catalogue already exist; the gap is execution. This POC is designed to prove four things within a focused programme: (1) the editor can be made fast and stable on mid-range Android through a bitmap-architecture change; (2) checkout completion can be lifted by fixing cart persistence and surfacing promotions earlier; (3) AI-assisted photo-book creation under five minutes is achievable on Android using existing server-side ML; and (4) a personalised homepage measurably increases add-to-cart and repeat purchase.</p>
+
+  <h4>Four focus areas at a glance</h4>
+  <div class="summary-grid">
+    <div class="summary-card ux">
+      <h4>&#129504; UX Friction</h4>
+      <p>Permission requested before value is shown; homepage lacks a single primary action; multi-level category nesting; editor guidance and error states are generic. The first-run path does not lead clearly to creation.</p>
+      <div class="tagline"><span class="pill likely">Mostly Likely</span> <span class="pill conf">Editor/permission Confirmed</span></div>
+    </div>
+    <div class="summary-card red">
+      <h4>&#9889; Performance Bottlenecks</h4>
+      <p>Full-resolution bitmaps held in heap, foreground-only uploads, synchronous preview rendering and undeferred startup work drive lag, ANRs and crashes &mdash; worst on mid-range devices.</p>
+      <div class="tagline"><span class="pill conf">Editor lag Confirmed</span> <span class="pill likely">Mechanics Likely</span></div>
+    </div>
+    <div class="summary-card orange">
+      <h4>&#128722; Conversion Blockers</h4>
+      <p>Resolution false-positives block valid orders; coupon entry is buried; cart state is fragile; no express payment. Users who finished the creation funnel are lost at the final step.</p>
+      <div class="tagline"><span class="pill conf">Resolution bug Confirmed</span> <span class="pill likely">Cart/coupon Likely</span></div>
+    </div>
+    <div class="summary-card purple">
+      <h4>&#129302; AI / Personalisation Opportunity</h4>
+      <p>A published Ray/Databricks ML pipeline powers personalisation elsewhere but is under-used in the Android app. Auto-creation, quality detection, smart grouping and personalised home are within reach.</p>
+      <div class="tagline"><span class="pill conf">ML platform Confirmed</span> <span class="pill needs">In-app wiring Needs validation</span></div>
+    </div>
+  </div>
+</div></div>
+
+<!-- 03 VERIFICATION -->
+<div id="verify" class="sec"><div class="w">
+  <div class="sec-head"><div class="sec-num">03</div><h2>Verification Summary</h2></div>
+  <p class="body">Before finalising findings, each major area was checked against publicly available information. The table below separates what is <strong>confirmed</strong> by public evidence, what remains a <strong>hypothesis</strong> requiring direct validation, and the confidence level. Internal artefacts that cannot be verified externally (precise app version labels, exact patch counts, server logic, funnel baselines) are explicitly marked <em>Needs direct validation</em> and are not presented as fact.</p>
+
+  <div class="legend">
+    <span><span class="pill conf">Confirmed</span> <b>publicly evidenced</b></span>
+    <span><span class="pill likely">Likely</span> <b>strong indirect signal</b></span>
+    <span><span class="pill hypo">Hypothesis</span> <b>reasoned, unverified</b></span>
+    <span><span class="pill needs">Needs validation</span> <b>device/data test required</b></span>
+  </div>
+
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>Area reviewed</th><th>Verification source</th><th>What was confirmed</th><th>What remains a hypothesis</th><th>Confidence</th></tr></thead>
+    <tbody>
+      <tr class="row-high"><td class="area">Google Play listing</td><td>Google Play Store &mdash; Shutterfly app listing</td><td>Live listing; rating ~4.0&#9733; from ~227K reviews; large install base; active patch cadence</td><td>Exact install count (10M+), APK size band, minimum OS version</td><td><span class="pill conf">Confirmed</span></td></tr>
+      <tr class="row-crit"><td class="area">Recent user reviews</td><td>Recent Google Play reviews; Trustpilot; Sitejabber; PissedConsumer</td><td>2026 update degraded ease/customisation; editor &ldquo;close to unresponsive&rdquo;; photo rearrange fails mid-session; advanced editor removed; loyal 20-year users leaving</td><td>Share of users affected; device/OS correlation; severity distribution</td><td><span class="pill conf">Confirmed</span></td></tr>
+      <tr class="row-high"><td class="area">App screenshots &amp; feature claims</td><td>Google Play listing; Shutterfly support centre (&ldquo;updated features and tools&rdquo;)</td><td>Broad catalogue; photo storage; in-app creation/editor; AI features (Autofill, Magic Writer) marketed</td><td>Exact current screen flows, nav depth, in-app personalisation presence</td><td><span class="pill likely">Likely</span></td></tr>
+      <tr class="row-crit"><td class="area">Android creation journey</td><td>Recent reviews; support troubleshooting articles</td><td>Resolution warning fires on valid/previously-accepted photos; editing/alignment difficulty; project frustration on reopen</td><td>Exact root cause (DPI vs pixel logic), permission opt-in rates, upload failure rates</td><td><span class="pill conf">Symptoms Confirmed</span></td></tr>
+      <tr class="row-high"><td class="area">Performance complaints</td><td>Recent reviews; app-problem trackers</td><td>Editor slowness/unresponsiveness reported across devices; repeated crash/stall complaints in 2026</td><td>Cold-start times, ANR rate, heap peaks, per-device-tier behaviour</td><td><span class="pill conf">Confirmed</span> / <span class="pill needs">metrics Needs validation</span></td></tr>
+      <tr class="row-med"><td class="area">Competitor comparison</td><td>Google Play listings; Tom's Guide; Digital Camera World</td><td>FreePrints 4.83&#9733; (340K reviews); Popsa 4.8&#9733; (35K+); Mixbook rated best-tested photo-book app &amp; named destination for departing users</td><td>Direct Android feature/perf parity benchmarking against each</td><td><span class="pill conf">Confirmed</span></td></tr>
+      <tr class="row-med"><td class="area">ML / personalisation capability</td><td>Shutterfly &amp; Databricks engineering blogs (Ray + Databricks case study)</td><td>Production ML for customer-propensity modelling across categories; billions of inference records; uses structured data + images</td><td>Degree to which this is wired into the Android homepage / in-app surfaces</td><td><span class="pill conf">Capability Confirmed</span></td></tr>
+      <tr class="row-low"><td class="area">Android best practices</td><td>Android Material Design guidance; Android performance &amp; Play Vitals guidance</td><td>Established thresholds &amp; patterns (bitmap downsampling, WorkManager, App Startup, predictive back, ANR &le;0.47%)</td><td>Shutterfly's current adherence per screen/flow</td><td><span class="pill conf">Guidance Confirmed</span></td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="callout amber"><span class="callout-icon">&#9888;</span><div class="callout-body"><strong>Evidence integrity note:</strong> Specific internal identifiers used illustratively in planning (e.g. a particular release version number, an exact &ldquo;N patches in N weeks&rdquo; figure, or the precise server-side resolution-check logic) are <strong>not</strong> publicly verifiable and are treated as <em>Needs direct validation</em>. The <em>symptoms</em> they describe &mdash; the editor regression and the resolution false-positives &mdash; are publicly confirmed.</div></div>
+</div></div>
+
+<!-- 04 PRODUCT CONTEXT -->
+<div id="context" class="sec"><div class="w">
+  <div class="sec-head"><div class="sec-num">04</div><h2>Product Context</h2></div>
+  <p class="body"><strong>What Shutterfly offers.</strong> Shutterfly is a leading online photo-personalisation and e-commerce brand that turns personal photos into physical products: photo books, prints, greeting and holiday cards, invitations, wall art, calendars, mugs, blankets, magnets and personalised gifts. Generous photo storage, recurring promotions and free-print offers anchor a recurring, emotionally-driven purchase relationship.</p>
+
+  <h3>Main Android app use cases</h3>
+  <ul class="body">
+    <li><strong>Capture &amp; store</strong> &mdash; back up and organise phone photos in the Shutterfly library.</li>
+    <li><strong>Create</strong> &mdash; build photo books, cards, prints, calendars and gifts directly on the phone.</li>
+    <li><strong>Personalise &amp; gift</strong> &mdash; produce occasion- and recipient-specific products (birthdays, weddings, holidays, baby, graduation).</li>
+    <li><strong>Reorder &amp; restock</strong> &mdash; repeat seasonal purchases (annual cards, calendars, prints).</li>
+  </ul>
+
+  <h3>Target users &amp; product categories</h3>
+  <p class="body">The core audience skews toward family memory-keepers and gift-givers &mdash; parents, grandparents and event hosts &mdash; with a long-tenured loyal segment and a strong seasonal/occasion purchase pattern. Product categories span high-effort creations (photo books, custom gifts) and low-effort repeat buys (prints, standard cards). Critically, the majority of this base uses mid-range Android hardware, so flagship-only optimisation under-serves most users.</p>
+
+  <h3>Mobile value proposition &amp; why it matters</h3>
+  <p class="body">The mobile promise is simple: move from phone photos to a meaningful printed product with minimal friction. Because photos already live on the phone, Android is the most natural creation surface &mdash; and the most performance-sensitive one. Conversion and retention both hinge on the app feeling fast, reliable and trustworthy through upload, editing, preview and checkout. When the editor lags or a valid photo is rejected, the brand's entire emotional promise is undercut at the exact moment of highest user investment &mdash; which is precisely the dynamic visible in current public reviews.</p>
+</div></div>
+
+<!-- 05 CURRENT STATE -->
+<div id="current" class="sec"><div class="w">
+  <div class="sec-head"><div class="sec-num">05</div><h2>Current State Analysis</h2></div>
+  <p class="body">Twenty-one app areas assessed. Row colour denotes priority: <span style="color:#B91C1C;font-weight:700">&#9632; Critical</span> &middot; <span style="color:#C2410C;font-weight:700">&#9632; High</span> &middot; <span style="color:#B45309;font-weight:700">&#9632; Medium</span> &middot; <span style="color:#1D6FA4;font-weight:700">&#9632; Lower</span>.</p>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>App area</th><th style="min-width:210px">Current observation</th><th>Issue type</th><th>User impact</th><th>Business impact</th><th>Confidence</th></tr></thead>
+    <tbody>
+      <tr class="row-med"><td class="area">First launch</td><td>Startup likely loaded with SDKs, remote config and home calls; cold start may exceed the 2-second Play Vitals guideline on mid-range devices</td><td><span class="pill perf">Performance</span></td><td><span class="pill med">Med</span></td><td><span class="pill med">Med</span></td><td><span class="pill likely">Likely</span></td></tr>
+      <tr class="row-high"><td class="area">Onboarding</td><td>Sign-in / value not clearly separated; new users unsure whether to start with prints, gifts, cards or upload; no guest-browse value moment</td><td><span class="pill ux">UX</span></td><td><span class="pill hi">High</span></td><td><span class="pill hi">High</span></td><td><span class="pill likely">Likely</span></td></tr>
+      <tr class="row-med"><td class="area">Sign-in / sign-up</td><td>Account is central to storage, projects and checkout; sessions reportedly lost after major updates, forcing re-auth; early login can dampen intent</td><td><span class="pill ux">UX</span> <span class="pill tech">Backend</span></td><td><span class="pill med">Med</span></td><td><span class="pill hi">High</span></td><td><span class="pill likely">Likely</span></td></tr>
+      <tr class="row-crit"><td class="area">Photos / media permission</td><td>Media access often requested before value is shown; Android 13+ scoped/selected-photo model adds complexity; denial leads to silent feature loss with weak recovery</td><td><span class="pill ux">UX</span> <span class="pill tech">Android</span></td><td><span class="pill hi">High</span></td><td><span class="pill hi">High</span></td><td><span class="pill likely">Likely</span></td></tr>
+      <tr class="row-high"><td class="area">Homepage</td><td>Promotions, categories and past projects compete at equal visual weight; published ML personalisation not clearly surfaced in-app; no session-aware primary CTA</td><td><span class="pill conv">Conversion</span></td><td><span class="pill hi">High</span></td><td><span class="pill hi">High</span></td><td><span class="pill likely">Likely</span></td></tr>
+      <tr class="row-med"><td class="area">Navigation</td><td>Multiple destinations compete (photos, products, projects, deals, cart, orders, account); deep category nesting; editor back-press may exit without confirmation</td><td><span class="pill ux">UX</span></td><td><span class="pill hi">High</span></td><td><span class="pill med">Med</span></td><td><span class="pill likely">Likely</span></td></tr>
+      <tr class="row-med"><td class="area">Product discovery</td><td>Category-primary browsing; limited occasion/intent discovery for a broad catalogue; gifting &amp; seasonal intent under-served</td><td><span class="pill ux">UX</span></td><td><span class="pill med">Med</span></td><td><span class="pill hi">High</span></td><td><span class="pill needs">Needs validation</span></td></tr>
+      <tr class="row-low"><td class="area">Search / filter</td><td>Search/filter coverage for templates, occasions and gifting intent unconfirmed; photo-picker filters limited</td><td><span class="pill ux">UX</span></td><td><span class="pill med">Med</span></td><td><span class="pill med">Med</span></td><td><span class="pill needs">Needs validation</span></td></tr>
+      <tr class="row-low"><td class="area">Product detail page</td><td>Pages functional and customisation entry clear; pricing shown; limited in-app social proof; upsell not personalised; promo eligibility could surface earlier</td><td><span class="pill ux">UX</span> <span class="pill conv">Commerce</span></td><td><span class="pill lo">Low</span></td><td><span class="pill med">Med</span></td><td><span class="pill likely">Likely</span></td></tr>
+      <tr class="row-crit"><td class="area">Photo selection / upload</td><td>Large-library picker slow/laggy; false &ldquo;insufficient resolution&rdquo; warnings on valid 4MP+ images (active issue); batch uploads can stall silently; foreground-bound</td><td><span class="pill perf">Performance</span> <span class="pill ux">UX</span></td><td><span class="pill hi">High</span></td><td><span class="pill hi">High</span></td><td><span class="pill conf">Confirmed</span></td></tr>
+      <tr class="row-crit"><td class="area">Customisation / editor</td><td>Editor reported close to unresponsive across devices; photo rearrange/align fails mid-session; advanced-editing mode removed with no fallback; task completion much slower since the 2026 update</td><td><span class="pill perf">Performance</span> <span class="pill ux">UX</span></td><td><span class="pill hi">High</span></td><td><span class="pill hi">High</span></td><td><span class="pill conf">Confirmed</span></td></tr>
+      <tr class="row-med"><td class="area">Preview</td><td>Multi-page books likely render synchronously; long books can freeze; no progressive/lazy page loading</td><td><span class="pill perf">Performance</span></td><td><span class="pill med">Med</span></td><td><span class="pill med">Med</span></td><td><span class="pill likely">Likely</span></td></tr>
+      <tr class="row-high"><td class="area">Cart</td><td>Cart state likely held in memory and vulnerable to loss on kill/network failure; stall/spinner complaints reported; no local persistence</td><td><span class="pill conv">Conversion</span> <span class="pill perf">Performance</span></td><td><span class="pill hi">High</span></td><td><span class="pill hi">High</span></td><td><span class="pill likely">Likely</span></td></tr>
+      <tr class="row-high"><td class="area">Checkout</td><td>Coupon entry buried at final step; express payment (e.g. Google Pay) not prominent; address/payment recovery weak; session-state issues block completion</td><td><span class="pill conv">Conversion</span> <span class="pill ux">UX</span></td><td><span class="pill hi">High</span></td><td><span class="pill vhi">Very High</span></td><td><span class="pill likely">Likely</span></td></tr>
+      <tr class="row-low"><td class="area">Order tracking</td><td>Production/delivery status not prominently surfaced post-purchase; no proactive delivery push</td><td><span class="pill ux">UX</span></td><td><span class="pill med">Med</span></td><td><span class="pill med">Med</span></td><td><span class="pill likely">Likely</span></td></tr>
+      <tr class="row-low"><td class="area">Push notifications</td><td>Cadence appears batch/promotional; little occasion- or behaviour-triggered personalisation; open rate likely below benchmark</td><td><span class="pill ux">UX</span></td><td><span class="pill med">Med</span></td><td><span class="pill med">Med</span></td><td><span class="pill likely">Likely</span></td></tr>
+      <tr class="row-low"><td class="area">Account / profile</td><td>Basic account management; storage status shown; stored photos/projects accessible; can feel overloaded; no loyalty tier surfacing</td><td><span class="pill ux">UX</span></td><td><span class="pill lo">Low</span></td><td><span class="pill lo">Low</span></td><td><span class="pill likely">Likely</span></td></tr>
+      <tr class="row-crit"><td class="area">App performance</td><td>Startup, image loading, editor rendering, preview generation and checkout latency are the key risk points; 2026 update introduced instability requiring rapid follow-up patches</td><td><span class="pill perf">Performance</span></td><td><span class="pill hi">High</span></td><td><span class="pill hi">High</span></td><td><span class="pill conf">Confirmed</span></td></tr>
+      <tr class="row-med"><td class="area">Android compatibility</td><td>Broad device/OS range supported; behaviour varies across OEMs, memory classes and screen sizes; Android 14+ predictive back &amp; full Material 3 adoption unconfirmed</td><td><span class="pill tech">Technical</span></td><td><span class="pill med">Med</span></td><td><span class="pill med">Med</span></td><td><span class="pill likely">Likely</span></td></tr>
+      <tr class="row-med"><td class="area">Personalisation</td><td>Production ML (Ray + Databricks) confirmed for propensity/recommendation; not clearly wired into the Android homepage or in-app product ordering</td><td><span class="pill ai">AI / Data</span></td><td><span class="pill med">Med</span></td><td><span class="pill hi">High</span></td><td><span class="pill conf">Capability Confirmed</span></td></tr>
+      <tr class="row-med"><td class="area">Analytics / monitoring</td><td>Likely relies on Play Console health data; limited flow-level breadcrumbs / real-user monitoring; feature-flag (kill-switch) coverage unconfirmed</td><td><span class="pill tech">Technical</span></td><td><span class="pill lo">Low</span></td><td><span class="pill hi">High</span></td><td><span class="pill likely">Likely</span></td></tr>
+    </tbody>
+  </table></div>
+</div></div>
+
+<!-- 06 ISSUE BLOCKS -->
+<div id="blocks" class="sec"><div class="w">
+  <div class="sec-head"><div class="sec-num">06</div><h2>Key Issue Blocks</h2></div>
+  <p class="body">Twelve issue blocks group the findings above. Each card states the problem, why it matters, user and business impact, evidence confidence, and the validation required.</p>
+  <div class="block-grid">
+
+    <div class="block-card red-top">
+      <h4>1 &middot; Mobile Journey Friction</h4>
+      <p>Permission requested before value; homepage lacks a single primary action; deep category nesting; no clear first-action path (&ldquo;Upload&rdquo;, &ldquo;Start a book&rdquo;, &ldquo;Order prints&rdquo;, &ldquo;Continue project&rdquo;).</p>
+      <p><span class="lbl-mini">Why it matters:</span> mobile users need a fast path to action; an overloaded first run drives browse-without-create and early exits.</p>
+      <p><span class="lbl-mini">User &middot; Business:</span> confusion &amp; abandonment &middot; lower install-to-first-order conversion and wasted acquisition spend.</p>
+      <div class="block-meta"><span class="pill p1">P1</span><span class="pill likely">Likely</span><span class="pill needs">Validate: funnel + session replay</span></div>
+    </div>
+
+    <div class="block-card amber-top">
+      <h4>2 &middot; Product Discovery Complexity</h4>
+      <p>Broad catalogue surfaced mainly by category; weak occasion/intent discovery; gifting and seasonal journeys under-served; ML signal not driving in-app ordering.</p>
+      <p><span class="lbl-mini">Why it matters:</span> users arrive with intent (&ldquo;gift for mom&rdquo;, &ldquo;wedding card&rdquo;), not SKUs.</p>
+      <p><span class="lbl-mini">User &middot; Business:</span> more effort to find the right product &middot; lower browse-to-detail conversion and AOV.</p>
+      <div class="block-meta"><span class="pill p2">P2</span><span class="pill needs">Needs validation</span></div>
+    </div>
+
+    <div class="block-card red-top">
+      <h4>3 &middot; Photos / Media Permission &amp; Upload Friction</h4>
+      <p>Permission asked without context; Android 13+ scoped/selected access handled poorly on denial; valid images flagged as low-resolution (confirmed); batch uploads stall silently; uploads foreground-bound.</p>
+      <p><span class="lbl-mini">Why it matters:</span> photos are the input to every product &mdash; if access or upload fails, the whole promise fails.</p>
+      <p><span class="lbl-mini">User &middot; Business:</span> abandonment at the first core step; valid photos rejected &middot; direct order block, trust damage, support volume.</p>
+      <div class="block-meta"><span class="pill p1c">P1 Critical</span><span class="pill conf">Resolution issue Confirmed</span></div>
+    </div>
+
+    <div class="block-card orange-top">
+      <h4>4 &middot; Heavy Image / Media Handling</h4>
+      <p>Full-resolution bitmaps likely loaded into heap without downsampling; large-library picker without pagination; <code>MediaStore</code> queries likely touching the main thread.</p>
+      <p><span class="lbl-mini">Why it matters:</span> image handling is the core technical challenge of this app category; getting it wrong degrades every photo-facing flow.</p>
+      <p><span class="lbl-mini">User &middot; Business:</span> scroll lag, slow editor, OOM &middot; editor abandonment, negative reviews, crash rate.</p>
+      <div class="block-meta"><span class="pill p1">P1</span><span class="pill likely">Symptoms Likely</span><span class="pill needs">Validate: heap profiling</span></div>
+    </div>
+
+    <div class="block-card red-top">
+      <h4>5 &middot; Customisation / Editor Performance</h4>
+      <p>The highest-value flow is reported close to unresponsive; rearrange/align fails mid-session; advanced mode removed with no fallback; undo unreliable; completion much slower since the 2026 update.</p>
+      <p><span class="lbl-mini">Why it matters:</span> the editor is Shutterfly's core differentiator &mdash; if it is unreliable, users switch, and reviews show they are.</p>
+      <p><span class="lbl-mini">User &middot; Business:</span> lost work, frustration, abandonment after heavy effort &middot; churn to Mixbook, lower photo-book revenue, rating decline.</p>
+      <div class="block-meta"><span class="pill p1c">P1 Critical</span><span class="pill conf">Confirmed</span></div>
+    </div>
+
+    <div class="block-card orange-top">
+      <h4>6 &middot; Cart &amp; Checkout Friction</h4>
+      <p>Cart state fragile (likely memory-only); stalls/spinners reported; coupon buried at final step; no prominent express payment; weak address/payment recovery.</p>
+      <p><span class="lbl-mini">Why it matters:</span> users who completed creation are lost at the highest-cost abandonment point.</p>
+      <p><span class="lbl-mini">User &middot; Business:</span> lost orders &amp; repeat abandonment &middot; direct revenue loss, higher support contact.</p>
+      <div class="block-meta"><span class="pill p1">P1</span><span class="pill likely">Likely</span><span class="pill needs">Validate: checkout analytics</span></div>
+    </div>
+
+    <div class="block-card amber-top">
+      <h4>7 &middot; Android Device Fragmentation</h4>
+      <p>Performance appears tuned for flagships; mid-range (2&ndash;4&nbsp;GB RAM) users suffer disproportionately; Android 14+ features not fully leveraged; OEM/screen variance untested.</p>
+      <p><span class="lbl-mini">Why it matters:</span> the majority of the base is on mid-range hardware &mdash; optimising for flagships optimises for the minority.</p>
+      <p><span class="lbl-mini">User &middot; Business:</span> crashes/lag for the majority &middot; churn in the largest segment, Play rating penalty.</p>
+      <div class="block-meta"><span class="pill p1">P1</span><span class="pill likely">Likely</span><span class="pill needs">Validate: device-tier matrix</span></div>
+    </div>
+
+    <div class="block-card amber-top">
+      <h4>8 &middot; Retention &amp; Push Notification Gaps</h4>
+      <p>Push is largely batch/promotional; little occasion-, project- or anniversary-triggered logic; post-purchase not designed as a distinct journey state.</p>
+      <p><span class="lbl-mini">Why it matters:</span> the highest-LTV users are seasonal/occasion-driven &mdash; generic pushes waste the re-engagement window.</p>
+      <p><span class="lbl-mini">User &middot; Business:</span> push fatigue, unsubscribes &middot; lost repeat-purchase revenue, higher re-acquisition cost.</p>
+      <div class="block-meta"><span class="pill p2">P2</span><span class="pill likely">Likely</span></div>
+    </div>
+
+    <div class="block-card purple-top">
+      <h4>9 &middot; Weak AI / Personalisation Layer (in-app)</h4>
+      <p>A production Ray/Databricks ML pipeline exists but is under-leveraged in the Android app; homepage appears static per user; marketed AI features (Autofill, Magic Writer) need mobile reliability parity.</p>
+      <p><span class="lbl-mini">Why it matters:</span> the data and infrastructure to lead on AI-assisted creation already exist; the gap is mobile execution.</p>
+      <p><span class="lbl-mini">User &middot; Business:</span> missed time-savings &amp; &ldquo;wow&rdquo; &middot; below-benchmark AI engagement vs Popsa/Journi, missed upsell.</p>
+      <div class="block-meta"><span class="pill p2">P2</span><span class="pill conf">Capability Confirmed</span><span class="pill needs">In-app wiring Needs validation</span></div>
+    </div>
+
+    <div class="block-card orange-top">
+      <h4>10 &middot; Performance Monitoring Gaps</h4>
+      <p>Likely reliant on Play Console health data only; limited flow-level breadcrumbs, real-user monitoring or kill-switch feature flags &mdash; consistent with a regression cascade that needed rapid follow-up patches.</p>
+      <p><span class="lbl-mini">Why it matters:</span> without observability, engineering debugs blind and regression cycles repeat.</p>
+      <p><span class="lbl-mini">User &middot; Business:</span> slow fixes &middot; extended regression windows, higher support cost, slower velocity.</p>
+      <div class="block-meta"><span class="pill p1">P1</span><span class="pill likely">Likely</span></div>
+    </div>
+
+    <div class="block-card">
+      <h4>11 &middot; Design System Inconsistency</h4>
+      <p>Partial Material 3 adoption; legacy and new components coexist; inconsistent typography/spacing; back-stack behaviour inconsistent with the M3 navigation model.</p>
+      <p><span class="lbl-mini">Why it matters:</span> inconsistency signals instability to users and slows every future UI change.</p>
+      <p><span class="lbl-mini">User &middot; Business:</span> cognitive load, accessibility risk &middot; slower delivery, higher QA surface, rework cost.</p>
+      <div class="block-meta"><span class="pill p3">P3</span><span class="pill likely">Likely</span></div>
+    </div>
+
+    <div class="block-card">
+      <h4>12 &middot; Technical Scalability Risks</h4>
+      <p>Accumulated SDKs without audit; no confirmed feature-flag layer; unbounded bitmap architecture; no robust background-task infrastructure.</p>
+      <p><span class="lbl-mini">Why it matters:</span> each feature added on an unstable foundation increases blast radius and slows the next growth phase.</p>
+      <p><span class="lbl-mini">User &middot; Business:</span> compounding regressions per release &middot; rising engineering cost per feature, growing refactor debt.</p>
+      <div class="block-meta"><span class="pill p2">P2</span><span class="pill hypo">Hypothesis</span><span class="pill needs">Validate: APK/SDK audit</span></div>
+    </div>
+  </div>
+</div></div>
+
+<!-- 07 DETAILED DIAGNOSIS -->
+<div id="diag" class="sec"><div class="w">
+  <div class="sec-head"><div class="sec-num">07</div><h2>Detailed Issue Diagnosis Table</h2></div>
+  <p class="body">The most material issues, with root cause, impact dimensions, complexity, feasibility and the validation each requires before committing engineering.</p>
+  <div class="tbl-wrap"><table>
+    <thead><tr>
+      <th>Pri.</th><th>Issue block</th><th style="min-width:200px">Issue description</th><th style="min-width:170px">Evidence / observation</th><th style="min-width:160px">Likely root cause</th><th>User</th><th>Business</th><th>Perf</th><th>Complexity</th><th>Feasibility</th><th>Validation</th>
+    </tr></thead>
+    <tbody>
+      <tr class="row-crit"><td><span class="pill p1c">P1</span></td><td class="area">Editor performance</td><td>Editor slow/unresponsive; rearrange &amp; align fail mid-session; advanced mode removed</td><td>Recurring 2026 reviews across devices; loyal users leaving</td><td>Full-res bitmaps in heap; main-thread work; regression in v-2026 interaction model</td><td><span class="pill hi">High</span></td><td><span class="pill hi">High</span></td><td><span class="pill hi">High</span></td><td><span class="pill hi">High</span></td><td><span class="pill med">Med</span></td><td><span class="pill conf">Confirmed</span></td></tr>
+      <tr class="row-crit"><td><span class="pill p1c">P1</span></td><td class="area">Resolution false-positive</td><td>Valid 4MP+ / previously-accepted photos flagged &ldquo;insufficient resolution&rdquo;</td><td>March 2026 reviews report it across past &amp; current projects</td><td>Faulty resolution check (suspected DPI vs pixel-dimension logic) &mdash; <em>exact cause unverified</em></td><td><span class="pill hi">High</span></td><td><span class="pill hi">High</span></td><td><span class="pill lo">Low</span></td><td><span class="pill lo">Low</span></td><td><span class="pill conf">High</span></td><td><span class="pill conf">Symptom Confirmed</span> / <span class="pill needs">cause Needs validation</span></td></tr>
+      <tr class="row-crit"><td><span class="pill p1c">P1</span></td><td class="area">Cart &amp; checkout</td><td>Cart loss / stall; coupon buried; no express pay; weak recovery</td><td>Stall/spinner &amp; checkout-frustration complaints</td><td>In-memory cart state; missing API timeout/retry; late coupon placement</td><td><span class="pill hi">High</span></td><td><span class="pill vhi">V.High</span></td><td><span class="pill med">Med</span></td><td><span class="pill med">Med</span></td><td><span class="pill conf">High</span></td><td><span class="pill likely">Likely</span></td></tr>
+      <tr class="row-high"><td><span class="pill p1">P1</span></td><td class="area">Permission &amp; upload</td><td>Permission before value; silent denial loss; foreground-only upload; silent stalls</td><td>Android model + review reports of stalled/failed uploads</td><td>No contextual rationale; no WorkManager/resumable upload</td><td><span class="pill hi">High</span></td><td><span class="pill hi">High</span></td><td><span class="pill med">Med</span></td><td><span class="pill hi">High</span></td><td><span class="pill med">Med</span></td><td><span class="pill likely">Likely</span></td></tr>
+      <tr class="row-high"><td><span class="pill p1">P1</span></td><td class="area">Heavy media handling</td><td>Picker lag on large libraries; OOM in editor</td><td>Lag/crash reports; category norms</td><td>No <code>inSampleSize</code> downsampling; unpaginated <code>MediaStore</code>; no bitmap pool</td><td><span class="pill hi">High</span></td><td><span class="pill med">Med</span></td><td><span class="pill hi">High</span></td><td><span class="pill med">Med</span></td><td><span class="pill conf">High</span></td><td><span class="pill needs">Heap profiling</span></td></tr>
+      <tr class="row-high"><td><span class="pill p1">P1</span></td><td class="area">App startup</td><td>Cold start likely &gt; 2s on mid-range</td><td>SDK-heavy startup pattern; category norms</td><td>Synchronous SDK init in <code>Application.onCreate()</code>; no App Startup ordering</td><td><span class="pill med">Med</span></td><td><span class="pill med">Med</span></td><td><span class="pill hi">High</span></td><td><span class="pill med">Med</span></td><td><span class="pill conf">High</span></td><td><span class="pill needs">TTID benchmark</span></td></tr>
+      <tr class="row-med"><td><span class="pill p1">P1</span></td><td class="area">Monitoring gaps</td><td>No flow-level breadcrumbs/RUM; no confirmed kill switch</td><td>Rapid follow-up patching after 2026 update</td><td>Play-Console-only health; no Crashlytics breadcrumbs / Remote Config flags</td><td><span class="pill lo">Low</span></td><td><span class="pill hi">High</span></td><td><span class="pill med">Med</span></td><td><span class="pill med">Med</span></td><td><span class="pill conf">High</span></td><td><span class="pill likely">Likely</span></td></tr>
+      <tr class="row-med"><td><span class="pill p2">P2</span></td><td class="area">Homepage personalisation</td><td>Static, equal-weight homepage; no session-aware CTA</td><td>ML platform confirmed; in-app surfacing not evident</td><td>ML recommendation API not wired to Android home module ordering</td><td><span class="pill med">Med</span></td><td><span class="pill hi">High</span></td><td><span class="pill lo">Low</span></td><td><span class="pill med">Med</span></td><td><span class="pill med">Med</span></td><td><span class="pill needs">Needs validation</span></td></tr>
+      <tr class="row-med"><td><span class="pill p2">P2</span></td><td class="area">Preview rendering</td><td>Long books freeze; no progressive load</td><td>Category norms; reports of freezes</td><td>Synchronous full-book render; no lazy page virtualisation</td><td><span class="pill med">Med</span></td><td><span class="pill med">Med</span></td><td><span class="pill med">Med</span></td><td><span class="pill lo">Low</span></td><td><span class="pill conf">High</span></td><td><span class="pill needs">Needs validation</span></td></tr>
+      <tr class="row-med"><td><span class="pill p2">P2</span></td><td class="area">AI Autofill on mobile</td><td>Marketed AI creation unreliable on Android</td><td>AI features marketed; reliability concerns</td><td>Heavy client-side compute; no server-side offload / progress affordance</td><td><span class="pill med">Med</span></td><td><span class="pill hi">High</span></td><td><span class="pill hi">High</span></td><td><span class="pill hi">High</span></td><td><span class="pill med">Med</span></td><td><span class="pill needs">Needs validation</span></td></tr>
+      <tr class="row-low"><td><span class="pill p3">P3</span></td><td class="area">Android 14+ compat &amp; M3</td><td>Predictive back / M3 nav gaps; editor back-stack exits</td><td>Back-press exit reports; partial M3</td><td>No <code>enableOnBackInvokedCallback</code>; mixed component libraries</td><td><span class="pill med">Med</span></td><td><span class="pill med">Med</span></td><td><span class="pill lo">Low</span></td><td><span class="pill med">Med</span></td><td><span class="pill conf">High</span></td><td><span class="pill needs">Needs validation</span></td></tr>
+    </tbody>
+  </table></div>
+</div></div>
+
+<!-- 08 ROOT CAUSE -->
+<div id="root" class="sec"><div class="w">
+  <div class="sec-head"><div class="sec-num">08</div><h2>Root Cause Analysis</h2></div>
+  <p class="body">Symptoms cluster around a small number of underlying causes. Fixing these foundations resolves multiple surface issues at once.</p>
+  <div class="rc-grid">
+    <div class="rc-card ux"><h4>&#127912; UX / Design causes</h4><ul>
+      <li>Permission and sign-in requested before value is demonstrated.</li>
+      <li>Homepage has no session-aware primary action; modules compete at equal weight.</li>
+      <li>Deep category nesting; weak occasion/intent discovery.</li>
+      <li>Generic error states with no recovery path; inconsistent components increase cognitive load.</li>
+    </ul></div>
+    <div class="rc-card perf"><h4>&#9889; Android technical causes</h4><ul>
+      <li>Full-resolution bitmaps held in heap without downsampling &rarr; OOM/ANR in the editor.</li>
+      <li>Synchronous SDK init at startup; main-thread <code>MediaStore</code> and image work.</li>
+      <li>No background-task infrastructure (WorkManager) for upload/sync.</li>
+      <li>Incomplete Android 14+ / Material 3 alignment (predictive back, nav).</li>
+    </ul></div>
+    <div class="rc-card api"><h4>&#128279; Backend / API causes</h4><ul>
+      <li>No client-side API timeout/retry &rarr; cart/checkout stalls never resolve.</li>
+      <li>Sequential rather than parallel home/checkout calls inflate latency.</li>
+      <li>Sessions dropped after major updates force re-authentication.</li>
+    </ul></div>
+    <div class="rc-card media"><h4>&#128247; Image / media pipeline causes</h4><ul>
+      <li>Faulty resolution validation rejects valid images (suspected DPI-vs-pixel logic).</li>
+      <li>Uploads foreground-bound, non-resumable, and silently stalling.</li>
+      <li>No responsive CDN sizing / confirmed WEBP delivery; thumbnails under-cached.</li>
+    </ul></div>
+    <div class="rc-card strat"><h4>&#127919; Product strategy causes</h4><ul>
+      <li>2026 platform change prioritised redesign over journey reliability and removed valued capability (advanced editor) without a fallback.</li>
+      <li>Capability marketed (AI, storage) ahead of mobile reliability.</li>
+      <li>Flagship-first optimisation under-serves the mid-range majority.</li>
+    </ul></div>
+    <div class="rc-card data"><h4>&#129302; Data / personalisation causes</h4><ul>
+      <li>Production ML (Ray + Databricks) not wired into in-app home ordering or product discovery.</li>
+      <li>Stored photos and order history under-used to guide creation and reorder.</li>
+      <li>Push is batch rather than behaviour/occasion-triggered.</li>
+    </ul></div>
+    <div class="rc-card mon"><h4>&#128202; Analytics / monitoring causes</h4><ul>
+      <li>Health visibility limited to app-level signals; no flow-level breadcrumbs or RUM.</li>
+      <li>No confirmed feature-flag / kill-switch layer &rarr; large release blast radius.</li>
+      <li>Crash/ANR causes hard to localise without device-tier segmentation.</li>
+    </ul></div>
+  </div>
+</div></div>
+
+<!-- 09 SOLUTIONS -->
+<div id="solutions" class="sec"><div class="w">
+  <div class="sec-head"><div class="sec-num">09</div><h2>Proposed Solution Plan</h2></div>
+  <p class="body">For each major issue block: the fix, how it works, effort by discipline, dependencies, and success metrics.</p>
+  <div class="tbl-wrap"><table>
+    <thead><tr>
+      <th style="min-width:150px">Issue block</th><th style="min-width:210px">Proposed fix &amp; how it works</th><th>UX</th><th>Android</th><th>Backend</th><th>Dependencies</th><th>Feas.</th><th>Impact</th><th>Cplx.</th><th>Pri.</th><th style="min-width:170px">Success metrics</th>
+    </tr></thead>
+    <tbody>
+      <tr class="row-crit"><td class="area">Resolution false-positive</td><td>Audit resolution-check logic (client + server); validate on true pixel dimensions; add a correct pre-cart quality gate.</td><td><span class="pill lo">Low</span></td><td><span class="pill lo">Low</span></td><td><span class="pill lo">Low</span></td><td>Image service rules</td><td><span class="pill conf">High</span></td><td><span class="pill hi">High</span></td><td><span class="pill lo">Low</span></td><td><span class="pill p1c">P1</span></td><td class="note">Zero false warnings on 4&ndash;24MP JPEG/HEIC</td></tr>
+      <tr class="row-crit"><td class="area">Editor bitmap architecture</td><td>Edit on downsampled preview bitmaps (<code>inSampleSize</code>); load full-res only at export; Glide/Coil bitmap pool; decode on IO dispatcher; fix undo to cover Autofill.</td><td><span class="pill lo">Low</span></td><td><span class="pill hi">High</span></td><td><span class="pill lo">Low</span></td><td>Editor architecture</td><td><span class="pill med">Med</span></td><td><span class="pill hi">High</span></td><td><span class="pill hi">High</span></td><td><span class="pill p1c">P1</span></td><td class="note">Zero ANR in 500-action editor test; heap peak &le;150MB</td></tr>
+      <tr class="row-crit"><td class="area">Cart &amp; checkout</td><td>Persist cart in Room DB; add 30s API timeout + exponential-backoff retry; move coupon to cart summary; add Google Pay express checkout.</td><td><span class="pill lo">Low</span></td><td><span class="pill med">Med</span></td><td><span class="pill med">Med</span></td><td>Checkout/promo APIs</td><td><span class="pill conf">High</span></td><td><span class="pill vhi">V.High</span></td><td><span class="pill med">Med</span></td><td><span class="pill p1c">P1</span></td><td class="note">Cart survives app kill; no infinite spinner; checkout completion +10%</td></tr>
+      <tr class="row-high"><td class="area">Permission &amp; upload</td><td>Value-first onboarding before any prompt; contextual rationale at first photo action; WorkManager + chunked resumable background upload with progress notification &amp; retry.</td><td><span class="pill hi">High</span></td><td><span class="pill hi">High</span></td><td><span class="pill med">Med</span></td><td>Upload API, permission map</td><td><span class="pill med">Med</span></td><td><span class="pill hi">High</span></td><td><span class="pill hi">High</span></td><td><span class="pill p1">P1</span></td><td class="note">Opt-in &ge;75%; 20k-photo upload completes backgrounded</td></tr>
+      <tr class="row-high"><td class="area">Heavy media handling</td><td>Paginate picker (Paging 3 + <code>DiffUtil</code>); async <code>MediaStore</code> via coroutines; persistent thumbnail cache; progressive (low&rarr;high-res) loading.</td><td><span class="pill lo">Low</span></td><td><span class="pill hi">High</span></td><td><span class="pill lo">Low</span></td><td>Cache strategy</td><td><span class="pill med">Med</span></td><td><span class="pill hi">High</span></td><td><span class="pill med">Med</span></td><td><span class="pill p1">P1</span></td><td class="note">&ge;55 FPS picker scroll on 20k library; faster gallery load</td></tr>
+      <tr class="row-med"><td class="area">App startup</td><td>Adopt App Startup library; defer non-critical SDKs post-first-frame; remove vestigial SDKs after audit; baseline profiles.</td><td><span class="pill lo">Low</span></td><td><span class="pill med">Med</span></td><td><span class="pill lo">Low</span></td><td>SDK inventory</td><td><span class="pill conf">High</span></td><td><span class="pill hi">High</span></td><td><span class="pill med">Med</span></td><td><span class="pill p1">P1</span></td><td class="note">Cold start &le;2.0s, warm &le;1.0s on Pixel 6a</td></tr>
+      <tr class="row-med"><td class="area">Discovery &amp; homepage</td><td>Wire ML recommendation API to home module ordering; session-aware primary CTA; occasion/intent-based discovery &amp; search.</td><td><span class="pill med">Med</span></td><td><span class="pill med">Med</span></td><td><span class="pill med">Med</span></td><td>Recommendation API, taxonomy</td><td><span class="pill med">Med</span></td><td><span class="pill hi">High</span></td><td><span class="pill med">Med</span></td><td><span class="pill p2">P2</span></td><td class="note">First-session add-to-cart +15%; home bounce -20%</td></tr>
+      <tr class="row-med"><td class="area">Preview rendering</td><td>Replace synchronous render with lazy virtualised page list (current + 2-page buffer); low-res placeholder while full-res renders async.</td><td><span class="pill lo">Low</span></td><td><span class="pill med">Med</span></td><td><span class="pill lo">Low</span></td><td>Preview service</td><td><span class="pill conf">High</span></td><td><span class="pill med">Med</span></td><td><span class="pill lo">Low</span></td><td><span class="pill p2">P2</span></td><td class="note">60-page preview first page &le;2s; no scroll jank</td></tr>
+      <tr class="row-med"><td class="area">Monitoring &amp; flags</td><td>Crashlytics with flow breadcrumbs; Firebase Performance traces for editor/upload/cart; Remote Config feature flags (kill switches).</td><td><span class="pill lo">Low</span></td><td><span class="pill med">Med</span></td><td><span class="pill lo">Low</span></td><td>Analytics/RUM platform</td><td><span class="pill conf">High</span></td><td><span class="pill hi">High</span></td><td><span class="pill med">Med</span></td><td><span class="pill p1">P1</span></td><td class="note">&ge;3 breadcrumbs per editor crash; flags toggle without app update</td></tr>
+      <tr class="row-med"><td class="area">AI Autofill (mobile)</td><td>Move layout generation server-side; client renders lightweight JSON manifest; show progress + cancel; fix crash-prone client path.</td><td><span class="pill med">Med</span></td><td><span class="pill hi">High</span></td><td><span class="pill hi">High</span></td><td>ML/data platform</td><td><span class="pill med">Med</span></td><td><span class="pill hi">High</span></td><td><span class="pill hi">High</span></td><td><span class="pill p2">P2</span></td><td class="note">No crash on Pixel 6a; time-to-first-preview &le;5 min</td></tr>
+      <tr class="row-med"><td class="area">Push &amp; retention</td><td>Trigger-based push: incomplete project (48h), order anniversary, seasonal window, post-delivery; segment by recency/category.</td><td><span class="pill med">Med</span></td><td><span class="pill lo">Low</span></td><td><span class="pill med">Med</span></td><td>CRM, FCM, analytics</td><td><span class="pill med">Med</span></td><td><span class="pill med">Med</span></td><td><span class="pill med">Med</span></td><td><span class="pill p2">P2</span></td><td class="note">Open rate &ge;8%; 90-day repeat purchase +10%</td></tr>
+      <tr class="row-low"><td class="area">Android 14+ &amp; design system</td><td>Predictive back (<code>enableOnBackInvokedCallback</code>); NavGraph + <code>SavedStateHandle</code> in editor; M3 Compose token system &amp; component migration.</td><td><span class="pill hi">High</span></td><td><span class="pill med">Med</span></td><td><span class="pill lo">Low</span></td><td>Component library</td><td><span class="pill conf">High</span></td><td><span class="pill med">Med</span></td><td><span class="pill med">Med</span></td><td><span class="pill p3">P3</span></td><td class="note">Zero unintended editor exits on Android 14&ndash;17; token coverage on new screens</td></tr>
+    </tbody>
+  </table></div>
+</div></div>
+
+<!-- 10 PERFORMANCE PLAN -->
+<div id="perf" class="sec"><div class="w">
+  <div class="sec-head"><div class="sec-num">10</div><h2>Android Performance Improvement Plan</h2></div>
+  <p class="body">Targeted optimisations across the full Android performance surface. Each gives the current problem, the specific engineering fix, expected impact, feasibility/complexity, and the measurement method. <span class="pill conf">High Feas.</span> = low-risk, well-understood pattern.</p>
+
+  <div class="perf-row" style="background:var(--red-bg);border-color:var(--red-border)"><div><div class="perf-area">&#128308; App startup (cold &amp; warm)</div><div class="perf-problem">SDKs initialised synchronously in <code>Application.onCreate()</code>; home calls and assets block first frame; cold start likely &gt;2s on mid-range.</div></div><div><div class="perf-fix">Adopt <code>App Startup</code> with explicit <code>dependencies()</code> ordering; defer analytics/personalisation/attribution SDKs post-first-frame via <code>coroutineScope.launch</code>; ship baseline profiles; R8 aggressive mode. Warm start: avoid unnecessary activity reloads.</div></div><div><div class="perf-meta"><span class="pill p1">P1</span><span class="pill conf">High Feas.</span><span class="pill hi">High Impact</span></div><div style="font-size:.76rem;color:var(--ink-3);margin-top:6px">Measure: Macrobenchmark / Android Vitals TTID &amp; TTFD. Target &le;2.0s cold, &le;1.0s warm.</div></div></div>
+
+  <div class="perf-row" style="background:var(--red-bg);border-color:var(--red-border)"><div><div class="perf-area">&#128308; Editor bitmap memory</div><div class="perf-problem">Full-resolution bitmaps loaded into heap for all editing; OOM/ANR on 2&ndash;4GB devices; confirmed editor instability post-2026.</div></div><div><div class="perf-fix">Edit on 1/4-res preview via <code>BitmapFactory.Options.inSampleSize</code>; full-res only at final render/export; Glide custom <code>BitmapPool</code>; decode on <code>Dispatchers.IO</code> &rarr; UI via <code>StateFlow</code>; keep <code>largeHeap=false</code> to surface issues early.</div></div><div><div class="perf-meta"><span class="pill p1c">P1</span><span class="pill conf">High Feas.</span><span class="pill hi">High Impact</span></div><div style="font-size:.76rem;color:var(--ink-3);margin-top:6px">Measure: Memory Profiler heap dump while editing. Target peak heap &le;150MB; OOM rate &rarr;0.</div></div></div>
+
+  <div class="perf-row" style="background:var(--red-bg);border-color:var(--red-border)"><div><div class="perf-area">&#128308; Background photo upload</div><div class="perf-problem">Foreground-only upload; app must stay open; large libraries stall; no chunked/resumable logic.</div></div><div><div class="perf-fix"><code>WorkManager</code> <code>UploadWorker</code> + <code>ForegroundService</code> progress notification; 5MB chunked upload with server-side offset resume; <code>setExpedited()</code> for user-initiated; surface an upload queue in the photos screen; network-aware constraints.</div></div><div><div class="perf-meta"><span class="pill p1">P1</span><span class="pill med">Med Feas.</span><span class="pill hi">High Impact</span></div><div style="font-size:.76rem;color:var(--ink-3);margin-top:6px">Measure: upload 20k photos, background after 30s. Target: completes with zero manual intervention.</div></div></div>
+
+  <div class="perf-row" style="background:var(--amber-bg);border-color:var(--amber-border)"><div><div class="perf-area">&#128993; Photo picker / library access</div><div class="perf-problem"><code>MediaStore</code> queries likely on main thread; large libraries cause scroll lag and freezes.</div></div><div><div class="perf-fix">Wrap <code>ContentResolver.query()</code> in <code>withContext(Dispatchers.IO)</code>; Paging 3 <code>PagingSource</code> for paginated access; pre-load thumbnails (Glide); <code>RecyclerView.RecycledViewPool</code> for grid reuse; support Android Photo Picker.</div></div><div><div class="perf-meta"><span class="pill p1">P1</span><span class="pill conf">High Feas.</span><span class="pill hi">High Impact</span></div><div style="font-size:.76rem;color:var(--ink-3);margin-top:6px">Measure: GPU Rendering Profiler scroll FPS on 20k library. Target &ge;55 FPS.</div></div></div>
+
+  <div class="perf-row" style="background:var(--amber-bg);border-color:var(--amber-border)"><div><div class="perf-area">&#128993; Image compression &amp; remote caching</div><div class="perf-problem">Originals uploaded heavy; product images may not use WEBP or DPI-aware sizing; excess bandwidth on browse.</div></div><div><div class="perf-fix">Compress uploads to print requirement (preserve print quality, avoid over-compression); CDN WEBP + DPI-aware URLs (<code>?w=720&amp;dpr=3</code>); Glide <code>diskCacheStrategy(ALL)</code> with <code>override()</code>; prefetch likely assets.</div></div><div><div class="perf-meta"><span class="pill p2">P2</span><span class="pill conf">High Feas.</span><span class="pill med">Med Impact</span></div><div style="font-size:.76rem;color:var(--ink-3);margin-top:6px">Measure: Network Profiler image bytes on browse. Target &ge;40% reduction vs JPEG baseline.</div></div></div>
+
+  <div class="perf-row" style="background:var(--amber-bg);border-color:var(--amber-border)"><div><div class="perf-area">&#128993; Preview generation</div><div class="perf-problem">All book pages rendered before preview shows; 40+ page books freeze; no progressive loading.</div></div><div><div class="perf-fix">Lazy virtualised page list (<code>LazyColumn</code> / <code>RecyclerView</code>), current + 2-page buffer; low-res placeholder via Glide <code>thumbnail()</code> while full-res renders on <code>Dispatchers.Default</code>; cache page previews server-side where justified.</div></div><div><div class="perf-meta"><span class="pill p2">P2</span><span class="pill conf">High Feas.</span><span class="pill med">Med Impact</span></div><div style="font-size:.76rem;color:var(--ink-3);margin-top:6px">Measure: time-to-first-page for 60-page book. Target &le;2.0s; no scroll jank.</div></div></div>
+
+  <div class="perf-row" style="background:var(--amber-bg);border-color:var(--amber-border)"><div><div class="perf-area">&#128993; Screen load times</div><div class="perf-problem">Full-screen spinners during fetch; no skeletons; perceived wait amplified by lack of progressive content.</div></div><div><div class="perf-fix">Shimmer skeletons on home/product list/library; load above-the-fold first, defer below-fold calls; cache-first UI; <code>LaunchedEffect</code> + <code>StateFlow</code> incremental emission; pagination + API batching.</div></div><div><div class="perf-meta"><span class="pill p2">P2</span><span class="pill conf">High Feas.</span><span class="pill med">Med Impact</span></div><div style="font-size:.76rem;color:var(--ink-3);margin-top:6px">Measure: screen TTI + perceived-load user study. Target: &ge;80% rate load &ldquo;acceptable&rdquo;.</div></div></div>
+
+  <div class="perf-row"><div><div class="perf-area">&#128309; Checkout API latency</div><div class="perf-problem">Cart spinner never resolves; likely no timeout ceiling; session expiry causes silent cart failure.</div></div><div><div class="perf-fix"><code>OkHttpClient.callTimeout(30s)</code>; exponential-backoff retry interceptor (max 3); optimistic local cart state in Room before API; &ldquo;Still working&hellip;&rdquo; + Cancel at 10s; sequence/parallelise checkout calls.</div></div><div><div class="perf-meta"><span class="pill p1c">P1</span><span class="pill conf">High Feas.</span><span class="pill hi">High Impact</span></div><div style="font-size:.76rem;color:var(--ink-3);margin-top:6px">Measure: time-to-cart on throttled 3G. Target: visible cart &le;5s; no infinite spinner.</div></div></div>
+
+  <div class="perf-row"><div><div class="perf-area">&#128309; Memory pressure, ANR &amp; crash reduction</div><div class="perf-problem">Editor holds many large bitmaps; no recycle policy; frequent GC and UI jank; crashes cluster around media/editor/checkout.</div></div><div><div class="perf-fix"><code>Glide.clearMemory()</code> on editor pause; <code>onTrimMemory()</code> release at TRIM_MEMORY_MODERATE; heavy compute on <code>Dispatchers.Default</code>; StrictMode + coroutine/threading audit to remove blocking calls; LeakCanary; crash breadcrumbs + release gating.</div></div><div><div class="perf-meta"><span class="pill p1">P1</span><span class="pill med">Med Feas.</span><span class="pill hi">High Impact</span></div><div style="font-size:.76rem;color:var(--ink-3);margin-top:6px">Measure: Play Vitals. Target ANR &le;0.1% (threshold 0.47%); crash-free sessions &ge;99.5%.</div></div></div>
+
+  <div class="perf-row"><div><div class="perf-area">&#128309; Third-party SDK audit &amp; app size</div><div class="perf-problem">Accumulated SDKs inflate startup and APK; some likely vestigial from deprecated features.</div></div><div><div class="perf-fix">Enumerate SDKs &amp; startup cost via Perfetto; remove un-instrumented and duplicated SDKs (e.g. two analytics libs &rarr; one); <code>extractNativeLibs=false</code>; lazy-load attribution/personalisation.</div></div><div><div class="perf-meta"><span class="pill p2">P2</span><span class="pill med">Med Feas.</span><span class="pill med">Med Impact</span></div><div style="font-size:.76rem;color:var(--ink-3);margin-top:6px">Measure: APK/AAB size + startup SDK init time. Target: leaner base APK; SDK init &lt;200ms total.</div></div></div>
+
+  <div class="perf-row"><div><div class="perf-area">&#128309; Network request optimisation</div><div class="perf-problem">Home modules likely fetched sequentially; redundant calls; HTTP/2 multiplexing unverified.</div></div><div><div class="perf-fix"><code>async{} + awaitAll()</code> for parallel home calls; verify HTTP/2; Gzip responses; cache-control for stable data (templates, categories); batch cart/promo calls.</div></div><div><div class="perf-meta"><span class="pill p2">P2</span><span class="pill conf">High Feas.</span><span class="pill med">Med Impact</span></div><div style="font-size:.76rem;color:var(--ink-3);margin-top:6px">Measure: Network Profiler home load. Target: above-fold calls &le;1.5s on 4G.</div></div></div>
+
+  <div class="perf-row"><div><div class="perf-area">&#128309; Low / mid-range device optimisation &amp; battery</div><div class="perf-problem">Tuned for flagships; Pixel 6a / Galaxy A-series users see disproportionate lag &amp; crashes; bulk upload/compression drains battery.</div></div><div><div class="perf-fix">Device tiers (<code>getMemoryClass()</code>): LOW &lt;3GB / MID 3&ndash;6GB / HIGH &gt;6GB &mdash; adapt bitmap budget, editor features, Autofill behaviour; efficient compression, network constraints, batching to limit battery drain &amp; repeated retries.</div></div><div><div class="perf-meta"><span class="pill p2">P2</span><span class="pill med">Med Feas.</span><span class="pill hi">High Impact</span></div><div style="font-size:.76rem;color:var(--ink-3);margin-top:6px">Measure: crash-free rate on tier-MID devices. Target &ge;99.5%; battery profiler stable on long sessions.</div></div></div>
+
+  <div class="perf-row"><div><div class="perf-area">&#128309; Real-user monitoring (RUM)</div><div class="perf-problem">No custom traces; reliance on Play Console ANR data; no visibility into editor latency by device tier.</div></div><div><div class="perf-fix">Firebase Performance custom traces (<code>editor_load</code>, Autofill, preview, cart add, checkout) with <code>putMetric("image_count", n)</code>; dashboard segmented by device tier, OS, network &amp; journey.</div></div><div><div class="perf-meta"><span class="pill p2">P2</span><span class="pill conf">High Feas.</span><span class="pill hi">High Impact</span></div><div style="font-size:.76rem;color:var(--ink-3);margin-top:6px">Measure: instrumentation coverage. Target: 100% of P1 flows traced before Phase 2 launch; lower MTTR.</div></div></div>
+</div></div>
+
+<!-- 11 UX PLAN -->
+<div id="ux" class="sec"><div class="w">
+  <div class="sec-head"><div class="sec-num">11</div><h2>Android UX Improvement Plan</h2></div>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th style="min-width:150px">UX area</th><th style="min-width:200px">Current state</th><th style="min-width:220px">Proposed improvement</th><th>UX</th><th>Eng</th><th>Pri.</th><th style="min-width:150px">Success metric</th></tr></thead>
+    <tbody>
+      <tr class="row-high"><td class="area">Onboarding</td><td>Sign-in before value; product not shown before registration prompt</td><td>2-screen value carousel (products + storage benefit) before sign-in; &ldquo;Continue as guest&rdquo; browse; defer sign-in to add-to-cart</td><td><span class="pill hi">High</span></td><td><span class="pill lo">Low</span></td><td><span class="pill p1">P1</span></td><td class="note">First-session creation start; 7-day new-user retention</td></tr>
+      <tr class="row-high"><td class="area">Permission timing &amp; education</td><td>Media access requested before value; silent feature loss on denial</td><td>Request at first photo action with in-context rationale; support &ldquo;select photos only&rdquo;; graceful denial fallback + deep link to settings</td><td><span class="pill med">Med</span></td><td><span class="pill lo">Low</span></td><td><span class="pill p1">P1</span></td><td class="note">Media opt-in &ge;75%</td></tr>
+      <tr class="row-high"><td class="area">Homepage</td><td>Modules at equal weight; no session-aware action; personalisation not surfaced</td><td>Three home &ldquo;modes&rdquo; (new &rarr; free-prints + tour; returning &rarr; resume project + seasonal; post-purchase &rarr; track + create next); primary CTA above fold, &ge;48dp target</td><td><span class="pill hi">High</span></td><td><span class="pill med">Med</span></td><td><span class="pill p1">P1</span></td><td class="note">Home&rarr;add-to-cart; time-to-first-tap on CTA</td></tr>
+      <tr class="row-med"><td class="area">Navigation &amp; category hierarchy</td><td>3+ levels for common products; editor back may exit; no progress indicator</td><td>Flatten to &le;2 levels for top products; group by occasion/recipient/type/urgency; editor exit-confirmation bottom sheet; &ldquo;step X of Y&rdquo;</td><td><span class="pill med">Med</span></td><td><span class="pill med">Med</span></td><td><span class="pill p2">P2</span></td><td class="note">Editor abandonment; back-press data-loss incidents</td></tr>
+      <tr class="row-med"><td class="area">Search / filter</td><td>Limited template/occasion search; flat filters</td><td>Support intent terms (&ldquo;gift for dad&rdquo;, &ldquo;wedding card&rdquo;, &ldquo;baby book&rdquo;, &ldquo;same day&rdquo;); saved filter presets; richer template search</td><td><span class="pill med">Med</span></td><td><span class="pill med">Med</span></td><td><span class="pill p2">P2</span></td><td class="note">Search conversion; intent-match rate</td></tr>
+      <tr class="row-low"><td class="area">Product cards</td><td>Limited at-a-glance info; no in-app social proof</td><td>Show price range, promo eligibility, delivery expectation and creation time on cards</td><td><span class="pill lo">Low</span></td><td><span class="pill lo">Low</span></td><td><span class="pill p3">P3</span></td><td class="note">Browse-to-detail conversion</td></tr>
+      <tr class="row-med"><td class="area">Photo selection flow</td><td>Flat chronological grid; no grouping; no AI-assisted selection</td><td>Smart grouping (month/event/year); &ldquo;suggested for this product&rdquo; by quality score; multi-select count badge with min/max guidance</td><td><span class="pill hi">High</span></td><td><span class="pill med">Med</span></td><td><span class="pill p2">P2</span></td><td class="note">Selection completion; time-to-selection-complete</td></tr>
+      <tr class="row-high"><td class="area">Upload progress states</td><td>Generic &ldquo;keep app open&rdquo;; no per-file progress; silent stalls</td><td>Per-file counter (&ldquo;247 of 1,203&rdquo;); failure notice + &ldquo;retry failed&rdquo;; upload-queue section; tray progress notification; safe-backgrounding guidance</td><td><span class="pill med">Med</span></td><td><span class="pill med">Med</span></td><td><span class="pill p1">P1</span></td><td class="note">Upload completion for batches &gt;1,000</td></tr>
+      <tr class="row-high"><td class="area">Editor guidance</td><td>No first-use hints; undo/redo not signposted; no save confirmation</td><td>Dismissible coach-marks (first 3 sessions); prominent undo/redo; Autofill progress + cancel; &ldquo;changes saved&rdquo; autosave indicator</td><td><span class="pill med">Med</span></td><td><span class="pill lo">Low</span></td><td><span class="pill p2">P2</span></td><td class="note">Editor completion; Autofill abandon rate; undo usage</td></tr>
+      <tr class="row-med"><td class="area">Preview confidence</td><td>No guidance on preview vs print; no &ldquo;looks good&rdquo; signal</td><td>&ldquo;How to review your book&rdquo; tip; crop-safe / print-quality highlights; &ldquo;Ready to order&rdquo; state once all pages viewed; &ldquo;last chance to edit&rdquo; prompt</td><td><span class="pill lo">Low</span></td><td><span class="pill lo">Low</span></td><td><span class="pill p3">P3</span></td><td class="note">Preview-to-add-to-cart conversion</td></tr>
+      <tr class="row-med"><td class="area">Error states</td><td>Generic &ldquo;something went wrong&rdquo; for all failures</td><td>Error taxonomy (upload_fail, resolution_low, cart_timeout, network, session_expired) with specific copy + one actionable CTA + visible code for support</td><td><span class="pill med">Med</span></td><td><span class="pill lo">Low</span></td><td><span class="pill p2">P2</span></td><td class="note">Support ticket volume; self-recovery rate</td></tr>
+      <tr class="row-high"><td class="area">Cart, coupon &amp; checkout</td><td>Coupon buried; final price/shipping/tax unclear; no express pay; weak recovery</td><td>Coupon field + &ldquo;available offer&rdquo; banner at cart; clear price/discount/shipping/tax/delivery breakdown; preserve address/payment after errors; Google Pay</td><td><span class="pill lo">Low</span></td><td><span class="pill med">Med</span></td><td><span class="pill p1">P1</span></td><td class="note">Coupon usage; cart&rarr;checkout conversion</td></tr>
+      <tr class="row-low"><td class="area">Order tracking</td><td>Status not surfaced post-purchase</td><td>Production / shipped / out-for-delivery / delivered states; persistent status surface; proactive delivery push</td><td><span class="pill med">Med</span></td><td><span class="pill med">Med</span></td><td><span class="pill p3">P3</span></td><td class="note">Post-purchase satisfaction; support contacts</td></tr>
+      <tr class="row-low"><td class="area">Accessibility</td><td>Editor icons lack <code>contentDescription</code>; contrast/font-scale risks</td><td><code>contentDescription</code> on all editor controls; WCAG 2.1 AA audit of editor/home/checkout; test at 200% font scale; &ge;48dp targets</td><td><span class="pill med">Med</span></td><td><span class="pill lo">Low</span></td><td><span class="pill p2">P2</span></td><td class="note">Zero critical Accessibility Scanner findings on P1 screens</td></tr>
+      <tr class="row-low"><td class="area">Material Design 3 alignment</td><td>Partial M3; mixed components; inconsistent back behaviour</td><td>Shared Compose design tokens; M3 TopAppBar/FAB/ModalBottomSheet; edge-to-edge; predictive back; consistent bottom nav</td><td><span class="pill hi">High</span></td><td><span class="pill hi">High</span></td><td><span class="pill p3">P3</span></td><td class="note">UI inconsistency incidents; design-to-build handoff time</td></tr>
+    </tbody>
+  </table></div>
+</div></div>
+
+<!-- 12 AI PLAN -->
+<div id="ai" class="sec"><div class="w">
+  <div class="sec-head"><div class="sec-num">12</div><h2>AI &amp; Personalisation Opportunity Plan</h2></div>
+  <div class="callout purple"><span class="callout-icon">&#129302;</span><div class="callout-body"><strong>Strategic context:</strong> Shutterfly's ML infrastructure &mdash; a Ray + Databricks pipeline performing propensity modelling across product categories on billions of inference records &mdash; is ahead of most competitors. The Android gap is not AI capability; it is mobile delivery reliability and in-app wiring. <strong>Fix execution before promoting features:</strong> a broken &ldquo;wow&rdquo; moment is worse than none.</div></div>
+  <div class="ai-grid">
+
+    <div class="ai-card"><h4>&#128247; AI Photo Quality Pre-Check</h4><p>Detect blur, low resolution, poor lighting and bad crop at selection &mdash; before time is invested &mdash; with alternative suggestions. Replaces the current faulty rejection with a correct, helpful gate.</p>
+      <div class="ai-row"><span class="ai-label">User benefit</span><span>No blurry printed surprises</span></div><div class="ai-row"><span class="ai-label">Business</span><span>Fewer refunds &amp; support tickets</span></div><div class="ai-row"><span class="ai-label">Data</span><span>Pixel dims, blur score (TFLite), EXIF</span></div><div class="ai-row"><span class="ai-label">Feas. / Impact</span><span><span class="pill conf">High</span> / <span class="pill hi">High</span></span></div><div class="ai-row"><span class="ai-label">POC</span><span>V1 server-side; V2 on-device TFLite</span></div></div>
+
+    <div class="ai-card"><h4>&#128450; Smart Photo Grouping</h4><p>Cluster the camera roll by event, date, location and faces; present albums instead of a flat grid &mdash; cutting selection from minutes to seconds.</p>
+      <div class="ai-row"><span class="ai-label">User benefit</span><span>Fast, intuitive photo finding</span></div><div class="ai-row"><span class="ai-label">Business</span><span>Higher selection &amp; creation completion</span></div><div class="ai-row"><span class="ai-label">Data</span><span>EXIF date/location, ML Kit faces</span></div><div class="ai-row"><span class="ai-label">Feas. / Impact</span><span><span class="pill med">Med</span> / <span class="pill hi">High</span></span></div><div class="ai-row"><span class="ai-label">POC</span><span>V2 date/location; V3 faces</span></div></div>
+
+    <div class="ai-card"><h4>&#128214; AI Auto-Layout / Autofill (mobile-optimised)</h4><p>Generate complete editable book drafts from selected photos; move layout generation server-side and render a lightweight JSON manifest on the client. Add progress + cancel; fix the crash-prone client path.</p>
+      <div class="ai-row"><span class="ai-label">User benefit</span><span>Full draft in &lt;5 min, no blank canvas</span></div><div class="ai-row"><span class="ai-label">Business</span><span>Parity with Popsa/Journi; higher completion</span></div><div class="ai-row"><span class="ai-label">Data</span><span>Photo IDs, quality scores, template rules</span></div><div class="ai-row"><span class="ai-label">Feas. / Impact</span><span><span class="pill med">Med</span> / <span class="pill hi">High</span></span></div><div class="ai-row"><span class="ai-label">POC</span><span>V1 crash fix; V2 server offload; V3 generative</span></div></div>
+
+    <div class="ai-card"><h4>&#127874; Occasion-Based Templates</h4><p>Detect upcoming occasions from purchase history (graduation anniversary, baby's first year, holidays) and proactively surface the most relevant template on home and via push.</p>
+      <div class="ai-row"><span class="ai-label">User benefit</span><span>Timely, relevant suggestions</span></div><div class="ai-row"><span class="ai-label">Business</span><span>Higher seasonal conversion &amp; AOV</span></div><div class="ai-row"><span class="ai-label">Data</span><span>Order dates, categories, calendar</span></div><div class="ai-row"><span class="ai-label">Feas. / Impact</span><span><span class="pill conf">High</span> / <span class="pill hi">High</span></span></div><div class="ai-row"><span class="ai-label">POC</span><span>V1 top-5 occasions; V2 full model</span></div></div>
+
+    <div class="ai-card"><h4>&#127968; Personalised Homepage</h4><p>Wire the existing ML recommendation API to home module ordering; rank products/promotions by predicted purchase probability; A/B test against static.</p>
+      <div class="ai-row"><span class="ai-label">User benefit</span><span>Relevant products without scrolling</span></div><div class="ai-row"><span class="ai-label">Business</span><span>+15% first-session add-to-cart (est.)</span></div><div class="ai-row"><span class="ai-label">Data</span><span>Purchase/browse history, ML API (exists)</span></div><div class="ai-row"><span class="ai-label">Feas. / Impact</span><span><span class="pill conf">High</span> / <span class="pill hi">High</span></span></div><div class="ai-row"><span class="ai-label">POC</span><span>V1 wire API; V2 A/B at scale</span></div></div>
+
+    <div class="ai-card"><h4>&#127873; Smart Gifting Suggestions</h4><p>When users add face/event photos, surface contextual gifts (&ldquo;Create a mug for Dad&rdquo;, &ldquo;Start a baby book&rdquo;) via face detection + event classification.</p>
+      <div class="ai-row"><span class="ai-label">User benefit</span><span>Discovers products they didn't seek</span></div><div class="ai-row"><span class="ai-label">Business</span><span>Gift cross-sell uplift; higher AOV</span></div><div class="ai-row"><span class="ai-label">Data</span><span>Photo faces/event tags, catalogue</span></div><div class="ai-row"><span class="ai-label">Feas. / Impact</span><span><span class="pill med">Med</span> / <span class="pill med">Med</span></span></div><div class="ai-row"><span class="ai-label">POC</span><span>V3</span></div></div>
+
+    <div class="ai-card"><h4>&#128257; Predictive Reorder Reminders</h4><p>&ldquo;Last year you created a Christmas card &mdash; ready for this year's?&rdquo; delivered ~6 weeks before the seasonal window from order history.</p>
+      <div class="ai-row"><span class="ai-label">User benefit</span><span>Helpful nudge before the rush</span></div><div class="ai-row"><span class="ai-label">Business</span><span>Repeat purchase +10&ndash;15%</span></div><div class="ai-row"><span class="ai-label">Data</span><span>Order history with dates &amp; types</span></div><div class="ai-row"><span class="ai-label">Feas. / Impact</span><span><span class="pill conf">High</span> / <span class="pill hi">High</span></span></div><div class="ai-row"><span class="ai-label">POC</span><span>V1</span></div></div>
+
+    <div class="ai-card"><h4>&#9997; AI Design Assistant / Magic Writer parity</h4><p>Natural-language creation (&ldquo;make a warm family book&rdquo;) and reliable in-editor caption generation with a tone selector &mdash; brought to Android reliability parity with web.</p>
+      <div class="ai-row"><span class="ai-label">User benefit</span><span>Effortless, personal-sounding content</span></div><div class="ai-row"><span class="ai-label">Business</span><span>Differentiation vs Mixbook; higher completion</span></div><div class="ai-row"><span class="ai-label">Data</span><span>Photo context, tone, LLM API, design rules</span></div><div class="ai-row"><span class="ai-label">Feas. / Impact</span><span><span class="pill conf">High (parity)</span> / <span class="pill med">Med</span></span></div><div class="ai-row"><span class="ai-label">POC</span><span>V1 caption parity; V2 assistant</span></div></div>
+
+    <div class="ai-card"><h4>&#128722; Smart Cart Upsells &amp; Personalised Promotions</h4><p>At cart, surface one contextual add-on (&ldquo;add a mug to complete the set&rdquo;) and auto-apply the best eligible promotion &mdash; ranked by predicted purchase probability.</p>
+      <div class="ai-row"><span class="ai-label">User benefit</span><span>Relevant add-ons; no coupon confusion</span></div><div class="ai-row"><span class="ai-label">Business</span><span>Higher AOV &amp; checkout completion</span></div><div class="ai-row"><span class="ai-label">Data</span><span>Cart contents, co-occurrence, promo rules</span></div><div class="ai-row"><span class="ai-label">Feas. / Impact</span><span><span class="pill med">Med</span> / <span class="pill med">Med</span></span></div><div class="ai-row"><span class="ai-label">POC</span><span>V1 promo auto-apply; V3 upsell model</span></div></div>
+
+    <div class="ai-card"><h4>&#128276; Personalised Push Notifications</h4><p>Replace batch promos with trigger-based segments: incomplete project (48h), order anniversary, seasonal window, post-delivery &mdash; each deep-linked to the exact flow.</p>
+      <div class="ai-row"><span class="ai-label">User benefit</span><span>Timely nudges that feel like service</span></div><div class="ai-row"><span class="ai-label">Business</span><span>Open rate ~3% &rarr; &ge;8%</span></div><div class="ai-row"><span class="ai-label">Data</span><span>Session, project state, order/delivery</span></div><div class="ai-row"><span class="ai-label">Feas. / Impact</span><span><span class="pill conf">High (FCM exists)</span> / <span class="pill hi">High</span></span></div><div class="ai-row"><span class="ai-label">POC</span><span>V1</span></div></div>
+  </div>
+</div></div>
+
+<!-- 13 MATRIX -->
+<div id="matrix" class="sec"><div class="w">
+  <div class="sec-head"><div class="sec-num">13</div><h2>Feasibility vs. Impact Matrix</h2></div>
+  <div class="matrix-grid">
+    <div class="matrix-cell matrix-a"><div class="matrix-label">A &mdash; Quick Wins</div><h4>High Feasibility &middot; High/Med Impact</h4><p class="body" style="font-size:.78rem;margin-bottom:12px">Ship first. Maximum impact per engineering hour; most are single-engineer changes.</p>
+      <div class="matrix-item"><div class="matrix-dot"></div><div class="matrix-text"><strong>Resolution check fix</strong><span>Validate on true pixel dimensions. ~1&ndash;2 days. Unblocks valid-image orders immediately.</span></div></div>
+      <div class="matrix-item"><div class="matrix-dot"></div><div class="matrix-text"><strong>Cart persistence (Room) + API timeout/retry</strong><span>~2&ndash;3 days. Eliminates cart loss and infinite spinner.</span></div></div>
+      <div class="matrix-item"><div class="matrix-dot"></div><div class="matrix-text"><strong>Coupon at cart stage</strong><span>Move promo field to cart summary. ~1 day UX + 1 day eng.</span></div></div>
+      <div class="matrix-item"><div class="matrix-dot"></div><div class="matrix-text"><strong>Value-first onboarding + contextual permission</strong><span>Two screens before sign-in; rationale at first photo action.</span></div></div>
+      <div class="matrix-item"><div class="matrix-dot"></div><div class="matrix-text"><strong>Crashlytics breadcrumbs + Remote Config flags</strong><span>~2 days. Observability + kill switch before any further change.</span></div></div>
+      <div class="matrix-item"><div class="matrix-dot"></div><div class="matrix-text"><strong>Startup SDK deferral</strong><span>App Startup + defer non-critical SDKs. Cold start under 2s.</span></div></div>
+      <div class="matrix-item"><div class="matrix-dot"></div><div class="matrix-text"><strong>Specific error states</strong><span>Replace generic errors with actionable recovery copy.</span></div></div>
+    </div>
+    <div class="matrix-cell matrix-b"><div class="matrix-label">B &mdash; High-Impact Strategic</div><h4>High Impact &middot; Medium/High Effort</h4><p class="body" style="font-size:.78rem;margin-bottom:12px">Core POC improvements; require sprint planning but deliver measurable conversion &amp; retention lift.</p>
+      <div class="matrix-item"><div class="matrix-dot"></div><div class="matrix-text"><strong>Editor bitmap architecture overhaul</strong><span>Downsampling + bitmap pool + async decode. Eliminates ANR/OOM on mid-range.</span></div></div>
+      <div class="matrix-item"><div class="matrix-dot"></div><div class="matrix-text"><strong>WorkManager background upload</strong><span>Foreground service + chunked resumable upload. Unlocks the storage promise.</span></div></div>
+      <div class="matrix-item"><div class="matrix-dot"></div><div class="matrix-text"><strong>Homepage personalisation wiring</strong><span>Connect ML API to home ordering + A/B test. +15% first-session add-to-cart.</span></div></div>
+      <div class="matrix-item"><div class="matrix-dot"></div><div class="matrix-text"><strong>AI Autofill server-side offload</strong><span>Lightweight JSON to client. Removes editor OOM during generation.</span></div></div>
+      <div class="matrix-item"><div class="matrix-dot"></div><div class="matrix-text"><strong>Google Pay express checkout</strong><span>Removes manual form-entry friction at the final step.</span></div></div>
+      <div class="matrix-item"><div class="matrix-dot"></div><div class="matrix-text"><strong>Picker pagination + async MediaStore</strong><span>Smooth scrolling on large libraries; faster time-to-grid.</span></div></div>
+    </div>
+    <div class="matrix-cell matrix-c"><div class="matrix-label">C &mdash; Long-Term Platform</div><h4>Important &middot; Larger Technical Investment</h4><p class="body" style="font-size:.78rem;margin-bottom:12px">Required for a sustainable competitive position. Plan for Phase 3&ndash;4.</p>
+      <div class="matrix-item"><div class="matrix-dot"></div><div class="matrix-text"><strong>Full Material 3 migration</strong><span>Unified Compose design-token system; foundation for all future UI.</span></div></div>
+      <div class="matrix-item"><div class="matrix-dot"></div><div class="matrix-text"><strong>Smart photo grouping (ML Kit)</strong><span>Event/date/face clustering; requires enrichment pipeline.</span></div></div>
+      <div class="matrix-item"><div class="matrix-dot"></div><div class="matrix-text"><strong>Generative auto-layout engine</strong><span>Non-template book compositions; premium differentiation.</span></div></div>
+      <div class="matrix-item"><div class="matrix-dot"></div><div class="matrix-text"><strong>Android 14&ndash;17 predictive back + NavGraph</strong><span>Permanently fixes editor back-stack failures.</span></div></div>
+      <div class="matrix-item"><div class="matrix-dot"></div><div class="matrix-text"><strong>RUM platform + experimentation infra</strong><span>Device-tier traces; scalable A/B velocity.</span></div></div>
+    </div>
+    <div class="matrix-cell matrix-d"><div class="matrix-label">D &mdash; Lower Priority</div><h4>Lower Urgency / Lower Measurable Impact</h4><p class="body" style="font-size:.78rem;margin-bottom:12px">Valid improvements that don't unblock conversion or active regressions. Schedule after A&ndash;C.</p>
+      <div class="matrix-item"><div class="matrix-dot"></div><div class="matrix-text"><strong>Cosmetic UI refresh without journey change</strong><span>Lower impact than upload/editor/checkout fixes.</span></div></div>
+      <div class="matrix-item"><div class="matrix-dot"></div><div class="matrix-text"><strong>Additional product categories</strong><span>Catalogue already broad; discovery matters more first.</span></div></div>
+      <div class="matrix-item"><div class="matrix-dot"></div><div class="matrix-text"><strong>Order-tracking prominence</strong><span>Satisfaction win, not a conversion blocker.</span></div></div>
+      <div class="matrix-item"><div class="matrix-dot"></div><div class="matrix-text"><strong>Social proof on product pages</strong><span>Lower ROI vs cart/checkout fixes.</span></div></div>
+      <div class="matrix-item"><div class="matrix-dot"></div><div class="matrix-text"><strong>Loyalty tier display / gamification</strong><span>Useful later; fix core reliability first.</span></div></div>
+    </div>
+  </div>
+</div></div>
+
+<!-- 14 ROADMAP -->
+<div id="roadmap" class="sec"><div class="w">
+  <div class="sec-head"><div class="sec-num">14</div><h2>Implementation Roadmap</h2></div>
+  <div class="callout blue"><span class="callout-icon">&#128205;</span><div class="callout-body"><strong>Sequencing principle &mdash; reliability before capability.</strong> No new AI or personalisation feature is marketed until the editor is stable, the resolution and cart issues are fixed, and cart persistence plus a feature-flag kill switch are in place.</div></div>
+  <div class="roadmap">
+
+    <div class="phase"><div class="phase-dot ph1">P1</div><div class="phase-body">
+      <h3>Phase 1 &mdash; Immediate Android Performance &amp; UX Quick Wins (Stabilise &amp; Unblock)</h3>
+      <div class="phase-timeline">Weeks 0&ndash;4 &middot; Owner: Android Eng (lead) + Backend (support)</div>
+      <div class="phase-cols">
+        <div class="phase-col"><h5>Key initiatives</h5>
+          <div class="phase-item">Fix resolution false-positive (validate on pixel dimensions); ship as hotfix</div>
+          <div class="phase-item">Fix cart stall: OkHttp 30s timeout + retry; Room DB cart persistence</div>
+          <div class="phase-item">Surface coupon at cart; specific error states</div>
+          <div class="phase-item">Crashlytics breadcrumbs + Firebase Performance baseline</div>
+          <div class="phase-item">Remote Config feature flags (kill switches)</div>
+          <div class="phase-item">Startup SDK audit + deferral; begin bitmap profiling</div>
+        </div>
+        <div class="phase-col"><h5>Success metrics &middot; Dependencies</h5>
+          <div class="phase-item">Zero false resolution warnings on 4MP+ images</div>
+          <div class="phase-item">Cart-stall incidents &rarr; 0; coupon usage +15%</div>
+          <div class="phase-item">Cold start &le;2.0s; &ge;3 breadcrumbs per editor crash</div>
+          <div class="phase-item">Flags toggle without app update</div>
+          <div class="phase-item">Dep: SDK inventory, promo-rule &amp; checkout API access</div>
+        </div>
+      </div>
+      <div class="phase-metrics"><span class="pill p1c">Active regressions fixed</span><span class="pill tag">Android Eng &times;2</span><span class="pill tag">Backend &times;1</span></div>
+    </div></div>
+
+    <div class="phase"><div class="phase-dot ph2">P2</div><div class="phase-body">
+      <h3>Phase 2 &mdash; Mobile Journey, Upload &amp; Checkout Optimisation</h3>
+      <div class="phase-timeline">Weeks 4&ndash;8 &middot; Owner: Android Eng (lead) + UX + Backend</div>
+      <div class="phase-cols">
+        <div class="phase-col"><h5>Key initiatives</h5>
+          <div class="phase-item">Editor bitmap downsampling + Glide pool + async decode</div>
+          <div class="phase-item">WorkManager chunked resumable background upload + progress UI</div>
+          <div class="phase-item">Picker pagination + async MediaStore; thumbnail cache</div>
+          <div class="phase-item">Value-first onboarding + contextual permission flow</div>
+          <div class="phase-item">Google Pay; skeleton screens on home/browse/library</div>
+          <div class="phase-item">Low/mid-range device test matrix; Magic Writer parity</div>
+        </div>
+        <div class="phase-col"><h5>Success metrics &middot; Dependencies</h5>
+          <div class="phase-item">Editor ANR &le;0.1% on Pixel 6a; heap &le;150MB</div>
+          <div class="phase-item">20k-photo upload completes backgrounded</div>
+          <div class="phase-item">Media opt-in &ge;75%; checkout completion +10%</div>
+          <div class="phase-item">Crash-free &ge;99.5% on tier-MID devices</div>
+          <div class="phase-item">Dep: upload API resume, permission architecture, device lab</div>
+        </div>
+      </div>
+      <div class="phase-metrics"><span class="pill p1">Core performance &amp; conversion</span><span class="pill tag">Android Eng &times;3</span><span class="pill tag">UX &times;1</span><span class="pill tag">Backend &times;1</span></div>
+    </div></div>
+
+    <div class="phase"><div class="phase-dot ph3">P3</div><div class="phase-body">
+      <h3>Phase 3 &mdash; Editor, Preview &amp; Personalisation Improvements</h3>
+      <div class="phase-timeline">Weeks 8&ndash;12 &middot; Owner: Android Eng + Backend + Data/ML</div>
+      <div class="phase-cols">
+        <div class="phase-col"><h5>Key initiatives</h5>
+          <div class="phase-item">AI Autofill server-side offload; undo/redo command-stack fix</div>
+          <div class="phase-item">Homepage personalisation API wiring + A/B test</div>
+          <div class="phase-item">AI photo quality pre-check at selection</div>
+          <div class="phase-item">Occasion push triggers; predictive reorder reminders</div>
+          <div class="phase-item">Lazy/virtualised preview rendering</div>
+          <div class="phase-item">Firebase Performance traces across all P1 flows</div>
+        </div>
+        <div class="phase-col"><h5>Success metrics &middot; Dependencies</h5>
+          <div class="phase-item">Autofill no-crash; time-to-first-preview &le;5 min</div>
+          <div class="phase-item">Personalised home: add-to-cart +15% (A/B)</div>
+          <div class="phase-item">Pre-check catches 95% of low-quality images</div>
+          <div class="phase-item">Occasion push open rate &ge;8%; 60-page preview &le;2s</div>
+          <div class="phase-item">Dep: recommendation API, quality model, project-sync service</div>
+        </div>
+      </div>
+      <div class="phase-metrics"><span class="pill p2">AI-assisted creation</span><span class="pill tag">Android Eng &times;3</span><span class="pill tag">Backend/ML &times;2</span><span class="pill tag">UX &times;1</span></div>
+    </div></div>
+
+    <div class="phase"><div class="phase-dot ph4">P4</div><div class="phase-body">
+      <h3>Phase 4 &mdash; AI-Assisted Creation &amp; Scalable Experimentation</h3>
+      <div class="phase-timeline">Week 12+ &middot; Owner: Product + full cross-functional team</div>
+      <div class="phase-cols">
+        <div class="phase-col"><h5>Key initiatives</h5>
+          <div class="phase-item">Android 14&ndash;17 predictive back + NavGraph migration</div>
+          <div class="phase-item">Material 3 token system + Compose migration</div>
+          <div class="phase-item">Smart photo grouping (ML Kit faces/events)</div>
+          <div class="phase-item">Smart gifting + smart cart upsells (co-occurrence model)</div>
+          <div class="phase-item">Generative auto-layout engine</div>
+          <div class="phase-item">Full RUM dashboard + scalable experimentation; WCAG 2.1 AA</div>
+        </div>
+        <div class="phase-col"><h5>Success metrics &middot; Dependencies</h5>
+          <div class="phase-item">Zero predictive-back issues on Android 14&ndash;17</div>
+          <div class="phase-item">Photo-selection time -40% with grouping</div>
+          <div class="phase-item">Cart-upsell AOV uplift &ge;8%</div>
+          <div class="phase-item">Zero critical Accessibility Scanner findings</div>
+          <div class="phase-item">Dep: experiment platform, ML pipelines, component library</div>
+        </div>
+      </div>
+      <div class="phase-metrics"><span class="pill p3">Long-term platform</span><span class="pill tag">Full cross-functional team</span><span class="pill tag">Quarterly cycles</span></div>
+    </div></div>
+  </div>
+</div></div>
+
+<!-- 15 KPIs -->
+<div id="kpis" class="sec"><div class="w">
+  <div class="sec-head"><div class="sec-num">15</div><h2>Success Metrics &amp; KPIs</h2></div>
+  <p class="body">Targets are directional and to be calibrated against measured baselines once Phase 1 instrumentation lands. Baselines marked &ldquo;est.&rdquo; require direct validation.</p>
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-icon perf">&#9889;</div><div><div class="kpi-title">Cold Start Time</div><div class="kpi-target">Target <strong>&le;2.0s TTID</strong> on Pixel 6a &middot; baseline est. 3&ndash;4s</div></div></div>
+    <div class="kpi-card"><div class="kpi-icon perf">&#128260;</div><div><div class="kpi-title">Warm Start Time</div><div class="kpi-target">Target <strong>&le;1.0s</strong> &middot; via Android Vitals</div></div></div>
+    <div class="kpi-card"><div class="kpi-icon perf">&#128250;</div><div><div class="kpi-title">Screen Load Time</div><div class="kpi-target">Target <strong>&le;1.5s</strong> above-fold on 4G</div></div></div>
+    <div class="kpi-card"><div class="kpi-icon perf">&#128165;</div><div><div class="kpi-title">Crash-Free Sessions</div><div class="kpi-target">Target <strong>&ge;99.5%</strong></div></div></div>
+    <div class="kpi-card"><div class="kpi-icon perf">&#9208;</div><div><div class="kpi-title">ANR Rate</div><div class="kpi-target">Target <strong>&le;0.1%</strong> &middot; Play threshold 0.47%</div></div></div>
+    <div class="kpi-card"><div class="kpi-icon perf">&#129504;</div><div><div class="kpi-title">Memory Warning / Freeze Rate</div><div class="kpi-target">Target <strong>&le;2%</strong> of editor sessions trim memory</div></div></div>
+    <div class="kpi-card"><div class="kpi-icon ux">&#128247;</div><div><div class="kpi-title">Photo Permission Opt-In</div><div class="kpi-target">Target <strong>&ge;75%</strong> &middot; baseline est. ~55%</div></div></div>
+    <div class="kpi-card"><div class="kpi-icon ux">&#9729;</div><div><div class="kpi-title">Upload Success Rate</div><div class="kpi-target">Target <strong>&ge;99%</strong> &middot; no silent failures</div></div></div>
+    <div class="kpi-card"><div class="kpi-icon ux">&#128228;</div><div><div class="kpi-title">Upload Completion Time</div><div class="kpi-target">Target <strong>1k photos &lt;15 min</strong> on WiFi (background)</div></div></div>
+    <div class="kpi-card"><div class="kpi-icon ux">&#9999;</div><div><div class="kpi-title">Editor Completion Rate</div><div class="kpi-target">Target <strong>+20%</strong> started&rarr;preview</div></div></div>
+    <div class="kpi-card"><div class="kpi-icon ux">&#128269;</div><div><div class="kpi-title">Preview Completion Rate</div><div class="kpi-target">Target <strong>&ge;80%</strong> of preview opens add to cart</div></div></div>
+    <div class="kpi-card"><div class="kpi-icon conv">&#128722;</div><div><div class="kpi-title">Add-to-Cart Rate</div><div class="kpi-target">Target <strong>+15%</strong></div></div></div>
+    <div class="kpi-card"><div class="kpi-icon conv">&#128682;</div><div><div class="kpi-title">Cart Abandonment</div><div class="kpi-target">Target <strong>-20%</strong></div></div></div>
+    <div class="kpi-card"><div class="kpi-icon conv">&#128179;</div><div><div class="kpi-title">Checkout Completion</div><div class="kpi-target">Target <strong>+10%</strong></div></div></div>
+    <div class="kpi-card"><div class="kpi-icon conv">&#128230;</div><div><div class="kpi-title">Order Completion</div><div class="kpi-target">Target <strong>+8%</strong> in first 30 days post Phase 1&ndash;2</div></div></div>
+    <div class="kpi-card"><div class="kpi-icon biz">&#128276;</div><div><div class="kpi-title">Push Open Rate</div><div class="kpi-target">Target <strong>&ge;8%</strong> &middot; vs est. 2&ndash;3% batch</div></div></div>
+    <div class="kpi-card"><div class="kpi-icon biz">&#128257;</div><div><div class="kpi-title">Repeat Purchase (90d)</div><div class="kpi-target">Target <strong>+10%</strong></div></div></div>
+    <div class="kpi-card"><div class="kpi-icon biz">&#128176;</div><div><div class="kpi-title">Average Order Value</div><div class="kpi-target">Target <strong>+8%</strong> &middot; upsells + smart gifting</div></div></div>
+    <div class="kpi-card"><div class="kpi-icon biz">&#129302;</div><div><div class="kpi-title">AI / Personalisation Engagement</div><div class="kpi-target">Target Autofill completion <strong>&ge;70%</strong></div></div></div>
+    <div class="kpi-card"><div class="kpi-icon eng">&#11088;</div><div><div class="kpi-title">Google Play Rating</div><div class="kpi-target">Target <strong>recover toward 4.5&#9733;+</strong> &middot; reduce 1-star velocity</div></div></div>
+    <div class="kpi-card"><div class="kpi-icon eng">&#128222;</div><div><div class="kpi-title">Support Ticket Volume</div><div class="kpi-target">Target <strong>-30%</strong> resolution/upload tickets in 60 days</div></div></div>
+    <div class="kpi-card"><div class="kpi-icon eng">&#127939;</div><div><div class="kpi-title">Engineering Velocity / MTTR</div><div class="kpi-target">Target: flags end uncontrolled cascades; faster diagnosis</div></div></div>
+    <div class="kpi-card"><div class="kpi-icon eng">&#9855;</div><div><div class="kpi-title">Accessibility Score</div><div class="kpi-target">Target: zero critical findings on P1 screens by Phase 3</div></div></div>
+  </div>
+</div></div>
+
+<!-- 16 BUSINESS IMPACT -->
+<div id="impact" class="sec"><div class="w">
+  <div class="sec-head"><div class="sec-num">16</div><h2>Expected Business Impact</h2></div>
+  <p class="body">Ranges are estimates on a 10M+ install base with strong seasonal patterns, to be confirmed against measured baselines. They assume reliability fixes land before capability features are promoted.</p>
+  <div class="impact-grid">
+    <div class="impact-card red"><h5>Conversion Rate</h5><p>Phase 1 alone (cart fix + resolution fix + coupon visibility) recovers orders currently blocked or abandoned.</p><div class="impact-delta">+8&ndash;15%</div></div>
+    <div class="impact-card green"><h5>Revenue (12-month)</h5><p>Combined Phase 1&ndash;3 lift to checkout completion, editor reliability and AI-assisted creation.</p><div class="impact-delta">+12&ndash;20%</div></div>
+    <div class="impact-card" style="border-left-color:var(--blue)"><h5>Average Order Value</h5><p>Smart upsells, smart gifting and personalised home ordering, combined.</p><div class="impact-delta">+8&ndash;12%</div></div>
+    <div class="impact-card green"><h5>Retention (90-day)</h5><p>Occasion push, predictive reorder and post-purchase prominence target the repeat window.</p><div class="impact-delta">+10&ndash;18%</div></div>
+    <div class="impact-card" style="border-left-color:var(--blue)"><h5>App Engagement</h5><p>Reliable editor, background upload and personalised home raise session frequency &amp; length.</p><div class="impact-delta">+25%</div></div>
+    <div class="impact-card green"><h5>Customer Satisfaction</h5><p>Phase 1 directly addresses the most-complained-about experiences.</p><div class="impact-delta">Support -30% (60d)</div></div>
+    <div class="impact-card" style="border-left-color:var(--blue)"><h5>Google Play Reputation</h5><p>Resolution &amp; cart fixes cut 1-star velocity; editor stability recovers power-user sentiment.</p><div class="impact-delta">4.0 &rarr; 4.5&#9733;+</div></div>
+    <div class="impact-card amber"><h5>Engineering Efficiency</h5><p>Feature flags end uncontrolled cascades; breadcrumbs cut time-to-root-cause from days to hours.</p><div class="impact-delta">-40% regression fix time</div></div>
+    <div class="impact-card purple"><h5>Competitive Positioning</h5><p>AI creation under 5 min matches Popsa; editor reliability matches Mixbook; quick-print entry matches FreePrints' simplicity.</p><div class="impact-delta">Best-in-class Android UX</div></div>
+    <div class="impact-card red"><h5>Brand Experience</h5><p>Restoring reliability restores the core promise &mdash; meaningful products created easily from personal photos.</p><div class="impact-delta">Trust restored</div></div>
+  </div>
+</div></div>
+
+<!-- 17 RISK & VALIDATION -->
+<div id="risk" class="sec"><div class="w">
+  <div class="sec-head"><div class="sec-num">17</div><h2>Risk &amp; Validation Plan</h2></div>
+  <p class="body">Each key assumption, its risk, the validation method, the data needed, the owning team and the decision criterion that determines go / no-go.</p>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th style="min-width:190px">Assumption</th><th>Risk if wrong</th><th>Validation method</th><th>Data needed</th><th>Owner</th><th style="min-width:160px">Decision criteria</th></tr></thead>
+    <tbody>
+      <tr class="row-crit"><td class="strong">Resolution rejection is a logic defect, not a genuine quality limit</td><td>&ldquo;Fix&rdquo; ships low-quality prints &rarr; refunds</td><td>App review mining; controlled tests on known-good 4&ndash;24MP JPEG/HEIC</td><td>Sample images, check thresholds, print specs</td><td>Android + Backend</td><td>Zero false rejects on valid set before rollout</td></tr>
+      <tr class="row-crit"><td class="strong">Editor instability is bitmap-memory driven on mid-range devices</td><td>Architecture rework misses real cause</td><td>Performance profiling; Memory Profiler heap dumps; 500-action editor test on Pixel 6a / Galaxy A-series</td><td>Heap timelines, ANR/OOM traces by device tier</td><td>Android Eng</td><td>Downsampling drops heap peak &le;150MB &amp; ANR&rarr;0 in test</td></tr>
+      <tr class="row-high"><td class="strong">Cart loss/stall stems from in-memory state + missing timeouts</td><td>Conversion fix ineffective</td><td>Crash/ANR + funnel analytics; throttled-network reproduction; session replay</td><td>Cart-stage drop-off, API timing, error taxonomy</td><td>Android + Backend</td><td>Cart survives app kill; no infinite spinner on 3G</td></tr>
+      <tr class="row-high"><td class="strong">Permission opt-in improves with value-first + contextual rationale</td><td>Effort yields no opt-in lift</td><td>A/B test onboarding variants; funnel analytics</td><td>Opt-in rate by variant; first-session creation start</td><td>UX + Android</td><td>Opt-in &ge;75% in test arm vs control</td></tr>
+      <tr class="row-high"><td class="strong">Background upload completes reliably on large libraries</td><td>Storage promise stays broken</td><td>Device testing: 500 / 2,000 / 20k photos; background + app-kill + weak-network scenarios</td><td>Completion rate, stall duration, resume success</td><td>Android + Backend</td><td>20k upload completes backgrounded, zero manual steps</td></tr>
+      <tr class="row-med"><td class="strong">Personalised home lifts add-to-cart</td><td>Wasted ML wiring effort</td><td>A/B test (static vs personalised) with Firebase A/B</td><td>First-session add-to-cart by arm; bounce</td><td>Data/ML + Android</td><td>+15% add-to-cart, statistically significant</td></tr>
+      <tr class="row-med"><td class="strong">AI Autofill is reliable once moved server-side</td><td>Feature promoted before stable</td><td>Device testing on mid-range; crash/RUM monitoring</td><td>Crash rate, time-to-first-preview, OOM events</td><td>Android + Backend/ML</td><td>No crash on Pixel 6a; first preview &le;5 min</td></tr>
+      <tr class="row-med"><td class="strong">Mid-range devices are the majority &amp; most affected</td><td>Optimisation targets wrong tier</td><td>Low/mid-range device-tier test matrix; Play Console device data</td><td>Install/crash distribution by device tier</td><td>QA + Android</td><td>Crash-free &ge;99.5% on tier-MID before GA</td></tr>
+      <tr class="row-low"><td class="strong">Occasion push beats batch promo</td><td>Push fatigue / unsubscribes</td><td>A/B test trigger-based vs batch; review mining</td><td>Open rate, opt-out rate, attributed repeat purchase</td><td>CRM + Data</td><td>Open rate &ge;8% &amp; opt-out not worse than control</td></tr>
+    </tbody>
+  </table></div>
+</div></div>
+
+<!-- 18 FINAL RECOMMENDATION -->
+<div id="reco" class="sec"><div class="w">
+  <div class="sec-head"><div class="sec-num">18</div><h2>Final Recommendation</h2></div>
+  <div class="reco-block">
+    <h3>Fix trust first. Then earn growth.</h3>
+    <p style="font-size:.88rem;color:#94A3B8;margin-bottom:24px">Shutterfly's Android app does not need new features &mdash; it needs its existing features to work reliably on the devices its users actually own. That reliability is the foundation on which the AI and personalisation ambitions can succeed. A brilliant Autofill on a crashing editor helps no one. Do not begin with a broad visual redesign; begin with the highest-impact Android conversion and performance risks.</p>
+    <div class="reco-cols">
+      <div class="reco-col">
+        <h5>Fix First (Phase 1 &mdash; 4 weeks)</h5>
+        <div class="reco-item"><span class="reco-arrow">&rarr;</span><span>Resolution false-positive &mdash; it is rejecting valid photos and blocking orders today.</span></div>
+        <div class="reco-item"><span class="reco-arrow">&rarr;</span><span>Cart stall &mdash; Room DB persistence + API timeout/retry.</span></div>
+        <div class="reco-item"><span class="reco-arrow">&rarr;</span><span>Move coupon entry to the cart stage &mdash; a one-day change with measurable lift.</span></div>
+        <div class="reco-item"><span class="reco-arrow">&rarr;</span><span>Crashlytics breadcrumbs &mdash; engineering needs observability before Phase 2.</span></div>
+        <div class="reco-item"><span class="reco-arrow">&rarr;</span><span>Remote Config feature flags &mdash; never ship another cascade without a kill switch.</span></div>
+        <h5 style="margin-top:20px">Test in the POC</h5>
+        <div class="reco-item"><span class="reco-arrow">&rarr;</span><span>Editor on Pixel 6a &amp; Galaxy A-series with Memory Profiler active; 500-action test.</span></div>
+        <div class="reco-item"><span class="reco-arrow">&rarr;</span><span>Background upload: start 20k upload, background app, return after 10 min.</span></div>
+        <div class="reco-item"><span class="reco-arrow">&rarr;</span><span>Personalised home A/B vs static &mdash; first-session add-to-cart.</span></div>
+        <div class="reco-item"><span class="reco-arrow">&rarr;</span><span>AI Autofill without crash on mid-range; time-to-first-preview &le;5 min.</span></div>
+        <div class="reco-item"><span class="reco-arrow">&rarr;</span><span>Large libraries (500 / 2,000 / 20k) on Android 13&ndash;17, weak network &amp; app-kill.</span></div>
+      </div>
+      <div class="reco-col">
+        <h5>Measure Throughout</h5>
+        <div class="reco-item"><span class="reco-arrow">&rarr;</span><span>ANR rate &amp; crash-free sessions &mdash; the two primary health signals.</span></div>
+        <div class="reco-item"><span class="reco-arrow">&rarr;</span><span>Editor completion (started&rarr;preview) &mdash; the key funnel conversion.</span></div>
+        <div class="reco-item"><span class="reco-arrow">&rarr;</span><span>Cart&rarr;checkout conversion &mdash; most directly impacted by Phase 1.</span></div>
+        <div class="reco-item"><span class="reco-arrow">&rarr;</span><span>Resolution/upload support tickets &mdash; should drop ~30% within 60 days.</span></div>
+        <div class="reco-item"><span class="reco-arrow">&rarr;</span><span>Google Play 1-star review velocity &mdash; monitor weekly.</span></div>
+        <h5 style="margin-top:20px">Long-Term Android Roadmap</h5>
+        <div class="reco-item"><span class="reco-arrow">&rarr;</span><span>Bitmap memory budget per device tier &mdash; enforced in code review.</span></div>
+        <div class="reco-item"><span class="reco-arrow">&rarr;</span><span>WorkManager as the standard for all background work &mdash; upload, sync, prefetch.</span></div>
+        <div class="reco-item"><span class="reco-arrow">&rarr;</span><span>Compose + Material 3 as the standard for new screens &mdash; retire dual-component debt.</span></div>
+        <div class="reco-item"><span class="reco-arrow">&rarr;</span><span>Server-side AI as the default &mdash; never compute on-device what the server can do.</span></div>
+        <div class="reco-item"><span class="reco-arrow">&rarr;</span><span>Quarterly SDK audit &mdash; APK size &amp; startup time treated as product KPIs.</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="callout green"><span class="callout-icon">&#9989;</span><div class="callout-body"><strong>POC success definition:</strong> by the end of Week 12, the Shutterfly Android app should demonstrate (1) zero active issues blocking valid-photo orders, (2) sub-2-second cold start on Pixel 6a, (3) zero ANR in a 500-action editor test on mid-range Android, (4) AI Autofill completing a ~40-photo book draft in under five minutes without crashing, and (5) a personalised homepage delivering a measurably higher add-to-cart rate than the static layout in A/B test. Achieving all five proves the app can be the best in its category &mdash; not just the most recognised brand in it.</div></div>
+</div></div>
+
+<footer><div class="w">
+  <strong style="color:#60A5FA">Shutterfly Android App &mdash; Performance &amp; Experience Improvement POC</strong><br>
+  12 June 2026 &middot; Confidential &mdash; Internal Use Only &middot; <span>Findings graded Confirmed / Likely / Hypothesis / Needs validation</span><br>
+  Product &middot; Android Engineering &middot; UX / Design &middot; Leadership
+</div></footer>
+
+</body>
+</html>
