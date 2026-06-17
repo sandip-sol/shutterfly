@@ -440,6 +440,20 @@
 <section id="ai">
   <div class="section-head"><div class="section-no">11</div><div><h2>AI and Personalisation Opportunity Plan</h2></div></div>
   <p class="section-intro">AI should reduce effort and prevent mistakes, not obscure decisions. Every recommendation should be editable, explainable and reversible, with clear data controls.</p>
+  <h3>Competitor and adjacent-market AI signals</h3>
+  <p class="section-intro">Recent public competitor activity shows that AI is moving beyond generic chat and into assisted memory-product creation. Mixbook is the closest direct signal; Canva, Adobe Express, Google Photos and VistaPrint show adjacent expectations for browser-based design, photo intelligence, prompt editing and print-ready generation.</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Company</th><th>AI features in use</th><th>Where it shows up</th><th>Why it matters for Shutterfly</th><th>Source signal</th></tr></thead>
+      <tbody>
+        <tr><td>Mixbook</td><td>AI-assisted photo-book creation through Story Mode and Mixbook Studio: prompt-led story intake, photo organisation, narrative captions, layout/theme selection, low-resolution photo touch-up and collaboration support.</td><td>Photo-book creation app and Studio workflow; public reporting says Story Mode is currently iOS, with web rollout expected.</td><td>The direct photo-book competitor is positioning AI around the hardest user problem: getting from many photos to a coherent editable book.</td><td>Tom's Guide, 2026 AI Awards and 2026 Story Mode coverage.</td></tr>
+        <tr><td>Canva</td><td>Magic Studio style workflows: prompt-to-design, AI writing, image/video generation, background/object editing, format switching, brand voice and Magic Layers for turning flat images into editable layers.</td><td>Browser-based design suite with print and photo-book creation paths.</td><td>Users will expect AI output to stay editable, not become a dead-end generated image.</td><td>Time profile, Lifewire feature summary and 2026 Magic Layers coverage.</td></tr>
+        <tr><td>Adobe Express</td><td>Conversational AI assistant for creating and editing designs, with natural-language changes to backgrounds, fonts, layers, resizing and animation, powered by Firefly-style creative generation.</td><td>Adobe Express web app public beta and broader Firefly ecosystem.</td><td>Design assistance is becoming an editor mode, not a separate chatbot. Shutterfly's Ask Paige should eventually act inside the creation canvas.</td><td>The Verge coverage of Adobe Express AI Assistant.</td></tr>
+        <tr><td>Google Photos</td><td>Ask Photos and Ask button: natural-language search across personal photos, related-photo discovery, image understanding, prompt-based edits, AI-curated memories and generated memory titles.</td><td>Google Photos app and photo library; Google Photos also has a web surface and photo-book history.</td><td>Photo libraries are becoming searchable by meaning, people, places, activities and emotion. Shutterfly can reduce upload and sorting work if users can bring intent-aware photo sets into products.</td><td>Google Keyword posts on Ask Photos and Memories.</td></tr>
+        <tr><td>VistaPrint</td><td>AI Logo Maker with guided prompts, style preferences, logo generation, editing controls and print-ready output formats.</td><td>Print and small-business design flow.</td><td>Print competitors are using AI to move from vague intent to production-ready assets. The same pattern can support cards, invitations, signs and personalised gifts.</td><td>TechRadar 2026 AI Logo Maker coverage.</td></tr>
+      </tbody>
+    </table>
+  </div>
   <div class="table-wrap">
     <table>
       <thead><tr><th>Opportunity</th><th>Use case</th><th>User benefit</th><th>Business benefit</th><th>Data required</th><th>Feasibility</th><th>Impact</th><th>POC version</th></tr></thead>
@@ -454,6 +468,24 @@
         <tr><td>Predictive reorder</td><td>Prompt users before recurring events such as annual cards, calendars and year-in-review books.</td><td>Timely reminder and faster repeat.</td><td>Retention at low acquisition cost.</td><td>Order history and communication consent.</td><td>High</td><td>High</td><td>Top recurring product categories.</td></tr>
         <tr><td>Design assistance</td><td>Suggest captions, page balance, layout alternatives and background choices inside the editor.</td><td>Reduced creative block.</td><td>Higher editor completion and AOV.</td><td>Editor state and selected theme.</td><td>Medium</td><td>High</td><td>Caption and layout suggestions.</td></tr>
         <tr><td>Relevant cart additions</td><td>Recommend a small number of complementary products based on the created item and occasion.</td><td>Useful gift-set completion.</td><td>Higher attachment and AOV.</td><td>Current project and co-purchase patterns.</td><td>High</td><td>Medium</td><td>Rules-based recommendations.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <h3>Additional AI features to improve the web app and product</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Feature</th><th>How it would work</th><th>Primary journey</th><th>User / product impact</th><th>Risk control</th></tr></thead>
+      <tbody>
+        <tr><td>AI story builder</td><td>Ask a few intent questions, then build an editable product narrative with sections such as trip, milestone, child-year, memorial, wedding or holiday recap.</td><td>Photo books and calendars</td><td>Turns Shutterfly from a template catalogue into a guided memory-making tool.</td><td>Require user approval for copy, order and photo inclusion.</td></tr>
+        <tr><td>Best-photo selector</td><td>Rank uploaded photos by sharpness, exposure, faces, duplicates, smiles, orientation and product fit; explain why a photo was chosen or skipped.</td><td>Upload and editor start</td><td>Reduces sorting time and improves print quality before layout begins.</td><td>Keep all photos available and make ranking editable.</td></tr>
+        <tr><td>Semantic photo search</td><td>Let users find uploaded or connected photos with phrases like "beach sunset with grandparents" or "first day of school".</td><td>Photo tray, search and returning-user projects</td><td>Removes tedious scrolling through large libraries.</td><td>Use consented, privacy-safe embeddings with deletion controls.</td></tr>
+        <tr><td>Prompt-based editor actions</td><td>Let users type or say "make this page more elegant", "use fewer photos", "make the title warmer" or "match this spread".</td><td>Creation editor</td><td>Brings AI into the workflow at the moment of creative hesitation.</td><td>Show a preview diff and one-click undo before applying changes.</td></tr>
+        <tr><td>Print-safe generative fill</td><td>Extend backgrounds, remove small distractions or fill crop gaps only when the generated area is outside the critical subject area.</td><td>Crop, review and print readiness</td><td>Fixes common photo-product problems without forcing users to replace photos.</td><td>Label generated edits and preserve the original image.</td></tr>
+        <tr><td>Caption and dedication assistant</td><td>Generate captions, page titles, gift notes and dedication text from occasion, recipient and selected photos.</td><td>Books, cards and gifts</td><td>Adds emotional polish while reducing writing friction.</td><td>Offer tone controls and avoid unsupported identity or relationship claims.</td></tr>
+        <tr><td>Gift recipient recommender</td><td>Recommend products from recipient, occasion, budget, deadline, available photos and past purchases.</td><td>Discovery, gift finder and cart</td><td>Converts "I need a gift" into a short, relevant product set.</td><td>Show reasons, price range and delivery confidence.</td></tr>
+        <tr><td>AI review checklist</td><td>Summarise remaining product risks: low-resolution photos, text overflow, blank pages, repeated images, likely delivery conflict and unresolved warnings.</td><td>Review before cart</td><td>Prevents regret and support contacts at the highest-effort point.</td><td>Use severity levels and allow informed override.</td></tr>
+        <tr><td>Conversational support handoff</td><td>When Ask Paige cannot complete a task, create a structured support packet with product, browser, upload state, errors and recent user intent.</td><td>Help, upload, editor and checkout</td><td>Reduces repetitive support conversations and speeds recovery.</td><td>Ask consent before attaching project context.</td></tr>
+        <tr><td>AI merchandiser for lifecycle moments</td><td>Detect safe, consented signals such as annual card season, graduation timing, previous calendar order or unfinished year-in-review book.</td><td>Homepage and email re-entry</td><td>Creates timely, useful prompts instead of generic promo noise.</td><td>Provide controls for reminders and sensitive-date suppression.</td></tr>
       </tbody>
     </table>
   </div>
@@ -588,6 +620,15 @@
     <div class="source"><b><a href="https://www.shutterfly.com/t/photo-book-styles/">Photo Book Styles</a></b><span>Reviewed June 12, 2026 for listing filters, ratings, review counts, favourites, sizes, themes and starting prices.</span></div>
     <div class="source"><b><a href="https://www.shutterfly.com/deals/promotions_details/">Promotion details</a></b><span>Reviewed as the public source for current offer terms, exclusions and code-related complexity.</span></div>
     <div class="source"><b><a href="https://support.shutterfly.com/">Shutterfly support</a></b><span>Reference point for customer-facing policies, accessibility and journey support; internal production validation is still required.</span></div>
+    <div class="source"><b><a href="https://www.tomsguide.com/ai/mixbook-just-launched-an-ai-feature-that-creates-photo-books-from-your-prompts">Mixbook Story Mode coverage</a></b><span>Reviewed for prompt-led photo-book story creation, AI layouts, captions and direct competitor direction.</span></div>
+    <div class="source"><b><a href="https://www.tomsguide.com/ai/toms-guide-ai-awards-2026">Tom's Guide AI Awards 2026</a></b><span>Reviewed for Mixbook Studio signals: narrative organisation, caption generation, layout/theme selection and photo touch-up.</span></div>
+    <div class="source"><b><a href="https://time.com/7094550/canva-magic-studio/">Canva Magic Studio profile</a></b><span>Reviewed for adjacent web design expectations around prompt-to-design, Magic Switch, Magic Grab, Magic Media and brand voice.</span></div>
+    <div class="source"><b><a href="https://www.lifewire.com/use-ai-in-canva-8667865">Canva AI feature summary</a></b><span>Reviewed for Magic Design, Magic Media, Magic Write, Magic Edit, Magic Eraser, Magic Grab, Magic Expand and Magic Animate examples.</span></div>
+    <div class="source"><b><a href="https://www.theverge.com/tech/893124/canva-ai-magic-layers-feature-beta">Canva Magic Layers coverage</a></b><span>Reviewed for editable AI design expectations and the shift from generation to controllable layer-based editing.</span></div>
+    <div class="source"><b><a href="https://www.theverge.com/news/807802/adobe-express-ai-assistant-prompt-editing-beta-max-2025">Adobe Express AI Assistant coverage</a></b><span>Reviewed for conversational design creation and natural-language editing inside a web design app.</span></div>
+    <div class="source"><b><a href="https://blog.google/products-and-platforms/products/photos/ask-button-ask-photos-tips/">Google Photos Ask Photos</a></b><span>Reviewed for natural-language photo search, related-photo discovery, image understanding and prompt-based editing.</span></div>
+    <div class="source"><b><a href="https://blog.google/products-and-platforms/products/photos/google-photos-memories-view/">Google Photos Memories view</a></b><span>Reviewed for AI-curated memories, generated titles, user control and collaboration around personal photo collections.</span></div>
+    <div class="source"><b><a href="https://www.techradar.com/pro/vistaprint-ai-logo-maker-review">VistaPrint AI Logo Maker review</a></b><span>Reviewed for print-adjacent AI generation, guided prompts, editable logo outputs and production-ready export expectations.</span></div>
   </div>
 </section>
 
