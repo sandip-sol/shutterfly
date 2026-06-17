@@ -120,7 +120,7 @@
   <div class="meta">
     <span>Product: Shutterfly</span><span>Platform: iOS</span>
     <span>Audience: Product, UX, Engineering, Leadership</span>
-    <span>Prepared: June 12, 2026</span><span>Public evidence checked: June 12, 2026</span>
+    <span>Prepared: June 12, 2026</span><span>Public evidence checked: June 17, 2026</span>
   </div>
 </header>
 
@@ -132,7 +132,7 @@
     <a href="#issues">5. Key Issue Blocks</a><a href="#diagnosis">6. Detailed Issue Diagnosis</a>
     <a href="#root-causes">7. Root Cause Analysis</a><a href="#solutions">8. Proposed Solution Plan</a>
     <a href="#performance">9. iOS Performance Plan</a><a href="#ux">10. iOS UX Plan</a>
-    <a href="#compatibility">11. iOS Platform Readiness</a><a href="#ai">12. AI &amp; Personalisation</a>
+    <a href="#compatibility">11. iOS Platform Readiness</a><a href="#ai">12. AI &amp; Competitor Benchmarks</a>
     <a href="#matrix">13. Feasibility vs Impact</a><a href="#roadmap">14. Implementation Roadmap</a>
     <a href="#metrics">15. Success Metrics</a><a href="#business">16. Expected Business Impact</a>
     <a href="#risk">17. Risk &amp; Validation</a><a href="#recommendation">18. Final Recommendation</a>
@@ -165,12 +165,12 @@
     <table>
       <thead><tr><th>Area reviewed</th><th>Verification source</th><th>Confirmed</th><th>Hypothesis / unknown</th><th>Confidence</th></tr></thead>
       <tbody>
-        <tr><td>Apple App Store listing</td><td>Apple App Store and iTunes Lookup, checked June 12, 2026</td><td>Version 16.10.1; 4.7 / about 587K; 298.8 MB; iOS 17+; broad product catalogue; active-customer storage claim.</td><td>Actual startup, crash, hang, upload and conversion performance.</td><td><span class="badge confirmed">Confirmed</span></td></tr>
-        <tr><td>Recent App Store reviews</td><td>Public App Store page and Apple review RSS endpoint</td><td>Featured reviews include historical complaints about iPhone bugs, freezes, editing difficulty, discounts and shipping clarity.</td><td>The public RSS endpoint returned no review entries on June 12, so a current sentiment trend or 2026 complaint spike could not be established.</td><td><span class="badge validate">Needs validation</span></td></tr>
+        <tr><td>Apple App Store listing</td><td>Apple App Store and iTunes Lookup, checked June 17, 2026</td><td>Version 16.10.1; 4.7 / about 587K; 298.8 MB; iOS 17+; broad product catalogue; active-customer storage claim.</td><td>Actual startup, crash, hang, upload and conversion performance.</td><td><span class="badge confirmed">Confirmed</span></td></tr>
+        <tr><td>Recent App Store reviews</td><td>Public App Store page and Apple review RSS endpoint</td><td>Featured reviews include historical complaints about iPhone bugs, freezes, editing difficulty, discounts and shipping clarity.</td><td>The public RSS endpoint previously returned no review entries, so a current sentiment trend or 2026 complaint spike could not be established from public RSS alone.</td><td><span class="badge validate">Needs validation</span></td></tr>
         <tr><td>App screenshots</td><td>Current US App Store screenshot set</td><td>Brand-led entry, photo books, explicit photo-upload flow, prints, cards, gifts and wall art; photo books are promoted with AI-powered tools.</td><td>Actual in-app navigation depth, editor behavior and checkout flow are not visible in the marketing set.</td><td><span class="badge confirmed">Confirmed</span></td></tr>
         <tr><td>iOS user journey</td><td>Public product claims plus inferred commerce flow</td><td>Users must select/upload photos, configure products, customise, preview and order.</td><td>Exact step count, account gates, state recovery and error handling.</td><td><span class="badge likely">Likely</span></td></tr>
         <tr><td>Performance complaints</td><td>Featured App Store reviews and generic release notes</td><td>Historical public complaints mention app freezes/crashes and awkward editing; releases frequently cite bug fixes and performance improvements.</td><td>Current reproducibility, affected versions, root cause and severity.</td><td><span class="badge likely">Likely</span></td></tr>
-        <tr><td>Competitor comparison</td><td>Current public App Store metadata for Mixbook, Popsa and FreePrints</td><td>Competitors position around speed, auto-layout, on-device AI, Apple Pay, simplified ordering or recurring value. Mixbook is about 164 MB versus Shutterfly at about 299 MB.</td><td>Comparable task performance and conversion require the same-device benchmark.</td><td><span class="badge confirmed">Confirmed</span></td></tr>
+        <tr><td>Competitor comparison</td><td>Current public App Store metadata for Mixbook, Mixtiles, Popsa, PastBook, Chatbooks, FreePrints and Snapfish</td><td>Competitors position around prompt-led book creation, on-device AI, best-photo selection, auto-layout, instant layouts, recurring books, Apple Pay, simplified ordering and monthly value. Mixbook is about 165 MB versus Shutterfly at about 299 MB.</td><td>Comparable task performance and conversion require the same-device benchmark.</td><td><span class="badge confirmed">Confirmed</span></td></tr>
         <tr><td>iOS best practices</td><td>Apple HIG, PhotoKit/Photos picker, MetricKit, Xcode performance guidance</td><td>Native permission timing, accessible controls, responsive feedback, measurement and memory-safe media processing are appropriate standards.</td><td>Current compliance and implementation quality inside Shutterfly.</td><td><span class="badge confirmed">Confirmed standard</span></td></tr>
       </tbody>
     </table>
@@ -399,8 +399,45 @@
 </section>
 
 <section id="ai">
-  <div class="section-head"><div class="section-no">12</div><div><h2>AI and Personalisation Opportunity Plan</h2></div></div>
-  <p class="section-intro">AI should reduce effort and prevent mistakes, not hide irreversible decisions. Every POC retains preview, edit and opt-out control.</p>
+  <div class="section-head"><div class="section-no">12</div><div><h2>AI and Competitor Benchmark Plan</h2></div></div>
+  <p class="section-intro">Close competitors are using AI and automation to remove the hardest parts of photo commerce: finding the right photos, choosing layouts, telling the story, checking print quality and getting to an editable draft quickly. AI should reduce effort and prevent mistakes, not hide irreversible decisions. Every POC retains preview, edit and opt-out control.</p>
+
+  <h3>Competitor AI features visible in iOS apps</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Competitor</th><th>Confirmed iOS AI / automation feature</th><th>How it helps users</th><th>Shutterfly implication</th><th>Evidence level</th></tr></thead>
+      <tbody>
+        <tr><td>Mixbook</td><td>Story Mode turns a short memory prompt plus selected photos into a print-ready photo book; release notes say it is built on Apple's on-device AI for private photo analysis. The listing also promotes app-exclusive Memories, Auto-Create, best-photo identification and recommended layouts.</td><td>Moves the user from blank canvas to an editable story-led book in minutes.</td><td>Make AI book creation a primary iOS entry path: prompt, select photos, preview first draft, then edit.</td><td><span class="badge confirmed">Confirmed</span></td></tr>
+        <tr><td>Mixtiles</td><td>AI Photo Books automatically find travel memories and create ready-to-order hardcover books in seconds; Gallery Walls creates automatic, cropped wall ideas from user photos.</td><td>Turns photo sets into ready-made products without a long editor session.</td><td>Use moment detection to suggest photo books, wall art and gallery sets from recent trips, events and seasons.</td><td><span class="badge confirmed">Confirmed</span></td></tr>
+        <tr><td>Popsa</td><td>Instant Layouts automatically pick templates, crop photos, group similar pictures and choose a color scheme. The app also supports Google Photos keyword search, 3D preview and Apple Pay.</td><td>Compresses layout decisions and checkout friction into a faster ordering flow.</td><td>Combine Shutterfly Auto-Fill with stronger layout explanations, semantic photo search and payment acceleration.</td><td><span class="badge confirmed">Confirmed automation</span></td></tr>
+        <tr><td>PastBook</td><td>Automatically selects best photos and designs a photo book in less than a minute; listing says it analyzes image quality and context, smart-groups images and creates page layouts while keeping photos on device until order.</td><td>Solves photo curation, sequencing and privacy anxiety together.</td><td>Prioritize best-photo selection, quality scoring, event grouping and local-first analysis for the first-draft flow.</td><td><span class="badge confirmed">Confirmed</span></td></tr>
+        <tr><td>Chatbooks</td><td>Not positioned as AI-first in the current listing, but Monthbooks and app flows promise 5-10 minute creation for 30-60 page books, with fast phone photo selection, captions and few-tap ordering.</td><td>Reduces repeat-photo-book creation to a lightweight habit.</td><td>Add recurring memory-book automation and subscription-like reminders without forcing a subscription model.</td><td><span class="badge confirmed">Confirmed automation</span></td></tr>
+        <tr><td>FreePrints / FreePrints Photobooks</td><td>Not AI-led publicly, but the iOS proposition is simplified monthly value, multi-source photo import and extremely simple print/book ordering.</td><td>Minimizes decision friction and gives users a recurring reason to return.</td><td>Pair AI creation with simple, transparent offers and repeat journeys so assistance does not feel buried under promotions.</td><td><span class="badge confirmed">Confirmed positioning</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout"><strong>Competitive read:</strong> Mixbook is the closest AI benchmark because it combines prompts, on-device photo analysis, best-photo selection, auto-create and editing control directly in the iOS app. Popsa and PastBook are important speed benchmarks. Chatbooks and FreePrints show that recurring simplicity can compete even without a heavy AI message.</div>
+
+  <h3>AI features to improve the iOS app, web app and product</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Feature</th><th>Where it fits</th><th>What it does</th><th>Why it improves the product</th><th>Priority</th></tr></thead>
+      <tbody>
+        <tr><td>Memory-to-product assistant</td><td>iOS home, web home, email deep links</td><td>User describes an event such as "summer trip with family"; AI recommends book, prints, wall art, cards or gifts from eligible photos.</td><td>Turns Shutterfly's broad catalogue into a guided recommendation engine instead of a category maze.</td><td><span class="badge p1">P1</span></td></tr>
+        <tr><td>Best-photo and duplicate curation</td><td>Photo picker, uploader, web editor</td><td>Ranks sharp, expressive and diverse photos; hides near-duplicates; lets users review the rationale.</td><td>Reduces selection fatigue and improves print quality before layout begins.</td><td><span class="badge p1">P1</span></td></tr>
+        <tr><td>Cross-platform first-draft builder</td><td>iOS editor and web editor</td><td>Creates an editable draft book, card set or wall-art layout that follows the same project state on phone and desktop.</td><td>Lets users start quickly on iPhone and finish detailed edits on the web without losing context.</td><td><span class="badge p1">P1</span></td></tr>
+        <tr><td>Print-quality proofing</td><td>Picker, editor, preview, cart</td><td>Flags blur, low resolution, dark faces, risky crop, text safe-area issues and duplicate pages with one-tap fixes.</td><td>Prevents disappointment, refunds, support contacts and low-confidence checkout exits.</td><td><span class="badge p1">P1</span></td></tr>
+        <tr><td>Natural-language product search</td><td>Web search, iOS search, gift finder</td><td>Accepts queries like "under $40 gift for grandma using baby photos by Friday" and returns eligible products with shipping and promo constraints.</td><td>Improves discovery, gifting conversion and deadline-sensitive purchases.</td><td><span class="badge p2">P2</span></td></tr>
+        <tr><td>AI design copilot</td><td>Web editor first, iOS guided editor second</td><td>Supports commands such as "make this more modern", "use fewer photos per page" or "match the cover style across pages."</td><td>Improves perceived creative control without forcing users through every manual layout step.</td><td><span class="badge p2">P2</span></td></tr>
+        <tr><td>Caption, title and message writer</td><td>Photo books, cards, invitations, gifts</td><td>Generates editable captions, book titles, card messages and invitation copy using occasion, relationship and tone controls.</td><td>Extends Shutterfly Magic Writer beyond books into more high-frequency product categories.</td><td><span class="badge p2">P2</span></td></tr>
+        <tr><td>Personalised promo and bundle optimizer</td><td>Cart, PDP, web merchandising</td><td>Applies the best eligible promotion and recommends only compatible add-ons using the same photos and delivery promise.</td><td>Reduces coupon hunting while lifting AOV with useful, not noisy, upsells.</td><td><span class="badge p2">P2</span></td></tr>
+        <tr><td>Lifecycle memory triggers</td><td>Push, email, web dashboard</td><td>Detects anniversaries, school years, holidays, annual calendars, baby milestones and prior orders to prompt timely projects.</td><td>Builds repeat purchase around meaningful moments instead of generic discount blasts.</td><td><span class="badge p2">P2</span></td></tr>
+        <tr><td>AI support and recovery assistant</td><td>Checkout, order tracking, help center</td><td>Explains failed uploads, coupon conflicts, delivery constraints and project recovery steps from the user's current state.</td><td>Improves trust at failure moments and reduces support load.</td><td><span class="badge p2">P2</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>POC AI opportunity backlog</h3>
   <div class="table-wrap">
     <table>
       <thead><tr><th>Idea</th><th>Use case</th><th>User benefit</th><th>Business benefit</th><th>Data required</th><th>Feasibility</th><th>Impact</th><th>POC</th></tr></thead>
@@ -523,7 +560,7 @@
   <div class="section-head"><div class="section-no">19</div><div><h2>Sources and Evidence Notes</h2></div></div>
   <div class="source-list">
     <div class="source"><b>Apple App Store - Shutterfly listing</b><span>Rating, size, compatibility, screenshots, product claims, version history and privacy disclosure.</span><a href="https://apps.apple.com/us/app/shutterfly-prints-cards-gifts/id309465525">Open source</a></div>
-    <div class="source"><b>Apple iTunes Lookup - Shutterfly</b><span>Version 16.10.1, June 10, 2026 release date, 298,763,264 bytes, iOS 17 minimum and current screenshot URLs.</span><a href="https://itunes.apple.com/lookup?id=309465525&amp;country=us">Open source</a></div>
+    <div class="source"><b>Apple iTunes Lookup - Shutterfly</b><span>Version 16.10.1, June 10, 2026 release date, 298,763,264 bytes, iOS 17 minimum and current screenshot URLs. Rechecked June 17, 2026.</span><a href="https://itunes.apple.com/lookup?id=309465525&amp;country=us">Open source</a></div>
     <div class="source"><b>Shutterfly - AI photo book guide</b><span>Official confirmation of Auto-Fill, Magic Writer, automatic layouts, captions, preview and edit control. Updated April 13, 2026.</span><a href="https://www.shutterfly.com/ideas/create-a-photo-book-with-ai-in-minutes/">Open source</a></div>
     <div class="source"><b>Apple Developer - Upcoming Requirements</b><span>Xcode 26 and iOS 26 SDK submission requirement effective April 28, 2026.</span><a href="https://developer.apple.com/news/upcoming-requirements/">Open source</a></div>
     <div class="source"><b>Apple Developer - Software Releases</b><span>iOS 26.5.1 released June 1, 2026; iOS 27 beta released June 8, 2026.</span><a href="https://developer.apple.com/news/releases/">Open source</a></div>
@@ -532,8 +569,13 @@
     <div class="source"><b>Apple Developer - Foundation Models</b><span>Official framework documentation and WWDC guidance for private on-device language-model features, availability checks and structured generation.</span><a href="https://developer.apple.com/documentation/foundationmodels">Documentation</a> | <a href="https://developer.apple.com/videos/play/wwdc2025/286/">WWDC session</a></div>
     <div class="source"><b>Apple PhotoKit and system picker guidance</b><span>Privacy-preserving photo selection and limited-library patterns.</span><a href="https://developer.apple.com/documentation/photokit/selecting-photos-and-videos-in-ios">Open source</a></div>
     <div class="source"><b>Apple MetricKit and Xcode performance guidance</b><span>Production diagnostics and profiling foundation.</span><a href="https://developer.apple.com/documentation/metrickit">MetricKit</a> | <a href="https://developer.apple.com/documentation/xcode/improving-your-app-s-performance">Performance</a></div>
-    <div class="source"><b>Public competitor App Store listings</b><span>Mixbook: on-device AI and Story Mode; Popsa: fast layouts and Apple Pay; FreePrints: simplified recurring print value.</span><a href="https://apps.apple.com/us/app/mixbook-photo-book-creator/id1562974920">Mixbook</a> | <a href="https://apps.apple.com/us/app/popsa-print-your-photos/id936799728">Popsa</a> | <a href="https://apps.apple.com/us/app/freeprints-print-photos/id518158653">FreePrints</a></div>
-    <div class="source"><b>Public review evidence limitation</b><span>The App Store page exposed featured historical reviews. Apple's public recent-review RSS endpoint returned no review entries on June 12, 2026; current review-trend claims therefore remain unverified.</span><a href="https://itunes.apple.com/us/rss/customerreviews/id=309465525/sortBy=mostRecent/json">Review feed</a></div>
+    <div class="source"><b>Mixbook iOS listing</b><span>Story Mode, prompt-led photo-book creation, Apple's on-device AI for private photo analysis, Memories, Auto-Create, best-photo identification and recommended layouts. Checked June 17, 2026.</span><a href="https://apps.apple.com/us/app/mixbook-photo-book-creator/id1562974920">Open source</a></div>
+    <div class="source"><b>Mixtiles iOS listing</b><span>AI Photo Books for travel memories, ready-to-order books in seconds, automatic gallery-wall ideas and resolution warnings. Checked June 17, 2026.</span><a href="https://apps.apple.com/us/app/mixtiles-tiles-photo-books/id583099157">Open source</a></div>
+    <div class="source"><b>Popsa iOS listing</b><span>Instant Layouts, automatic template selection, cropping, similar-photo grouping, color schemes, Google Photos keyword search, 3D preview and Apple Pay. Checked June 17, 2026.</span><a href="https://apps.apple.com/us/app/popsa-print-your-photos/id936799728">Open source</a></div>
+    <div class="source"><b>PastBook iOS listing</b><span>Automatic best-photo selection, image quality and context analysis, smart grouping, page layouts, under-one-minute preview and on-device privacy positioning. Checked June 17, 2026.</span><a href="https://apps.apple.com/us/app/pastbook-1-click-photo-book/id1524251801">Open source</a></div>
+    <div class="source"><b>Chatbooks and FreePrints iOS listings</b><span>Recurring Monthbooks and fast creation benchmark from Chatbooks; simplified monthly value and multi-source import benchmark from FreePrints/FreePrints Photobooks. Checked June 17, 2026.</span><a href="https://apps.apple.com/us/app/chatbooks/id734887606">Chatbooks</a> | <a href="https://apps.apple.com/us/app/freeprints-photobooks/id945164641">FreePrints Photobooks</a> | <a href="https://apps.apple.com/us/app/freeprints-print-photos/id518158653">FreePrints</a></div>
+    <div class="source"><b>Snapfish iOS listing</b><span>Adjacent benchmark for broad Shutterfly-family catalogue, product search, album/timeline photo selection, Apple Pay, PayPal, Afterpay and pickup options. Checked June 17, 2026.</span><a href="https://apps.apple.com/us/app/snapfish-photos-cards-books/id330035194">Open source</a></div>
+    <div class="source"><b>Public review evidence limitation</b><span>The App Store page exposed featured historical reviews. Apple's public recent-review RSS endpoint previously returned no review entries; current review-trend claims therefore remain unverified.</span><a href="https://itunes.apple.com/us/rss/customerreviews/id=309465525/sortBy=mostRecent/json">Review feed</a></div>
   </div>
   <div class="callout warn"><strong>Claims requiring direct iPhone or internal validation:</strong> actual startup time; HEIF/RAW upload behavior; limited Photos recovery; large-library performance; background upload; editor technology and responsiveness; autosave recovery; preview latency and fidelity; cart persistence; coupon behavior; Apple Pay availability; checkout latency; push deep links; production crash/hang rates; analytics coverage; current review sentiment; and all forecast conversion or revenue lifts.</div>
 </section>

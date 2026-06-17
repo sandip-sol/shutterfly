@@ -270,7 +270,7 @@ footer span{color:#60A5FA}
         <div class="cover-meta-item"><span class="cover-meta-label">Product</span><span class="cover-meta-value">Shutterfly: Prints Cards Gifts</span></div>
         <div class="cover-meta-item"><span class="cover-meta-label">Platform</span><span class="cover-meta-value">Android Mobile App</span></div>
         <div class="cover-meta-item"><span class="cover-meta-label">Prepared for</span><span class="cover-meta-value">Product &middot; Android Eng &middot; UX/Design &middot; Leadership</span></div>
-        <div class="cover-meta-item"><span class="cover-meta-label">Date</span><span class="cover-meta-value">12 June 2026</span></div>
+        <div class="cover-meta-item"><span class="cover-meta-label">Date</span><span class="cover-meta-value">12 June 2026 &middot; AI research checked 17 June 2026</span></div>
         <div class="cover-meta-item"><span class="cover-meta-label">Classification</span><span class="cover-meta-value">Confidential &middot; Internal</span></div>
       </div>
     </div>
@@ -307,6 +307,7 @@ footer span{color:#60A5FA}
   <a href="#impact" class="nav-link"><span class="nav-n">16</span>Business Impact</a>
   <a href="#risk" class="nav-link"><span class="nav-n">17</span>Risk &amp; Validation</a>
   <a href="#reco" class="nav-link"><span class="nav-n">18</span>Recommendation</a>
+  <a href="#sources" class="nav-link"><span class="nav-n">19</span>Sources</a>
 </div></div></nav>
 
 <!-- 01/02 EXECUTIVE SUMMARY -->
@@ -384,7 +385,7 @@ footer span{color:#60A5FA}
       <tr class="row-high"><td class="area">App screenshots &amp; feature claims</td><td>Google Play listing; Shutterfly support centre (&ldquo;updated features and tools&rdquo;)</td><td>Broad catalogue; photo storage; in-app creation/editor; AI features (Autofill, Magic Writer) marketed</td><td>Exact current screen flows, nav depth, in-app personalisation presence</td><td><span class="pill likely">Likely</span></td></tr>
       <tr class="row-crit"><td class="area">Android creation journey</td><td>Recent reviews; support troubleshooting articles</td><td>Resolution warning fires on valid/previously-accepted photos; editing/alignment difficulty; project frustration on reopen</td><td>Exact root cause (DPI vs pixel logic), permission opt-in rates, upload failure rates</td><td><span class="pill conf">Symptoms Confirmed</span></td></tr>
       <tr class="row-high"><td class="area">Performance complaints</td><td>Recent reviews; app-problem trackers</td><td>Editor slowness/unresponsiveness reported across devices; repeated crash/stall complaints in 2026</td><td>Cold-start times, ANR rate, heap peaks, per-device-tier behaviour</td><td><span class="pill conf">Confirmed</span> / <span class="pill needs">metrics Needs validation</span></td></tr>
-      <tr class="row-med"><td class="area">Competitor comparison</td><td>Google Play listings; Tom's Guide; Digital Camera World</td><td>FreePrints 4.83&#9733; (340K reviews); Popsa 4.8&#9733; (35K+); Mixbook rated best-tested photo-book app &amp; named destination for departing users</td><td>Direct Android feature/perf parity benchmarking against each</td><td><span class="pill conf">Confirmed</span></td></tr>
+      <tr class="row-med"><td class="area">Competitor comparison</td><td>Google Play listings; Mixbook, Popsa, Journi, Tom's Guide, Digital Camera World</td><td>Mixbook and Popsa now market AI-assisted creation; Popsa publishes automatic layouts, generative captions, print-quality scores, Smart Albums, facial recognition and AI recommendations; Journi is positioned around AI/ML-generated photo books; FreePrints remains the Android simplicity benchmark.</td><td>Direct Android feature/perf parity benchmarking against each; Mixbook Story Mode Android availability needs monitoring because public coverage confirms iOS first.</td><td><span class="pill conf">Confirmed</span> / <span class="pill needs">Android parity check</span></td></tr>
       <tr class="row-med"><td class="area">ML / personalisation capability</td><td>Shutterfly &amp; Databricks engineering blogs (Ray + Databricks case study)</td><td>Production ML for customer-propensity modelling across categories; billions of inference records; uses structured data + images</td><td>Degree to which this is wired into the Android homepage / in-app surfaces</td><td><span class="pill conf">Capability Confirmed</span></td></tr>
       <tr class="row-low"><td class="area">Android best practices</td><td>Android Material Design guidance; Android performance &amp; Play Vitals guidance</td><td>Established thresholds &amp; patterns (bitmap downsampling, WorkManager, App Startup, predictive back, ANR &le;0.47%)</td><td>Shutterfly's current adherence per screen/flow</td><td><span class="pill conf">Guidance Confirmed</span></td></tr>
     </tbody>
@@ -703,7 +704,38 @@ footer span{color:#60A5FA}
 <!-- 12 AI PLAN -->
 <div id="ai" class="sec"><div class="w">
   <div class="sec-head"><div class="sec-num">12</div><h2>AI &amp; Personalisation Opportunity Plan</h2></div>
-  <div class="callout purple"><span class="callout-icon">&#129302;</span><div class="callout-body"><strong>Strategic context:</strong> Shutterfly's ML infrastructure &mdash; a Ray + Databricks pipeline performing propensity modelling across product categories on billions of inference records &mdash; is ahead of most competitors. The Android gap is not AI capability; it is mobile delivery reliability and in-app wiring. <strong>Fix execution before promoting features:</strong> a broken &ldquo;wow&rdquo; moment is worse than none.</div></div>
+  <div class="callout purple"><span class="callout-icon">&#129302;</span><div class="callout-body"><strong>Strategic context:</strong> Shutterfly's ML infrastructure &mdash; a Ray + Databricks pipeline performing propensity modelling across product categories on billions of inference records &mdash; is ahead of most competitors. The Android gap is not AI capability; it is mobile delivery reliability and in-app wiring. <strong>Fix execution before promoting features:</strong> a broken &ldquo;wow&rdquo; moment is worse than none. Public competitor research was refreshed on 17 June 2026.</div></div>
+
+  <h3>Competitor AI Features in Android-Relevant Photo Apps</h3>
+  <p class="body">Close competitors are using AI to compress the hardest parts of the Shutterfly journey: finding the right photos, deciding on a story, building a first layout, writing captions and avoiding low-quality print results. The table separates confirmed public claims from Android-specific assumptions.</p>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>Competitor</th><th>Public AI / automation features</th><th>Android relevance</th><th>Shutterfly implication</th><th>Confidence</th></tr></thead>
+    <tbody>
+      <tr class="row-high"><td class="area">Mixbook</td><td>Story Mode asks for the book intent, collects follow-up context, then assembles a photo book with layouts, captions and design elements. Mixbook Studio is marketed with AI-powered design tools and a three-step creation flow.</td><td>Mixbook markets this as app-exclusive; Tom's Guide reported Story Mode as iOS-first in June 2026, so Android availability needs direct monitoring.</td><td>Users will expect prompt-led creation, narrative structure and editable first drafts, not just autofill.</td><td><span class="pill conf">AI confirmed</span> <span class="pill needs">Android check</span></td></tr>
+      <tr class="row-high"><td class="area">Popsa</td><td>Automatic layouts, generative captions, print-quality scores, dynamic themes that derive colors from photos, Smart Albums, reminders, facial recognition and AI recommendations on what to print.</td><td>Popsa is a mobile-app-first competitor with Android distribution; public site presents these as app features.</td><td>Popsa defines the fast Android photo-book bar: generate layout, customize lightly, order with confidence.</td><td><span class="pill conf">Confirmed</span></td></tr>
+      <tr class="row-med"><td class="area">Journi</td><td>AI / machine learning automates photo-book creation from a selected folder, creates aesthetic layouts and learns from user edits. Public sources describe fast preview generation and ML-assisted layouting.</td><td>Journi has Android and iOS apps; current Android performance and feature parity still require same-device testing.</td><td>Journi raises expectations that large trips or family events can become a book draft in seconds or minutes.</td><td><span class="pill likely">Likely current</span></td></tr>
+      <tr class="row-med"><td class="area">Google Photos</td><td>Computer vision search by people, places and things; face grouping; automatic memories and album suggestions; photo-book creation from search-selected photos.</td><td>Native Android reach and OS-level familiarity make Google Photos a direct competitor for the photo-finding and simple-book use case.</td><td>Shutterfly must beat Google on emotional product depth while matching its photo discovery speed.</td><td><span class="pill conf">Confirmed</span></td></tr>
+      <tr class="row-low"><td class="area">Chatbooks / FreePrints</td><td>Less visible AI positioning, but strong automation and simplicity: auto-organized pages, subscription books and very short print-order flows.</td><td>Both compete directly for Android users who value speed over deep customization.</td><td>AI is not the only threat. Shutterfly also needs a non-AI quick path for prints and simple books.</td><td><span class="pill conf">Automation confirmed</span></td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>AI Features That Would Improve Shutterfly Android</h3>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>Priority</th><th>Feature</th><th>What it does</th><th>Why it improves product</th><th>POC test</th></tr></thead>
+    <tbody>
+      <tr class="row-high"><td><span class="pill p1">P1</span></td><td class="area">Prompt-led book builder</td><td>Ask what the book is for, who is in it and what tone it should have, then generate an editable first draft with story sections.</td><td>Catches up to Mixbook's Story Mode expectation and makes AI feel like a guide, not a background process.</td><td>40-photo draft to preview in &le;5 minutes; completion &ge;70%.</td></tr>
+      <tr class="row-high"><td><span class="pill p1">P1</span></td><td class="area">Quality-aware photo picker</td><td>Score blur, resolution, lighting, faces cut off and crop risk before the user enters the editor.</td><td>Turns the current resolution-warning pain into a trust feature that prevents refunds and rework.</td><td>False rejection rate &lt;1%; quality warning accepted or resolved in &ge;80% of affected sessions.</td></tr>
+      <tr class="row-high"><td><span class="pill p1">P1</span></td><td class="area">Smart Albums and event clusters</td><td>Group photos by date, location, faces and event density, then suggest the best set for books, calendars or gifts.</td><td>Matches Popsa and Google Photos photo-finding speed while staying inside Shutterfly's commerce flow.</td><td>Time-to-selection-complete -40%; selection completion +15%.</td></tr>
+      <tr class="row-med"><td><span class="pill p2">P2</span></td><td class="area">Generative captions with tone control</td><td>Suggest captions, section titles and dedication pages in family, travel, memorial, playful or premium tones.</td><td>Creates emotional value and reduces blank-page anxiety without taking away user control.</td><td>Caption acceptance &ge;35%; caption edits under 2 per accepted caption.</td></tr>
+      <tr class="row-med"><td><span class="pill p2">P2</span></td><td class="area">Dynamic themes</td><td>Generate color palettes, type treatments and background options from selected photos and occasion intent.</td><td>Helps Shutterfly feel modern without forcing users into complex design decisions.</td><td>Theme apply rate &ge;45%; manual style edits -25%.</td></tr>
+      <tr class="row-med"><td><span class="pill p2">P2</span></td><td class="area">AI project rescue</td><td>When a project stalls, identify why and offer one-tap fixes: replace low-quality photos, reduce page count, simplify layout or apply best promo.</td><td>Converts abandonment moments into recoverable journeys and protects invested effort.</td><td>Recover 10% of inactive projects within 7 days.</td></tr>
+      <tr class="row-med"><td><span class="pill p2">P2</span></td><td class="area">Personalized gift recommender</td><td>Use purchase history, occasion timing and selected photos to recommend one relevant product bundle.</td><td>Uses Shutterfly's catalogue breadth as a strength instead of a navigation burden.</td><td>Recommended-product add-to-cart +12% vs static modules.</td></tr>
+      <tr class="row-low"><td><span class="pill p3">P3</span></td><td class="area">AI support and order helper</td><td>Explain delivery windows, promo eligibility, order status and photo-quality warnings with grounded support answers.</td><td>Reduces support demand and increases checkout confidence, especially during seasonal peaks.</td><td>Support deflection &ge;20%; checkout-help satisfaction &ge;4.3/5.</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="callout blue"><span class="callout-icon">&#128161;</span><div class="callout-body"><strong>Recommended sequencing:</strong> first fix Android editor stability and quality validation, then ship AI that removes work from the funnel. The strongest near-term package is <strong>quality-aware picker + Smart Albums + server-side AI Autofill + prompt-led captions</strong>. That gives Shutterfly parity with Popsa/Journi speed and a credible answer to Mixbook's narrative-led creation.</div></div>
+
   <div class="ai-grid">
 
     <div class="ai-card"><h4>&#128247; AI Photo Quality Pre-Check</h4><p>Detect blur, low resolution, poor lighting and bad crop at selection &mdash; before time is invested &mdash; with alternative suggestions. Replaces the current faulty rejection with a correct, helpful gate.</p>
@@ -985,9 +1017,28 @@ footer span{color:#60A5FA}
   <div class="callout green"><span class="callout-icon">&#9989;</span><div class="callout-body"><strong>POC success definition:</strong> by the end of Week 12, the Shutterfly Android app should demonstrate (1) zero active issues blocking valid-photo orders, (2) sub-2-second cold start on Pixel 6a, (3) zero ANR in a 500-action editor test on mid-range Android, (4) AI Autofill completing a ~40-photo book draft in under five minutes without crashing, and (5) a personalised homepage delivering a measurably higher add-to-cart rate than the static layout in A/B test. Achieving all five proves the app can be the best in its category &mdash; not just the most recognised brand in it.</div></div>
 </div></div>
 
+<!-- 19 SOURCES -->
+<div id="sources" class="sec"><div class="w">
+  <div class="sec-head"><div class="sec-num">19</div><h2>Sources &amp; Evidence Notes</h2></div>
+  <p class="body">Public sources used for the AI competitor refresh. The report keeps Android-specific claims conservative where the public source confirms a mobile or app feature but not exact Android parity.</p>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>Source</th><th>Used for</th><th>Evidence note</th></tr></thead>
+    <tbody>
+      <tr><td class="area"><a href="https://popsa.com/en-us/">Popsa official site</a></td><td>Popsa AI and automation feature set</td><td>Official site lists automatic layouts, generative captions, print-quality scores, dynamic themes, Smart Albums, reminders, facial recognition and AI recommendations.</td></tr>
+      <tr><td class="area"><a href="https://www.tomsguide.com/ai/mixbook-just-launched-an-ai-feature-that-creates-photo-books-from-your-prompts">Tom's Guide: Mixbook Story Mode</a></td><td>Mixbook prompt-led AI creation</td><td>June 2026 coverage confirms Story Mode, follow-up prompts, photo curation, layouts and captions. It reports iOS-first availability, so Android parity needs monitoring.</td></tr>
+      <tr><td class="area"><a href="https://www.tomsguide.com/ai/toms-guide-ai-awards-2026">Tom's Guide AI Awards 2026</a></td><td>Mixbook Studio AI capabilities</td><td>Used for AI photo organization, narrative, captions, layout/theme selection and low-resolution photo touch-up positioning.</td></tr>
+      <tr><td class="area"><a href="https://www.tomsguide.com/cameras-photography/popsa-photo-book-review">Tom's Guide: Popsa Photo Book review</a></td><td>Independent Popsa app usability signal</td><td>Review describes AI-driven layout organization and simple mobile creation experience.</td></tr>
+      <tr><td class="area"><a href="https://www.digitalcameraworld.com/buying-guides/best-photo-calendars">Digital Camera World: photo calendars 2026</a></td><td>Popsa calendar/app AI benchmark</td><td>Used for AI-assisted calendar design, photo-derived color suggestions and fast app-based creation.</td></tr>
+      <tr><td class="area"><a href="https://www.welt.de/231825599">Welt: Journi AI photo books</a></td><td>Journi AI layout and learning model</td><td>German-language source describing Journi's AI-assisted photo-book creation and ML learning from user edits.</td></tr>
+      <tr><td class="area"><a href="https://www.wired.com/story/google-photo-books-review">Wired: Google Photo Books review</a></td><td>Google Photos as simple Android-adjacent competitor</td><td>Used for AI search, quick photo selection and order-in-minutes positioning versus traditional photo-book apps.</td></tr>
+      <tr><td class="area"><a href="https://www.tomsguide.com/cameras-photography/chatbooks-photo-book-review">Tom's Guide: Chatbooks review</a></td><td>Simple automation benchmark</td><td>Used for auto-organized pages, beginner-friendly app flow and low-effort recurring book positioning.</td></tr>
+    </tbody>
+  </table></div>
+</div></div>
+
 <footer><div class="w">
   <strong style="color:#60A5FA">Shutterfly Android App &mdash; Performance &amp; Experience Improvement POC</strong><br>
-  12 June 2026 &middot; Confidential &mdash; Internal Use Only &middot; <span>Findings graded Confirmed / Likely / Hypothesis / Needs validation</span><br>
+  12 June 2026 &middot; AI competitor research checked 17 June 2026 &middot; Confidential &mdash; Internal Use Only &middot; <span>Findings graded Confirmed / Likely / Hypothesis / Needs validation</span><br>
   Product &middot; Android Engineering &middot; UX / Design &middot; Leadership
 </div></footer>
 
