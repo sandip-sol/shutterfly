@@ -48,12 +48,20 @@
   .metric{background:var(--soft);border-top:4px solid var(--teal)}
   .metric .value{font-size:24px;font-weight:800;color:var(--navy);line-height:1.15}
   .metric .label{margin-top:5px;color:var(--muted);font-size:12px}
+  .score-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:14px 0}
+  .score-card{padding:15px;border:1px solid var(--line);border-radius:var(--radius);background:#fff}
+  .score-card .score-label{color:var(--muted);font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+  .score-card .score-value{margin-top:4px;color:var(--navy);font-size:25px;font-weight:850;line-height:1.1}
+  .score-card .score-note{margin-top:5px;color:var(--muted);font-size:11px}
+  .score-card.risk{border-top:4px solid var(--red)}.score-card.warn{border-top:4px solid var(--amber)}
+  .score-card.good{border-top:4px solid var(--green)}.score-card.info{border-top:4px solid var(--blue)}
   .callout{margin:16px 0;padding:14px 16px;border-left:4px solid var(--blue);border-radius:var(--small);background:var(--soft2)}
   .callout.warn{border-color:var(--amber);background:#fff8e8}
   .callout.good{border-color:var(--green);background:#edf8f1}
   .callout.risk{border-color:var(--red);background:#fff1f0}
   .callout strong{color:var(--navy)}
   .table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 4px 14px rgba(16,42,67,.03)}
+  .table-wrap.stacked{margin-top:14px}
   table{width:100%;border-collapse:collapse;font-size:12.5px}
   th{padding:10px 11px;text-align:left;background:var(--soft);color:var(--navy);font-size:10px;letter-spacing:.055em;text-transform:uppercase;white-space:nowrap}
   td{padding:10px 11px;vertical-align:top;border-top:1px solid var(--line);color:#486581}
@@ -101,13 +109,13 @@
   .source span{display:block;color:var(--muted);font-size:12px}
   footer{margin-top:46px;padding-top:20px;border-top:1px solid var(--line);color:var(--muted);font-size:11.5px}
   @media(max-width:900px){
-    .grid,.timeline,.kpis{grid-template-columns:repeat(2,1fr)}
+    .grid,.timeline,.kpis,.score-grid{grid-template-columns:repeat(2,1fr)}
     .toc-grid{grid-template-columns:repeat(2,1fr)}
     .issue-meta{grid-template-columns:repeat(2,1fr)}
   }
   @media(max-width:600px){
     .page{padding:18px 12px 50px}.hero{padding:30px 22px}.hero h1{font-size:31px}
-    .grid,.grid.two,.grid.three,.timeline,.kpis,.matrix,.source-list,.toc-grid{grid-template-columns:1fr}
+    .grid,.grid.two,.grid.three,.timeline,.kpis,.score-grid,.matrix,.source-list,.toc-grid{grid-template-columns:1fr}
     .issue-meta{grid-template-columns:1fr}
   }
   @media print{
@@ -186,6 +194,43 @@
     </table>
   </div>
   <div class="callout warn"><strong>Evidence discipline:</strong> Exact conversion, revenue, traffic, editor-failure and performance figures are intentionally excluded unless an internal analytics baseline confirms them. Targets in this report are POC goals, not claims about current production results.</div>
+  <h3>Lighthouse lab baseline</h3>
+  <p class="section-intro">Local Lighthouse 13.4.0 homepage reports were captured for <code>https://www.shutterfly.com/</code> on June 12, 2026. These are lab results, not field Core Web Vitals, but they identify the most urgent performance and quality signals to validate in RUM.</p>
+  <div class="score-grid" aria-label="Lighthouse category scores">
+    <div class="score-card risk"><div class="score-label">Mobile performance</div><div class="score-value">34</div><div class="score-note">Desktop performance: 63</div></div>
+    <div class="score-card good"><div class="score-label">Accessibility</div><div class="score-value">94 / 97</div><div class="score-note">Mobile / desktop</div></div>
+    <div class="score-card warn"><div class="score-label">Best practices</div><div class="score-value">58 / 54</div><div class="score-note">Mobile / desktop</div></div>
+    <div class="score-card good"><div class="score-label">SEO</div><div class="score-value">92</div><div class="score-note">Same score on mobile and desktop</div></div>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Lighthouse metric</th><th>Mobile lab result</th><th>Desktop lab result</th><th>POC implication</th></tr></thead>
+      <tbody>
+        <tr><td>First Contentful Paint</td><td>4.1 s</td><td>1.2 s</td><td>Mobile first paint is slow enough to affect initial orientation and perceived trust.</td></tr>
+        <tr><td>Largest Contentful Paint</td><td>5.3 s</td><td>1.6 s</td><td>Desktop LCP is acceptable in this run; mobile LCP needs priority work on the homepage critical path.</td></tr>
+        <tr><td>Total Blocking Time</td><td>11,370 ms</td><td>590 ms</td><td>Main-thread pressure is the clearest mobile risk and should drive JavaScript, tag and hydration budgets.</td></tr>
+        <tr><td>Speed Index</td><td>9.5 s</td><td>2.4 s</td><td>Mobile visual completion lags heavily behind desktop, reinforcing the need for mobile-specific optimisation.</td></tr>
+        <tr><td>Cumulative Layout Shift</td><td>0.014</td><td>0.009</td><td>Layout stability is a relative strength in the lab run and should be protected during performance changes.</td></tr>
+        <tr><td>Time to Interactive</td><td>44.0 s</td><td>9.6 s</td><td>The page can appear before it is reliably usable, especially on mobile.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="table-wrap stacked">
+    <table>
+      <thead><tr><th>Audit signal</th><th>Mobile</th><th>Desktop</th><th>Recommended priority</th></tr></thead>
+      <tbody>
+        <tr><td>Main-thread work</td><td>30.8 s</td><td>7.9 s</td><td>Reduce hydration, defer non-critical modules and isolate heavy client work.</td></tr>
+        <tr><td>JavaScript execution</td><td>15.0 s</td><td>2.5 s</td><td>Cut unused JavaScript, split route bundles and govern third-party scripts.</td></tr>
+        <tr><td>Unused JavaScript estimate</td><td>1,508 KiB</td><td>1,360 KiB</td><td>Create a bundle inventory tied to route ownership and conversion value.</td></tr>
+        <tr><td>Total network payload</td><td>4,214 KiB</td><td>4,095 KiB</td><td>Set asset budgets for homepage, listing, editor and checkout routes.</td></tr>
+        <tr><td>Initial server response</td><td>990 ms</td><td>640 ms</td><td>Review edge caching, origin latency and early document dependencies.</td></tr>
+        <tr><td>Render-blocking requests</td><td>Estimated 1,140 ms savings</td><td>Estimated 370 ms savings</td><td>Inline only critical CSS, defer the rest and verify real LCP impact.</td></tr>
+        <tr><td>Accessibility issues</td><td>Touch target size, color contrast and role conflicts</td><td>Color contrast</td><td>Add automated checks plus manual keyboard, zoom and screen-reader testing.</td></tr>
+        <tr><td>Best-practice issues</td><td>29 third-party cookies, deprecated API warning, DevTools issues</td><td>17 third-party cookies, deprecated API warning, console errors</td><td>Run a tag audit with privacy, reliability and performance owners.</td></tr>
+        <tr><td>SEO issue</td><td>2 non-descriptive links</td><td>2 non-descriptive links</td><td>Fix link text and keep crawlability checks in the release gate.</td></tr>
+      </tbody>
+    </table>
+  </div>
 </section>
 
 <section id="context">
