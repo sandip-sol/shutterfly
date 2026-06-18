@@ -539,3 +539,45 @@ Long term, Shutterfly should build toward an AI-assisted personalisation layer w
 The strongest POC positioning is:
 
 “Make Shutterfly faster, simpler and more intelligent — helping users turn photos into personalised products with less effort, higher confidence and stronger conversion.”
+
+---
+
+## 16. Abbreviation and Short Form Meanings
+
+This section explains the short forms used in the report so non-technical readers can follow the recommendations more easily.
+
+| Short Form | Meaning | Plain-English Explanation |
+| ---------- | ------- | ------------------------- |
+| AI | Artificial Intelligence | Technology that helps software make smart suggestions, automate tasks or personalise experiences. |
+| AOV | Average Order Value | The average amount a customer spends in one order. |
+| API | Application Programming Interface | A connection that lets different software systems share data or actions. |
+| APIs | Application Programming Interfaces | Multiple software connections between systems. |
+| AVIF | AV1 Image File Format | A modern image format that can reduce file size while keeping good quality. |
+| CDN | Content Delivery Network | A network of servers that helps deliver images, pages and files faster to users. |
+| CI | Continuous Integration | An automated process that checks code changes before they are released. |
+| CLS | Cumulative Layout Shift | A Core Web Vitals metric that measures whether page content jumps around while loading. |
+| CMS | Content Management System | A tool used by business or marketing teams to manage website content without changing code directly. |
+| Core Web Vitals | Core Web Vitals | Google performance measures for page loading speed, responsiveness and visual stability. |
+| CTR | Click-Through Rate | The percentage of users who click a button, link, product card or promotion. |
+| CTA | Call to Action | A button or link asking users to take a specific step, such as “Create,” “Start,” or “Checkout.” |
+| CTAs | Calls to Action | Multiple action buttons or links. |
+| CWV | Core Web Vitals | A short form for the Google performance metrics LCP, INP and CLS. |
+| IA | Information Architecture | The way content, navigation and categories are organised so users can find things easily. |
+| INP | Interaction to Next Paint | A Core Web Vitals metric that measures how quickly a page responds after a user action. |
+| JPG | Joint Photographic Experts Group | A common image file format, often used for photos. |
+| JS | JavaScript | The programming language commonly used to make websites interactive. |
+| LCP | Largest Contentful Paint | A Core Web Vitals metric that measures how quickly the main visible page content loads. |
+| MVP | Minimum Viable Product | The simplest usable version of a feature that can be tested with users. |
+| NLP | Natural Language Processing | AI technology that helps software understand everyday language, such as search phrases. |
+| P1 | Priority 1 | A high-priority item that should be addressed first. |
+| P2 | Priority 2 | An important item, but usually after P1 work. |
+| PDP | Product Detail Page | The page where users see product details, options, pricing and creation steps. |
+| PNG | Portable Network Graphics | A common image file format, often used when images need transparency or sharp edges. |
+| POC | Proof of Concept | A small test project used to validate whether an idea is practical and valuable. |
+| QA | Quality Assurance | Testing work that checks whether a product works correctly before release. |
+| RUM | Real-User Monitoring | Performance data collected from real users while they use the website. |
+| SEO | Search Engine Optimisation | Improvements that help pages appear better in search engines such as Google. |
+| TTI | Time to Interactive | A performance metric that measures when a page becomes ready for user interaction. |
+| UI | User Interface | The screens, buttons, forms and visual elements users interact with. |
+| UX | User Experience | The overall experience users have while completing tasks in the product. |
+| WebP | Web Picture Format | A modern image format that can reduce file size compared with older formats like JPG or PNG. |
